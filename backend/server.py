@@ -209,6 +209,447 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
     return {"message": "User deleted successfully"}
 
 
+# ============= VIDEO ENDPOINTS =============
+@api_router.get("/videos", response_model=List[Video])
+async def get_videos(current_user: dict = Depends(get_current_user)):
+    videos = await db.videos.find({}, {"_id": 0}).to_list(1000)
+    return videos
+
+@api_router.post("/videos", response_model=Video)
+async def create_video(video_data: VideoCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    video_obj = Video(**video_data.model_dump())
+    doc = video_obj.model_dump()
+    
+    await db.videos.insert_one(doc)
+    return video_obj
+
+@api_router.put("/videos/{video_id}", response_model=Video)
+async def update_video(video_id: str, video_data: VideoCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.videos.update_one({"id": video_id}, {"$set": video_data.model_dump()})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Video not found")
+    
+    updated_video = await db.videos.find_one({"id": video_id}, {"_id": 0})
+    return Video(**updated_video)
+
+@api_router.delete("/videos/{video_id}")
+async def delete_video(video_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.videos.delete_one({"id": video_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Video not found")
+    
+    return {"message": "Video deleted successfully"}
+
+
+# ============= VIDEO PROGRESS ENDPOINTS =============
+@api_router.get("/progress", response_model=List[VideoProgress])
+async def get_user_progress(current_user: dict = Depends(get_current_user)):
+    progress = await db.video_progress.find({"user_id": current_user['id']}, {"_id": 0}).to_list(1000)
+    
+    # If no progress exists, initialize it
+    if not progress:
+        videos = await db.videos.find({}, {"_id": 0}).to_list(1000)
+        progress = []
+        for idx, video in enumerate(videos):
+            prog = VideoProgress(
+                user_id=current_user['id'],
+                video_id=video['id'],
+                unlocked=(idx == 0)
+            )
+            doc = prog.model_dump()
+            doc['completed_at'] = doc['completed_at'].isoformat() if doc['completed_at'] else None
+            await db.video_progress.insert_one(doc)
+            progress.append(prog)
+    
+    return progress
+
+@api_router.post("/progress/{video_id}")
+async def complete_video(video_id: str, comment: str, current_user: dict = Depends(get_current_user)):
+    # Mark current video as watched
+    await db.video_progress.update_one(
+        {"user_id": current_user['id'], "video_id": video_id},
+        {"$set": {
+            "watched": True,
+            "comment": comment,
+            "completed_at": datetime.utcnow().isoformat()
+        }}
+    )
+    
+    # Find and unlock next video
+    videos = await db.videos.find({}, {"_id": 0}).to_list(1000)
+    current_idx = next((i for i, v in enumerate(videos) if v['id'] == video_id), None)
+    
+    if current_idx is not None and current_idx + 1 < len(videos):
+        next_video_id = videos[current_idx + 1]['id']
+        await db.video_progress.update_one(
+            {"user_id": current_user['id'], "video_id": next_video_id},
+            {"$set": {"unlocked": True}}
+        )
+    
+    return {"message": "Video completed successfully"}
+
+
+# ============= MEETING ENDPOINTS =============
+@api_router.get("/meetings", response_model=List[Meeting])
+async def get_meetings(current_user: dict = Depends(get_current_user)):
+    meetings = await db.meetings.find({"user_id": current_user['id']}, {"_id": 0}).to_list(1000)
+    return meetings
+
+@api_router.post("/meetings", response_model=Meeting)
+async def create_meeting(meeting_data: MeetingCreate, current_user: dict = Depends(get_current_user)):
+    meeting_dict = meeting_data.model_dump()
+    meeting_dict['user_id'] = current_user['id']
+    meeting_obj = Meeting(**meeting_dict)
+    
+    doc = meeting_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.meetings.insert_one(doc)
+    return meeting_obj
+
+@api_router.put("/meetings/{meeting_id}", response_model=Meeting)
+async def update_meeting(meeting_id: str, meeting_data: MeetingCreate, current_user: dict = Depends(get_current_user)):
+    result = await db.meetings.update_one(
+        {"id": meeting_id, "user_id": current_user['id']},
+        {"$set": meeting_data.model_dump()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+    
+    updated_meeting = await db.meetings.find_one({"id": meeting_id}, {"_id": 0})
+    return Meeting(**updated_meeting)
+
+@api_router.delete("/meetings/{meeting_id}")
+async def delete_meeting(meeting_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.meetings.delete_one({"id": meeting_id, "user_id": current_user['id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+    
+    return {"message": "Meeting deleted successfully"}
+
+
+# ============= TASK ENDPOINTS =============
+@api_router.get("/tasks", response_model=List[Task])
+async def get_tasks(current_user: dict = Depends(get_current_user)):
+    tasks = await db.tasks.find({"user_id": current_user['id']}, {"_id": 0}).to_list(1000)
+    return tasks
+
+@api_router.post("/tasks", response_model=Task)
+async def create_task(task_data: TaskCreate, current_user: dict = Depends(get_current_user)):
+    task_dict = task_data.model_dump()
+    task_dict['user_id'] = current_user['id']
+    task_obj = Task(**task_dict)
+    
+    doc = task_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.tasks.insert_one(doc)
+    return task_obj
+
+@api_router.put("/tasks/{task_id}", response_model=Task)
+async def update_task(task_id: str, task_data: TaskCreate, current_user: dict = Depends(get_current_user)):
+    result = await db.tasks.update_one(
+        {"id": task_id, "user_id": current_user['id']},
+        {"$set": task_data.model_dump()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    updated_task = await db.tasks.find_one({"id": task_id}, {"_id": 0})
+    return Task(**updated_task)
+
+@api_router.patch("/tasks/{task_id}/status")
+async def update_task_status(task_id: str, status: str, current_user: dict = Depends(get_current_user)):
+    result = await db.tasks.update_one(
+        {"id": task_id, "user_id": current_user['id']},
+        {"$set": {"status": status}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    return {"message": "Task status updated"}
+
+@api_router.delete("/tasks/{task_id}")
+async def delete_task(task_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.tasks.delete_one({"id": task_id, "user_id": current_user['id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    return {"message": "Task deleted successfully"}
+
+
+# ============= GOAL ENDPOINTS =============
+@api_router.get("/goals", response_model=List[Goal])
+async def get_goals(current_user: dict = Depends(get_current_user)):
+    goals = await db.goals.find({"user_id": current_user['id']}, {"_id": 0}).to_list(1000)
+    return goals
+
+@api_router.post("/goals", response_model=Goal)
+async def create_goal(goal_data: GoalCreate, current_user: dict = Depends(get_current_user)):
+    goal_dict = goal_data.model_dump()
+    goal_dict['user_id'] = current_user['id']
+    goal_obj = Goal(**goal_dict)
+    
+    doc = goal_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.goals.insert_one(doc)
+    return goal_obj
+
+@api_router.delete("/goals/{goal_id}")
+async def delete_goal(goal_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.goals.delete_one({"id": goal_id, "user_id": current_user['id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    
+    return {"message": "Goal deleted successfully"}
+
+
+# ============= REASON ENDPOINTS =============
+@api_router.get("/reasons", response_model=List[Reason])
+async def get_reasons(current_user: dict = Depends(get_current_user)):
+    reasons = await db.reasons.find({"user_id": current_user['id']}, {"_id": 0}).to_list(1000)
+    return reasons
+
+@api_router.post("/reasons", response_model=Reason)
+async def create_reason(reason_data: ReasonCreate, current_user: dict = Depends(get_current_user)):
+    reason_dict = reason_data.model_dump()
+    reason_dict['user_id'] = current_user['id']
+    reason_obj = Reason(**reason_dict)
+    
+    doc = reason_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.reasons.insert_one(doc)
+    return reason_obj
+
+@api_router.delete("/reasons/{reason_id}")
+async def delete_reason(reason_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.reasons.delete_one({"id": reason_id, "user_id": current_user['id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Reason not found")
+    
+    return {"message": "Reason deleted successfully"}
+
+
+# ============= PROSPECT ENDPOINTS =============
+@api_router.get("/prospects", response_model=List[Prospect])
+async def get_prospects(current_user: dict = Depends(get_current_user)):
+    prospects = await db.prospects.find({"user_id": current_user['id']}, {"_id": 0}).to_list(1000)
+    return prospects
+
+@api_router.post("/prospects", response_model=Prospect)
+async def create_prospect(prospect_data: ProspectCreate, current_user: dict = Depends(get_current_user)):
+    prospect_dict = prospect_data.model_dump()
+    prospect_dict['user_id'] = current_user['id']
+    prospect_obj = Prospect(**prospect_dict)
+    
+    doc = prospect_obj.model_dump()
+    doc['added_date'] = doc['added_date'].isoformat()
+    
+    await db.prospects.insert_one(doc)
+    return prospect_obj
+
+@api_router.put("/prospects/{prospect_id}", response_model=Prospect)
+async def update_prospect(prospect_id: str, prospect_data: ProspectCreate, current_user: dict = Depends(get_current_user)):
+    result = await db.prospects.update_one(
+        {"id": prospect_id, "user_id": current_user['id']},
+        {"$set": prospect_data.model_dump()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Prospect not found")
+    
+    updated_prospect = await db.prospects.find_one({"id": prospect_id}, {"_id": 0})
+    return Prospect(**updated_prospect)
+
+@api_router.delete("/prospects/{prospect_id}")
+async def delete_prospect(prospect_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.prospects.delete_one({"id": prospect_id, "user_id": current_user['id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Prospect not found")
+    
+    return {"message": "Prospect deleted successfully"}
+
+
+# ============= PARTNER ENDPOINTS =============
+@api_router.get("/partners", response_model=List[Partner])
+async def get_partners(current_user: dict = Depends(get_current_user)):
+    partners = await db.partners.find({"user_id": current_user['id']}, {"_id": 0}).to_list(1000)
+    return partners
+
+@api_router.post("/partners", response_model=Partner)
+async def create_partner(partner_data: PartnerCreate, current_user: dict = Depends(get_current_user)):
+    partner_dict = partner_data.model_dump()
+    partner_dict['user_id'] = current_user['id']
+    partner_obj = Partner(**partner_dict)
+    
+    doc = partner_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.partners.insert_one(doc)
+    return partner_obj
+
+@api_router.put("/partners/{partner_id}", response_model=Partner)
+async def update_partner(partner_id: str, partner_data: PartnerCreate, current_user: dict = Depends(get_current_user)):
+    result = await db.partners.update_one(
+        {"id": partner_id, "user_id": current_user['id']},
+        {"$set": partner_data.model_dump()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Partner not found")
+    
+    updated_partner = await db.partners.find_one({"id": partner_id}, {"_id": 0})
+    return Partner(**updated_partner)
+
+@api_router.delete("/partners/{partner_id}")
+async def delete_partner(partner_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.partners.delete_one({"id": partner_id, "user_id": current_user['id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Partner not found")
+    
+    return {"message": "Partner deleted successfully"}
+
+
+# ============= HABIT ENDPOINTS =============
+@api_router.get("/habits", response_model=List[Habit])
+async def get_habits(current_user: dict = Depends(get_current_user)):
+    today = datetime.utcnow().strftime("%Y-%m-%d")
+    habits = await db.habits.find({"user_id": current_user['id'], "date": today}, {"_id": 0}).to_list(1000)
+    
+    # If no habits for today, create default ones
+    if not habits:
+        default_habits = [
+            {"title": "Yeni kişilerle konuş", "target": 5, "completed": 0, "done": False},
+            {"title": "Follow-up yap", "target": 3, "completed": 0, "done": False},
+            {"title": "Sosyal medya paylaşımı", "target": 2, "completed": 0, "done": False},
+            {"title": "Eğitim izle", "target": 1, "completed": 0, "done": False}
+        ]
+        
+        habits = []
+        for habit_data in default_habits:
+            habit_data['user_id'] = current_user['id']
+            habit_obj = Habit(**habit_data)
+            doc = habit_obj.model_dump()
+            await db.habits.insert_one(doc)
+            habits.append(habit_obj)
+    
+    return habits
+
+@api_router.patch("/habits/{habit_id}")
+async def update_habit(habit_id: str, completed: int, current_user: dict = Depends(get_current_user)):
+    habit = await db.habits.find_one({"id": habit_id, "user_id": current_user['id']}, {"_id": 0})
+    if not habit:
+        raise HTTPException(status_code=404, detail="Habit not found")
+    
+    new_completed = min(completed, habit['target'])
+    done = new_completed >= habit['target']
+    
+    await db.habits.update_one(
+        {"id": habit_id},
+        {"$set": {"completed": new_completed, "done": done}}
+    )
+    
+    return {"message": "Habit updated"}
+
+
+# ============= EVENT ENDPOINTS =============
+@api_router.get("/events", response_model=List[Event])
+async def get_events(current_user: dict = Depends(get_current_user)):
+    events = await db.events.find({}, {"_id": 0}).to_list(1000)
+    return events
+
+@api_router.post("/events", response_model=Event)
+async def create_event(event_data: EventCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    event_obj = Event(**event_data.model_dump())
+    doc = event_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.events.insert_one(doc)
+    return event_obj
+
+@api_router.put("/events/{event_id}", response_model=Event)
+async def update_event(event_id: str, event_data: EventCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.events.update_one({"id": event_id}, {"$set": event_data.model_dump()})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    updated_event = await db.events.find_one({"id": event_id}, {"_id": 0})
+    return Event(**updated_event)
+
+@api_router.delete("/events/{event_id}")
+async def delete_event(event_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.events.delete_one({"id": event_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    return {"message": "Event deleted successfully"}
+
+
+# ============= EVENT REGISTRATION ENDPOINTS =============
+@api_router.get("/event-registrations", response_model=List[EventRegistration])
+async def get_event_registrations(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] == 'admin':
+        registrations = await db.event_registrations.find({}, {"_id": 0}).to_list(1000)
+    else:
+        registrations = await db.event_registrations.find({"user_id": current_user['id']}, {"_id": 0}).to_list(1000)
+    return registrations
+
+@api_router.post("/event-registrations")
+async def register_for_event(event_id: str, current_user: dict = Depends(get_current_user)):
+    # Check if already registered
+    existing = await db.event_registrations.find_one({
+        "event_id": event_id,
+        "user_id": current_user['id']
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Already registered for this event")
+    
+    registration_obj = EventRegistration(
+        event_id=event_id,
+        user_id=current_user['id'],
+        user_name=current_user['name'],
+        user_email=current_user['email']
+    )
+    
+    doc = registration_obj.model_dump()
+    doc['registered_at'] = doc['registered_at'].isoformat()
+    
+    await db.event_registrations.insert_one(doc)
+    return {"message": "Registration successful"}
+
+@api_router.patch("/event-registrations/{registration_id}/status")
+async def update_registration_status(registration_id: str, status: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.event_registrations.update_one(
+        {"id": registration_id},
+        {"$set": {"status": status}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Registration not found")
+    
+    return {"message": "Registration status updated"}
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
