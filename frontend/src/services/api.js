@@ -1,0 +1,120 @@
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API_URL = `${BACKEND_URL}/api`;
+
+// Create axios instance
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add token to requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Auth API
+export const authAPI = {
+  login: (email, password) => api.post('/auth/login', { email, password }),
+  register: (name, email, password, role) => api.post('/auth/register', { name, email, password, role }),
+  getMe: () => api.get('/auth/me'),
+};
+
+// User API
+export const userAPI = {
+  getAll: () => api.get('/users'),
+  create: (userData) => api.post('/users', userData),
+  update: (userId, userData) => api.put(`/users/${userId}`, userData),
+  delete: (userId) => api.delete(`/users/${userId}`),
+};
+
+// Video API
+export const videoAPI = {
+  getAll: () => api.get('/videos'),
+  create: (videoData) => api.post('/videos', videoData),
+  update: (videoId, videoData) => api.put(`/videos/${videoId}`, videoData),
+  delete: (videoId) => api.delete(`/videos/${videoId}`),
+};
+
+// Video Progress API
+export const progressAPI = {
+  get: () => api.get('/progress'),
+  complete: (videoId, comment) => api.post(`/progress/${videoId}`, null, { params: { comment } }),
+};
+
+// Meeting API
+export const meetingAPI = {
+  getAll: () => api.get('/meetings'),
+  create: (meetingData) => api.post('/meetings', meetingData),
+  update: (meetingId, meetingData) => api.put(`/meetings/${meetingId}`, meetingData),
+  delete: (meetingId) => api.delete(`/meetings/${meetingId}`),
+};
+
+// Task API
+export const taskAPI = {
+  getAll: () => api.get('/tasks'),
+  create: (taskData) => api.post('/tasks', taskData),
+  update: (taskId, taskData) => api.put(`/tasks/${taskId}`, taskData),
+  updateStatus: (taskId, status) => api.patch(`/tasks/${taskId}/status`, null, { params: { status } }),
+  delete: (taskId) => api.delete(`/tasks/${taskId}`),
+};
+
+// Goal API
+export const goalAPI = {
+  getAll: () => api.get('/goals'),
+  create: (goalData) => api.post('/goals', goalData),
+  delete: (goalId) => api.delete(`/goals/${goalId}`),
+};
+
+// Reason API
+export const reasonAPI = {
+  getAll: () => api.get('/reasons'),
+  create: (reasonData) => api.post('/reasons', reasonData),
+  delete: (reasonId) => api.delete(`/reasons/${reasonId}`),
+};
+
+// Prospect API
+export const prospectAPI = {
+  getAll: () => api.get('/prospects'),
+  create: (prospectData) => api.post('/prospects', prospectData),
+  update: (prospectId, prospectData) => api.put(`/prospects/${prospectId}`, prospectData),
+  delete: (prospectId) => api.delete(`/prospects/${prospectId}`),
+};
+
+// Partner API
+export const partnerAPI = {
+  getAll: () => api.get('/partners'),
+  create: (partnerData) => api.post('/partners', partnerData),
+  update: (partnerId, partnerData) => api.put(`/partners/${partnerId}`, partnerData),
+  delete: (partnerId) => api.delete(`/partners/${partnerId}`),
+};
+
+// Habit API
+export const habitAPI = {
+  getAll: () => api.get('/habits'),
+  update: (habitId, completed) => api.patch(`/habits/${habitId}`, null, { params: { completed } }),
+};
+
+// Event API
+export const eventAPI = {
+  getAll: () => api.get('/events'),
+  create: (eventData) => api.post('/events', eventData),
+  update: (eventId, eventData) => api.put(`/events/${eventId}`, eventData),
+  delete: (eventId) => api.delete(`/events/${eventId}`),
+};
+
+// Event Registration API
+export const eventRegistrationAPI = {
+  getAll: () => api.get('/event-registrations'),
+  register: (eventId) => api.post('/event-registrations', null, { params: { event_id: eventId } }),
+  updateStatus: (registrationId, status) => api.patch(`/event-registrations/${registrationId}/status`, null, { params: { status } }),
+};
+
+export default api;
