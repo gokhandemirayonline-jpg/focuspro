@@ -117,4 +117,35 @@ export const eventRegistrationAPI = {
   updateStatus: (registrationId, status) => api.patch(`/event-registrations/${registrationId}/status`, null, { params: { status } }),
 };
 
+// Notification API
+export const notificationAPI = {
+  getAll: () => api.get('/notifications'),
+  create: (notificationData, userId) => api.post('/notifications', notificationData, { params: { user_id: userId } }),
+  markRead: (notificationId) => api.patch(`/notifications/${notificationId}/read`),
+  markAllRead: () => api.patch('/notifications/read-all'),
+  getUnreadCount: () => api.get('/notifications/unread-count'),
+};
+
+// Recommendation API
+export const recommendationAPI = {
+  getAll: (type) => api.get('/recommendations', { params: { type } }),
+  create: (recData) => api.post('/recommendations', recData),
+  update: (recId, recData) => api.put(`/recommendations/${recId}`, recData),
+  delete: (recId) => api.delete(`/recommendations/${recId}`),
+};
+
+// Blog API
+export const blogAPI = {
+  getAll: (published) => api.get('/blogs', { params: { published } }),
+  getOne: (blogId) => api.get(`/blogs/${blogId}`),
+  create: (blogData) => api.post('/blogs', blogData),
+  update: (blogId, blogData) => api.put(`/blogs/${blogId}`, blogData),
+  delete: (blogId) => api.delete(`/blogs/${blogId}`),
+};
+
+// Search API
+export const searchAPI = {
+  search: (query) => api.get('/search', { params: { q: query } }),
+};
+
 export default api;
