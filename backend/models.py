@@ -69,6 +69,9 @@ class MeetingBase(BaseModel):
     person: str = ""
     notes: str = ""
     status: str = "scheduled"  # scheduled, completed, cancelled
+    category: str = "work"  # work, personal, important
+    color: str = "#3b82f6"  # Default blue color
+    all_day: bool = False
 
 class MeetingCreate(MeetingBase):
     pass
