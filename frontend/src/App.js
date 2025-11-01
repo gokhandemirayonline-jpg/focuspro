@@ -1927,6 +1927,259 @@ const FocusProApp = () => {
             </div>
           )}
 
+
+          {/* RECOMMENDATIONS PAGE */}
+          {currentPage === 'recommendations' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Tavsiyeler</h2>
+                {currentUser?.role === 'admin' && (
+                  <button
+                    onClick={() => {
+                      setShowRecommendationModal(true);
+                      setEditingRecommendation(null);
+                      setNewRecommendation({ title: '', type: 'book', description: '', cover_image: '', link: '', author: '', duration: '', category: '' });
+                    }}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                  >
+                    <Plus size={20} />
+                    Yeni Tavsiye
+                  </button>
+                )}
+              </div>
+
+              {/* Filter Tabs */}
+              <div className="flex gap-2 mb-6 overflow-x-auto">
+                {['all', 'book', 'video', 'movie'].map(type => (
+                  <button
+                    key={type}
+                    onClick={async () => {
+                      const response = await recommendationAPI.getAll(type === 'all' ? null : type);
+                      setRecommendations(response.data);
+                    }}
+                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 whitespace-nowrap"
+                  >
+                    {type === 'all' ? 'Tümü' : type === 'book' ? '📚 Kitaplar' : type === 'video' ? '🎥 Videolar' : '🎬 Filmler'}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {recommendations.map(rec => (
+                  <div key={rec.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
+                    {rec.cover_image && (
+                      <img 
+                        src={rec.cover_image} 
+                        alt={rec.title}
+                        className="w-full h-48 object-cover"
+                      />
+                    )}
+                    <div className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-2xl">
+                          {rec.type === 'book' ? '📚' : rec.type === 'video' ? '🎥' : '🎬'}
+                        </span>
+                        <span className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
+                          {rec.category}
+                        </span>
+                      </div>
+                      <h3 className="font-bold text-gray-800 mb-2">{rec.title}</h3>
+                      {rec.author && (
+                        <p className="text-sm text-gray-600 mb-2">Yazar: {rec.author}</p>
+                      )}
+                      {rec.duration && (
+                        <p className="text-sm text-gray-600 mb-2">Süre: {rec.duration}</p>
+                      )}
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-3">{rec.description}</p>
+                      <div className="flex gap-2">
+                        {rec.link && (
+                          <a
+                            href={rec.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 bg-purple-600 text-white py-2 px-3 rounded-lg text-sm text-center hover:bg-purple-700"
+                          >
+                            Görüntüle
+                          </a>
+                        )}
+                        {currentUser?.role === 'admin' && (
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => {
+                                setEditingRecommendation(rec);
+                                setNewRecommendation(rec);
+                                setShowRecommendationModal(true);
+                              }}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => deleteRecommendation(rec.id)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {recommendations.length === 0 && (
+                  <div className="col-span-full text-center py-12 text-gray-500">
+                    Henüz tavsiye eklenmemiş
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* BLOGS PAGE */}
+          {currentPage === 'blogs' && !selectedBlog && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Blog</h2>
+                {currentUser?.role === 'admin' && (
+                  <button
+                    onClick={() => {
+                      setShowBlogModal(true);
+                      setEditingBlog(null);
+                      setNewBlog({ title: '', content: '', cover_image: '', excerpt: '', category: '', tags: [], published: false });
+                    }}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                  >
+                    <Plus size={20} />
+                    Yeni Blog
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {blogs.filter(b => b.published || currentUser?.role === 'admin').map(blog => (
+                  <div key={blog.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                    {blog.cover_image && (
+                      <img 
+                        src={blog.cover_image} 
+                        alt={blog.title}
+                        className="w-full h-48 object-cover"
+                      />
+                    )}
+                    <div className="p-6">
+                      <div className="flex items-center gap-2 mb-3">
+                        {blog.category && (
+                          <span className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
+                            {blog.category}
+                          </span>
+                        )}
+                        {!blog.published && (
+                          <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full">
+                            Taslak
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">{blog.title}</h3>
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                        {blog.excerpt || blog.content.substring(0, 150) + '...'}
+                      </p>
+                      <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                        <span>{blog.author_name}</span>
+                        <span>{new Date(blog.created_at).toLocaleDateString('tr-TR')}</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={async () => {
+                            const response = await blogAPI.getOne(blog.id);
+                            setSelectedBlog(response.data);
+                          }}
+                          className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                        >
+                          Oku
+                        </button>
+                        {currentUser?.role === 'admin' && (
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => {
+                                setEditingBlog(blog);
+                                setNewBlog(blog);
+                                setShowBlogModal(true);
+                              }}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => deleteBlog(blog.id)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {blogs.filter(b => b.published || currentUser?.role === 'admin').length === 0 && (
+                  <div className="col-span-full text-center py-12 text-gray-500">
+                    Henüz blog yazısı yok
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* BLOG DETAIL VIEW */}
+          {currentPage === 'blogs' && selectedBlog && (
+            <div>
+              <button
+                onClick={() => setSelectedBlog(null)}
+                className="mb-6 flex items-center gap-2 text-purple-600 hover:underline"
+              >
+                <ChevronLeft size={20} />
+                Geri Dön
+              </button>
+
+              <article className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden max-w-4xl mx-auto">
+                {selectedBlog.cover_image && (
+                  <img 
+                    src={selectedBlog.cover_image} 
+                    alt={selectedBlog.title}
+                    className="w-full h-64 md:h-96 object-cover"
+                  />
+                )}
+                <div className="p-6 md:p-12">
+                  {selectedBlog.category && (
+                    <span className="inline-block text-sm px-3 py-1 bg-purple-100 text-purple-700 rounded-full mb-4">
+                      {selectedBlog.category}
+                    </span>
+                  )}
+                  <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">{selectedBlog.title}</h1>
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-8 pb-8 border-b border-gray-200">
+                    <span>Yazar: {selectedBlog.author_name}</span>
+                    <span>•</span>
+                    <span>{new Date(selectedBlog.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  </div>
+                  <div className="prose max-w-none text-gray-700 whitespace-pre-wrap leading-relaxed">
+                    {selectedBlog.content}
+                  </div>
+                  {selectedBlog.tags && selectedBlog.tags.length > 0 && (
+                    <div className="mt-8 pt-8 border-t border-gray-200">
+                      <div className="flex flex-wrap gap-2">
+                        {selectedBlog.tags.map((tag, idx) => (
+                          <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </article>
+            </div>
+          )}
+
+
           {/* CALENDAR PAGE */}
           {currentPage === 'calendar' && (
             <div>
