@@ -594,6 +594,64 @@ const FocusProApp = () => {
     }
   };
 
+
+  const addOrUpdateRecommendation = async () => {
+    if (!newRecommendation.title || !newRecommendation.type) return;
+    
+    try {
+      if (editingRecommendation) {
+        await recommendationAPI.update(editingRecommendation.id, newRecommendation);
+      } else {
+        await recommendationAPI.create(newRecommendation);
+      }
+      
+      await loadRecommendations();
+      setNewRecommendation({ title: '', type: 'book', description: '', cover_image: '', link: '', author: '', duration: '', category: '' });
+      setEditingRecommendation(null);
+      setShowRecommendationModal(false);
+    } catch (error) {
+      alert('İşlem başarısız!');
+    }
+  };
+
+  const deleteRecommendation = async (id) => {
+    try {
+      await recommendationAPI.delete(id);
+      await loadRecommendations();
+    } catch (error) {
+      alert('Silme işlemi başarısız!');
+    }
+  };
+
+  const addOrUpdateBlog = async () => {
+    if (!newBlog.title || !newBlog.content) return;
+    
+    try {
+      if (editingBlog) {
+        await blogAPI.update(editingBlog.id, newBlog);
+      } else {
+        await blogAPI.create(newBlog);
+      }
+      
+      await loadBlogs();
+      setNewBlog({ title: '', content: '', cover_image: '', excerpt: '', category: '', tags: [], published: false });
+      setEditingBlog(null);
+      setShowBlogModal(false);
+    } catch (error) {
+      alert('İşlem başarısız!');
+    }
+  };
+
+  const deleteBlog = async (id) => {
+    try {
+      await blogAPI.delete(id);
+      await loadBlogs();
+    } catch (error) {
+      alert('Silme işlemi başarısız!');
+    }
+  };
+
+
   const registerForEvent = async (eventId) => {
     try {
       await eventRegistrationAPI.register(eventId);
