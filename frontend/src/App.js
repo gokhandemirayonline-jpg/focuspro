@@ -368,6 +368,7 @@ const FocusProApp = () => {
       setEditingMeeting(null);
       setShowMeetingModal(false);
       setSelectedDate(null);
+      toast.success(editingMeeting ? '✅ Görüşme güncellendi' : '✅ Görüşme eklendi');
     } catch (error) {
       toast.error('İşlem başarısız!');
     }
