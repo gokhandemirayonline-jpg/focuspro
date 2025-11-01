@@ -133,7 +133,7 @@ const FocusProApp = () => {
 
   const handleRegister = async () => {
     if (!registerForm.name || !registerForm.email || !registerForm.password) {
-      alert('Tüm alanları doldurun!');
+      toast.error('Tüm alanları doldurun!');
       return;
     }
     
@@ -141,9 +141,9 @@ const FocusProApp = () => {
       await authAPI.register(registerForm.name, registerForm.email, registerForm.password, registerForm.role);
       setRegisterForm({ name: '', email: '', password: '', role: 'user' });
       setShowRegister(false);
-      alert('Kayıt başarılı! Giriş yapabilirsiniz.');
+      toast.success('Kayıt başarılı! Giriş yapabilirsiniz. ✅');
     } catch (error) {
-      alert(error.response?.data?.detail || 'Kayıt başarısız!');
+      toast.error(error.response?.data?.detail || 'Kayıt başarısız!');
     }
   };
 
