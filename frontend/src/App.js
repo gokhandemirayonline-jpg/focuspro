@@ -2114,135 +2114,214 @@ const FocusProApp = () => {
           {/* CALENDAR PAGE */}
           {currentPage === 'calendar' && (
             <div>
-              <div className="flex items-center justify-between mb-6">
+              {/* Header with View Selector and Filters */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                 <h2 className="text-3xl font-bold text-gray-800">Takvim</h2>
-                <button
-                  onClick={() => {
+                
+                <div className="flex items-center gap-3">
+                  {/* View Selector - Dropdown */}
+                  <div className="relative">
+                    <select
+                      value={calendarView}
+                      onChange={(e) => setCalendarView(e.target.value)}
+                      className="appearance-none bg-white border-2 border-gray-300 rounded-lg px-4 py-2 pr-10 font-medium text-gray-700 focus:outline-none focus:border-purple-500"
+                    >
+                      <option value="day">Gün</option>
+                      <option value="week">Hafta</option>
+                      <option value="work_week">4 gün</option>
+                      <option value="month">Ay</option>
+                      <option value="agenda">Planlama</option>
+                    </select>
+                    <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-gray-500 pointer-events-none" size={16} />
+                  </div>
+                  
+                  {/* Add Meeting Button */}
+                  <button
+                    onClick={() => {
+                      setShowMeetingModal(true);
+                      setEditingMeeting(null);
+                      setNewMeeting({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled', category: 'work', color: '#3b82f6', all_day: false });
+                    }}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                  >
+                    <Plus size={20} />
+                    <span className="hidden md:inline">Yeni Görüşme</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Filters Section */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+                <div className="flex flex-wrap gap-4 items-center">
+                  <span className="font-semibold text-gray-700">Filtreler:</span>
+                  
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showWeekends}
+                      onChange={(e) => setShowWeekends(e.target.checked)}
+                      className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-gray-700">Hafta sonlarını göster</span>
+                  </label>
+                  
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showRejected}
+                      onChange={(e) => setShowRejected(e.target.checked)}
+                      className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-gray-700">Reddedilen etkinlikleri göster</span>
+                  </label>
+                  
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showCompleted}
+                      onChange={(e) => setShowCompleted(e.target.checked)}
+                      className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-gray-700">Tamamlanan görevleri göster</span>
+                  </label>
+
+                  <div className="flex items-center gap-2 ml-4">
+                    <span className="text-sm text-gray-700">Kategoriler:</span>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={categoryFilters.work}
+                        onChange={(e) => setCategoryFilters({...categoryFilters, work: e.target.checked})}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-xs text-gray-700 bg-blue-100 px-2 py-1 rounded">İş</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={categoryFilters.personal}
+                        onChange={(e) => setCategoryFilters({...categoryFilters, personal: e.target.checked})}
+                        className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                      />
+                      <span className="text-xs text-gray-700 bg-green-100 px-2 py-1 rounded">Kişisel</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={categoryFilters.important}
+                        onChange={(e) => setCategoryFilters({...categoryFilters, important: e.target.checked})}
+                        className="w-4 h-4 text-red-600 rounded focus:ring-red-500"
+                      />
+                      <span className="text-xs text-gray-700 bg-red-100 px-2 py-1 rounded">Önemli</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Calendar View */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4" style={{ height: '700px' }}>
+                <BigCalendar
+                  localizer={localizer}
+                  events={meetings
+                    .filter(m => {
+                      // Filter by status
+                      if (!showCompleted && m.status === 'completed') return false;
+                      if (!showRejected && m.status === 'cancelled') return false;
+                      // Filter by category
+                      if (!categoryFilters[m.category || 'work']) return false;
+                      return true;
+                    })
+                    .map(meeting => ({
+                      id: meeting.id,
+                      title: meeting.title,
+                      start: new Date(`${meeting.date}T${meeting.start_time || '09:00'}`),
+                      end: new Date(`${meeting.date}T${meeting.end_time || '10:00'}`),
+                      allDay: meeting.all_day || false,
+                      resource: meeting,
+                      color: meeting.color || (
+                        meeting.category === 'work' ? '#3b82f6' :
+                        meeting.category === 'personal' ? '#10b981' :
+                        meeting.category === 'important' ? '#ef4444' : '#3b82f6'
+                      )
+                    }))}
+                  view={calendarView}
+                  views={['day', 'week', 'work_week', 'month', 'agenda']}
+                  onView={(view) => setCalendarView(view)}
+                  date={currentDate}
+                  onNavigate={(date) => setCurrentDate(date)}
+                  onSelectSlot={(slotInfo) => {
                     setShowMeetingModal(true);
                     setEditingMeeting(null);
-                    if (selectedDate) {
-                      setNewMeeting({ ...newMeeting, date: selectedDate.toISOString().split('T')[0] });
-                    }
+                    const dateStr = moment(slotInfo.start).format('YYYY-MM-DD');
+                    const startTime = moment(slotInfo.start).format('HH:mm');
+                    const endTime = moment(slotInfo.end).format('HH:mm');
+                    setNewMeeting({ 
+                      title: '', 
+                      date: dateStr, 
+                      start_time: startTime, 
+                      end_time: endTime, 
+                      person: '', 
+                      notes: '', 
+                      status: 'scheduled',
+                      category: 'work',
+                      color: '#3b82f6',
+                      all_day: false
+                    });
                   }}
-                  className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
-                >
-                  <Plus size={20} />
-                  Yeni Görüşme
-                </button>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <button
-                    onClick={() => setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() - 7)))}
-                    className="p-2 hover:bg-gray-100 rounded-lg"
-                  >
-                    <ChevronLeft />
-                  </button>
-                  <h3 className="text-xl font-bold text-gray-800">
-                    {currentDate.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
-                  </h3>
-                  <button
-                    onClick={() => setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() + 7)))}
-                    className="p-2 hover:bg-gray-100 rounded-lg"
-                  >
-                    <ChevronRight />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-7 gap-2 mb-4">
-                  {['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map(day => (
-                    <div key={day} className="text-center font-semibold text-gray-600 py-2">
-                      {day}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-7 gap-2">
-                  {getDaysInWeek(currentDate).map(day => {
-                    const dayMeetings = getMeetingsForDay(day);
-                    const isToday = day.toDateString() === new Date().toDateString();
-
-                    return (
-                      <div
-                        key={day.toISOString()}
-                        onClick={() => {
-                          setSelectedDate(day);
-                          setShowMeetingModal(true);
-                          setNewMeeting({ ...newMeeting, date: day.toISOString().split('T')[0] });
-                        }}
-                        className={`min-h-[120px] p-2 rounded-lg border-2 cursor-pointer transition-all ${
-                          isToday ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
-                        }`}
-                      >
-                        <div className={`text-center font-semibold mb-2 ${isToday ? 'text-purple-600' : 'text-gray-700'}`}>
-                          {day.getDate()}
-                        </div>
-                        <div className="space-y-1">
-                          {dayMeetings.slice(0, 3).map(meeting => (
-                            <div
-                              key={meeting.id}
-                              className="text-xs p-1 bg-purple-100 text-purple-700 rounded truncate"
-                              title={meeting.title}
-                            >
-                              {meeting.start_time} {meeting.title}
-                            </div>
-                          ))}
-                          {dayMeetings.length > 3 && (
-                            <div className="text-xs text-gray-500">+{dayMeetings.length - 3} daha</div>
-                          )}
-                        </div>
-                      </div>
-                    );
+                  onSelectEvent={(event) => {
+                    setEditingMeeting(event.resource);
+                    setNewMeeting(event.resource);
+                    setShowMeetingModal(true);
+                  }}
+                  onEventDrop={(args) => {
+                    const { event, start, end } = args;
+                    const updatedMeeting = {
+                      ...event.resource,
+                      date: moment(start).format('YYYY-MM-DD'),
+                      start_time: moment(start).format('HH:mm'),
+                      end_time: moment(end).format('HH:mm')
+                    };
+                    meetingAPI.update(event.id, updatedMeeting).then(() => loadMeetings());
+                  }}
+                  onEventResize={(args) => {
+                    const { event, start, end } = args;
+                    const updatedMeeting = {
+                      ...event.resource,
+                      start_time: moment(start).format('HH:mm'),
+                      end_time: moment(end).format('HH:mm')
+                    };
+                    meetingAPI.update(event.id, updatedMeeting).then(() => loadMeetings());
+                  }}
+                  selectable
+                  resizable
+                  draggableAccessor={() => true}
+                  eventPropGetter={(event) => ({
+                    style: {
+                      backgroundColor: event.color,
+                      borderColor: event.color,
+                      color: 'white'
+                    }
                   })}
-                </div>
-              </div>
-
-              <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">Tüm Görüşmeler</h3>
-                <div className="space-y-3">
-                  {meetings.map(meeting => (
-                    <div key={meeting.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-800">{meeting.title}</h4>
-                        <p className="text-sm text-gray-600">
-                          {meeting.date} • {meeting.start_time} - {meeting.end_time}
-                        </p>
-                        <p className="text-sm text-gray-600">Kişi: {meeting.person}</p>
-                        {meeting.notes && <p className="text-sm text-gray-500 mt-1">{meeting.notes}</p>}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          meeting.status === 'completed' ? 'bg-green-100 text-green-700' :
-                          meeting.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                          'bg-blue-100 text-blue-700'
-                        }`}>
-                          {meeting.status === 'completed' ? 'Tamamlandı' :
-                           meeting.status === 'cancelled' ? 'İptal' : 'Planlandı'}
-                        </span>
-                        <button
-                          onClick={() => {
-                            setEditingMeeting(meeting);
-                            setNewMeeting(meeting);
-                            setShowMeetingModal(true);
-                          }}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => deleteMeeting(meeting.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  {meetings.length === 0 && (
-                    <p className="text-center py-8 text-gray-500">Henüz görüşme eklenmemiş</p>
-                  )}
-                </div>
+                  messages={{
+                    today: 'Bugün',
+                    previous: 'Geri',
+                    next: 'İleri',
+                    month: 'Ay',
+                    week: 'Hafta',
+                    day: 'Gün',
+                    agenda: 'Planlama',
+                    work_week: '4 Gün',
+                    date: 'Tarih',
+                    time: 'Saat',
+                    event: 'Etkinlik',
+                    noEventsInRange: 'Bu tarih aralığında etkinlik yok',
+                    showMore: (total) => `+${total} daha`
+                  }}
+                  step={30}
+                  timeslots={2}
+                  min={new Date(2000, 1, 1, 7, 0, 0)}
+                  max={new Date(2000, 1, 1, 22, 0, 0)}
+                />
               </div>
             </div>
           )}
