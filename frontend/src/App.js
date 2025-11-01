@@ -2456,7 +2456,7 @@ const FocusProApp = () => {
       {/* Meeting Modal */}
       {showMeetingModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-gray-800 mb-4">
               {editingMeeting ? 'Görüşme Düzenle' : 'Yeni Görüşme'}
             </h3>
@@ -2474,22 +2474,37 @@ const FocusProApp = () => {
                 onChange={(e) => setNewMeeting({...newMeeting, date: e.target.value})}
                 className="w-full px-4 py-2 border rounded-lg"
               />
-              <div className="grid grid-cols-2 gap-4">
+              
+              {/* All Day Checkbox */}
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
-                  type="time"
-                  value={newMeeting.start_time}
-                  onChange={(e) => setNewMeeting({...newMeeting, start_time: e.target.value})}
-                  placeholder="Başlangıç"
-                  className="w-full px-4 py-2 border rounded-lg"
+                  type="checkbox"
+                  checked={newMeeting.all_day || false}
+                  onChange={(e) => setNewMeeting({...newMeeting, all_day: e.target.checked})}
+                  className="w-4 h-4 text-purple-600 rounded"
                 />
-                <input
-                  type="time"
-                  value={newMeeting.end_time}
-                  onChange={(e) => setNewMeeting({...newMeeting, end_time: e.target.value})}
-                  placeholder="Bitiş"
-                  className="w-full px-4 py-2 border rounded-lg"
-                />
-              </div>
+                <span className="text-sm text-gray-700">Tüm gün</span>
+              </label>
+
+              {!newMeeting.all_day && (
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    type="time"
+                    value={newMeeting.start_time}
+                    onChange={(e) => setNewMeeting({...newMeeting, start_time: e.target.value})}
+                    placeholder="Başlangıç"
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="time"
+                    value={newMeeting.end_time}
+                    onChange={(e) => setNewMeeting({...newMeeting, end_time: e.target.value})}
+                    placeholder="Bitiş"
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                </div>
+              )}
+              
               <input
                 type="text"
                 value={newMeeting.person}
@@ -2504,6 +2519,43 @@ const FocusProApp = () => {
                 rows={3}
                 className="w-full px-4 py-2 border rounded-lg"
               />
+              
+              {/* Category Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                <select
+                  value={newMeeting.category || 'work'}
+                  onChange={(e) => {
+                    const category = e.target.value;
+                    const color = category === 'work' ? '#3b82f6' : 
+                                  category === 'personal' ? '#10b981' : 
+                                  '#ef4444';
+                    setNewMeeting({...newMeeting, category, color});
+                  }}
+                  className="w-full px-4 py-2 border rounded-lg"
+                >
+                  <option value="work">İş</option>
+                  <option value="personal">Kişisel</option>
+                  <option value="important">Önemli</option>
+                </select>
+              </div>
+
+              {/* Color Picker */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Renk</label>
+                <div className="flex gap-2 flex-wrap">
+                  {['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#6366f1'].map(color => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setNewMeeting({...newMeeting, color})}
+                      className={`w-10 h-10 rounded-full border-2 ${newMeeting.color === color ? 'border-gray-800' : 'border-gray-300'}`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+              </div>
+
               <select
                 value={newMeeting.status}
                 onChange={(e) => setNewMeeting({...newMeeting, status: e.target.value})}
