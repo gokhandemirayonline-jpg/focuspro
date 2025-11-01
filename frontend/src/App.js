@@ -1039,12 +1039,129 @@ const FocusProApp = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="p-8">
+      <div className="flex-1 overflow-auto flex flex-col">
+        {/* Top Navbar - Arama ve Bildirimler */}
+        <div className="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-30">
+          <div className="flex items-center gap-4 flex-1">
+            <button 
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
+            >
+              <Menu size={24} />
+            </button>
+            
+            {/* Search Bar */}
+            <div className="relative flex-1 max-w-xl">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="text"
+                placeholder="Ara... (isim, video, kitap, blog)"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+              
+              {/* Search Results Dropdown */}
+              {showSearchResults && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-y-auto z-50">
+                  {searchResults.map((result, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => {
+                        if (result.type === 'video') setCurrentPage('videos');
+                        else if (result.type === 'prospect') setCurrentPage('prospects');
+                        else if (result.type === 'partner') setCurrentPage('partners');
+                        else if (result.type === 'recommendation') setCurrentPage('recommendations');
+                        else if (result.type === 'blog') setCurrentPage('blogs');
+                        setShowSearchResults(false);
+                        setSearchQuery('');
+                      }}
+                      className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-medium">
+                          {result.type === 'video' ? 'Video' :
+                           result.type === 'prospect' ? 'Potansiyel' :
+                           result.type === 'partner' ? 'Partner' :
+                           result.type === 'recommendation' ? 'Tavsiye' :
+                           result.type === 'blog' ? 'Blog' : result.type}
+                        </span>
+                        <span className="text-sm font-medium text-gray-800">{result.data.title || result.data.name}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Notifications */}
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-2 hover:bg-gray-100 rounded-lg"
+            >
+              <Bell size={24} className="text-gray-700" />
+              {unreadCount > 0 && (
+                <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Notifications Dropdown */}
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 md:w-96 bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-y-auto z-50">
+                <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+                  <h3 className="font-bold text-gray-800">Bildirimler</h3>
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllNotificationsRead}
+                      className="text-sm text-purple-600 hover:underline"
+                    >
+                      Tümünü Okundu İşaretle
+                    </button>
+                  )}
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {notifications.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500">
+                      Henüz bildirim yok
+                    </div>
+                  ) : (
+                    notifications.slice(0, 10).map(notif => (
+                      <div
+                        key={notif.id}
+                        onClick={() => !notif.read && markNotificationRead(notif.id)}
+                        className={`p-4 cursor-pointer hover:bg-gray-50 ${!notif.read ? 'bg-purple-50' : ''}`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`w-2 h-2 rounded-full mt-2 ${!notif.read ? 'bg-purple-600' : 'bg-gray-300'}`} />
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-800 text-sm">{notif.title}</h4>
+                            <p className="text-sm text-gray-600 mt-1">{notif.message}</p>
+                            <p className="text-xs text-gray-400 mt-2">
+                              {new Date(notif.created_at).toLocaleDateString('tr-TR', { 
+                                day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-auto p-4 md:p-8">
           {/* DASHBOARD PAGE */}
           {currentPage === 'dashboard' && (
             <div>
-              <h2 className="text-3xl font-bold text-gray-800 mb-6">Dashboard</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Dashboard</h2>
               
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
