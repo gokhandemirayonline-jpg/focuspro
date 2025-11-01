@@ -988,6 +988,26 @@ const FocusProApp = () => {
             {sidebarOpen && <span>Nedenlerim</span>}
           </button>
 
+          <button
+            onClick={() => setCurrentPage('recommendations')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              currentPage === 'recommendations' ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <Bookmark size={20} />
+            {sidebarOpen && <span>Tavsiyeler</span>}
+          </button>
+
+          <button
+            onClick={() => setCurrentPage('blogs')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              currentPage === 'blogs' ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <FileText size={20} />
+            {sidebarOpen && <span>Blog</span>}
+          </button>
+
           {currentUser?.role === 'admin' && (
             <button
               onClick={() => setCurrentPage('admin')}
