@@ -82,7 +82,7 @@ const FocusProApp = () => {
   const [editingRecommendation, setEditingRecommendation] = useState(null);
   const [editingBlog, setEditingBlog] = useState(null);
 
-  const [newMeeting, setNewMeeting] = useState({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled' });
+  const [newMeeting, setNewMeeting] = useState({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled', category: 'work', color: '#3b82f6', all_day: false });
   const [newTask, setNewTask] = useState({ title: '', date: '', priority: 'medium', status: 'todo', description: '', assignee: '' });
   const [newGoal, setNewGoal] = useState({ title: '', type: 'daily', target: '', deadline: '', current: 0 });
   const [newReason, setNewReason] = useState({ title: '', description: '' });
