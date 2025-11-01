@@ -882,6 +882,7 @@ const FocusProApp = () => {
 
   // MAIN APP UI
   return (
+    <>
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-gradient-to-b from-purple-700 to-indigo-800 text-white transition-all duration-300 flex flex-col`}>
