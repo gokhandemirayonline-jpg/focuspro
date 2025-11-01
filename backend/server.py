@@ -23,7 +23,10 @@ from models import (
     PartnerCreate, Partner,
     HabitCreate, Habit,
     EventCreate, Event,
-    EventRegistrationCreate, EventRegistration
+    EventRegistrationCreate, EventRegistration,
+    NotificationCreate, Notification,
+    RecommendationCreate, Recommendation,
+    BlogCreate, Blog
 )
 
 
