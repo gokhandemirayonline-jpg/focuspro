@@ -64,6 +64,8 @@ const FocusProApp = () => {
   const [editingProspect, setEditingProspect] = useState(null);
   const [editingPartner, setEditingPartner] = useState(null);
   const [editingEvent, setEditingEvent] = useState(null);
+  const [editingRecommendation, setEditingRecommendation] = useState(null);
+  const [editingBlog, setEditingBlog] = useState(null);
 
   const [newMeeting, setNewMeeting] = useState({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled' });
   const [newTask, setNewTask] = useState({ title: '', date: '', priority: 'medium', status: 'todo', description: '', assignee: '' });
