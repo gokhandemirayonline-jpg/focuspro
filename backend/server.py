@@ -277,6 +277,9 @@ async def get_user_progress(current_user: dict = Depends(get_current_user)):
 
 @api_router.post("/progress/{video_id}")
 async def complete_video(video_id: str, comment: str, current_user: dict = Depends(get_current_user)):
+    # Get video info
+    video = await db.videos.find_one({"id": video_id}, {"_id": 0})
+    
     # Mark current video as watched
     await db.video_progress.update_one(
         {"user_id": current_user['id'], "video_id": video_id},
@@ -287,16 +290,41 @@ async def complete_video(video_id: str, comment: str, current_user: dict = Depen
         }}
     )
     
+    # Create notification for video completion
+    notification = Notification(
+        user_id=current_user['id'],
+        title="Video Tamamlandı! 🎉",
+        message=f"'{video['title']}' videosunu tamamladınız!",
+        type="video_complete",
+        link=f"/videos/{video_id}"
+    )
+    notif_doc = notification.model_dump()
+    notif_doc['created_at'] = notif_doc['created_at'].isoformat()
+    await db.notifications.insert_one(notif_doc)
+    
     # Find and unlock next video
     videos = await db.videos.find({}, {"_id": 0}).to_list(1000)
     current_idx = next((i for i, v in enumerate(videos) if v['id'] == video_id), None)
     
     if current_idx is not None and current_idx + 1 < len(videos):
         next_video_id = videos[current_idx + 1]['id']
+        next_video = videos[current_idx + 1]
         await db.video_progress.update_one(
             {"user_id": current_user['id'], "video_id": next_video_id},
             {"$set": {"unlocked": True}}
         )
+        
+        # Create notification for unlocked video
+        unlock_notification = Notification(
+            user_id=current_user['id'],
+            title="Yeni Video Açıldı! 🔓",
+            message=f"'{next_video['title']}' videosu izlemeye hazır!",
+            type="info",
+            link=f"/videos"
+        )
+        unlock_doc = unlock_notification.model_dump()
+        unlock_doc['created_at'] = unlock_doc['created_at'].isoformat()
+        await db.notifications.insert_one(unlock_doc)
     
     return {"message": "Video completed successfully"}
 
