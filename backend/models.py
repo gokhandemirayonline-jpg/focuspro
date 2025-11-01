@@ -202,6 +202,68 @@ class EventCreate(EventBase):
 
 class Event(EventBase):
     model_config = ConfigDict(extra="ignore")
+
+
+
+# Notification Models
+class NotificationBase(BaseModel):
+    title: str
+    message: str
+    type: str = "info"  # info, success, warning, video_complete, admin
+    link: str = ""
+    read: bool = False
+
+class NotificationCreate(NotificationBase):
+    pass
+
+class Notification(NotificationBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# Recommendation Models
+class RecommendationBase(BaseModel):
+    title: str
+    type: str  # book, video, movie
+    description: str
+    cover_image: str = ""
+    link: str = ""
+    author: str = ""  # For books
+    duration: str = ""  # For videos/movies
+    category: str = ""
+
+class RecommendationCreate(RecommendationBase):
+    pass
+
+class Recommendation(RecommendationBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# Blog Models
+class BlogBase(BaseModel):
+    title: str
+    content: str
+    cover_image: str = ""
+    excerpt: str = ""
+    category: str = ""
+    tags: List[str] = []
+    published: bool = False
+
+class BlogCreate(BlogBase):
+    pass
+
+class Blog(BlogBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    author_id: str
+    author_name: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
