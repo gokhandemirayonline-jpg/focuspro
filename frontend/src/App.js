@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Calendar, Users, GraduationCap, User, Play, Lock, Check, Shield, Plus, Trash2, Target, ListChecks, MessageSquare, BarChart3, LogOut, Eye, EyeOff, TrendingUp, Clock, CheckCircle2, Menu, X, Edit, ChevronLeft, ChevronRight, CalendarDays, UserPlus, Bell, Search, Book, Film, Bookmark, FileText, Moon, Sun } from 'lucide-react';
-import { authAPI, userAPI, videoAPI, progressAPI, meetingAPI, taskAPI, goalAPI, reasonAPI, prospectAPI, partnerAPI, habitAPI, eventAPI, eventRegistrationAPI, notificationAPI, recommendationAPI, blogAPI, searchAPI } from './services/api';
-import toast, { Toaster } from 'react-hot-toast';
+import { Home, Calendar, Users, GraduationCap, User, Play, Lock, Check, Shield, Plus, Trash2, Target, ListChecks, MessageSquare, BarChart3, LogOut, Eye, EyeOff, TrendingUp, Clock, CheckCircle2, Menu, X, Edit, ChevronLeft, ChevronRight, CalendarDays, UserPlus } from 'lucide-react';
+import { authAPI, userAPI, videoAPI, progressAPI, meetingAPI, taskAPI, goalAPI, reasonAPI, prospectAPI, partnerAPI, habitAPI, eventAPI, eventRegistrationAPI } from './services/api';
 import './App.css';
 
 const FocusProApp = () => {
@@ -13,11 +12,11 @@ const FocusProApp = () => {
   const [showPassword, setShowPassword] = useState(false);
   
   const [currentPage, setCurrentPage] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
-  const [calendarView, setCalendarView] = useState('month');
+  const [calendarView, setCalendarView] = useState('week');
 
   const [videos, setVideos] = useState([]);
   const [users, setUsers] = useState([]);
@@ -35,18 +34,6 @@ const FocusProApp = () => {
   const [comment, setComment] = useState('');
   const [videoWatched, setVideoWatched] = useState(false);
   
-  // New states for notifications, recommendations, blogs, search
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [recommendations, setRecommendations] = useState([]);
-  const [blogs, setBlogs] = useState([]);
-  const [selectedBlog, setSelectedBlog] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [showSearchResults, setShowSearchResults] = useState(false);
-  const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
-  
   const [showMeetingModal, setShowMeetingModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
@@ -56,9 +43,6 @@ const FocusProApp = () => {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
-  const [showRecommendationModal, setShowRecommendationModal] = useState(false);
-  const [showBlogModal, setShowBlogModal] = useState(false);
-  
   const [editingUser, setEditingUser] = useState(null);
   const [editingVideo, setEditingVideo] = useState(null);
   const [editingMeeting, setEditingMeeting] = useState(null);
@@ -66,8 +50,6 @@ const FocusProApp = () => {
   const [editingProspect, setEditingProspect] = useState(null);
   const [editingPartner, setEditingPartner] = useState(null);
   const [editingEvent, setEditingEvent] = useState(null);
-  const [editingRecommendation, setEditingRecommendation] = useState(null);
-  const [editingBlog, setEditingBlog] = useState(null);
 
   const [newMeeting, setNewMeeting] = useState({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled' });
   const [newTask, setNewTask] = useState({ title: '', date: '', priority: 'medium', status: 'todo', description: '', assignee: '' });
@@ -78,13 +60,10 @@ const FocusProApp = () => {
   const [newVideo, setNewVideo] = useState({ title: '', youtube_id: '', description: '', duration: '', category: '' });
   const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'user' });
   const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '', location: '', description: '', max_participants: '' });
-  const [newRecommendation, setNewRecommendation] = useState({ title: '', type: 'book', description: '', cover_image: '', link: '', author: '', duration: '', category: '' });
-  const [newBlog, setNewBlog] = useState({ title: '', content: '', cover_image: '', excerpt: '', category: '', tags: [], published: false });
 
   useEffect(() => {
     checkAutoLogin();
-    document.documentElement.classList.toggle('dark', darkMode);
-  }, [darkMode]);
+  }, []);
 
   useEffect(() => {
     if (isLoggedIn && currentUser) {
@@ -102,16 +81,6 @@ const FocusProApp = () => {
       }
     } catch (error) {
       console.log('No auto login');
-
-
-  const toggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    localStorage.setItem('darkMode', newMode);
-    document.documentElement.classList.toggle('dark', newMode);
-    toast.success(newMode ? '🌙 Dark mode aktif' : '☀️ Light mode aktif');
-  };
-
       localStorage.removeItem('token');
     }
   };
@@ -125,15 +94,14 @@ const FocusProApp = () => {
       setCurrentUser(user);
       setIsLoggedIn(true);
       setLoginForm({ email: '', password: '' });
-      toast.success(`Hoş geldiniz, ${user.name}! 👋`);
     } catch (error) {
-      toast.error('Email veya şifre hatalı!');
+      alert('Email veya şifre hatalı!');
     }
   };
 
   const handleRegister = async () => {
     if (!registerForm.name || !registerForm.email || !registerForm.password) {
-      toast.error('Tüm alanları doldurun!');
+      alert('Tüm alanları doldurun!');
       return;
     }
     
@@ -141,9 +109,9 @@ const FocusProApp = () => {
       await authAPI.register(registerForm.name, registerForm.email, registerForm.password, registerForm.role);
       setRegisterForm({ name: '', email: '', password: '', role: 'user' });
       setShowRegister(false);
-      toast.success('Kayıt başarılı! Giriş yapabilirsiniz. ✅');
+      alert('Kayıt başarılı! Giriş yapabilirsiniz.');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Kayıt başarısız!');
+      alert(error.response?.data?.detail || 'Kayıt başarısız!');
     }
   };
 
@@ -168,9 +136,6 @@ const FocusProApp = () => {
         loadPartners(),
         loadEvents(),
         loadEventRegistrations(),
-        loadNotifications(),
-        loadRecommendations(),
-        loadBlogs(),
         currentUser?.role === 'admin' ? loadUsers() : Promise.resolve()
       ]);
     } catch (error) {
@@ -286,72 +251,6 @@ const FocusProApp = () => {
     }
   };
 
-
-  const loadNotifications = async () => {
-    try {
-      const response = await notificationAPI.getAll();
-      setNotifications(response.data);
-      const countResponse = await notificationAPI.getUnreadCount();
-      setUnreadCount(countResponse.data.count);
-    } catch (error) {
-      console.error('Notifications yüklenemedi:', error);
-    }
-  };
-
-  const loadRecommendations = async () => {
-    try {
-      const response = await recommendationAPI.getAll();
-      setRecommendations(response.data);
-    } catch (error) {
-      console.error('Recommendations yüklenemedi:', error);
-    }
-  };
-
-  const loadBlogs = async () => {
-    try {
-      const response = await blogAPI.getAll();
-      setBlogs(response.data);
-    } catch (error) {
-      console.error('Blogs yüklenemedi:', error);
-    }
-  };
-
-  const handleSearch = async (query) => {
-    setSearchQuery(query);
-    if (query.length < 2) {
-      setSearchResults([]);
-      setShowSearchResults(false);
-      return;
-    }
-
-    try {
-      const response = await searchAPI.search(query);
-      setSearchResults(response.data.results);
-      setShowSearchResults(true);
-    } catch (error) {
-      console.error('Arama hatası:', error);
-    }
-  };
-
-  const markNotificationRead = async (notifId) => {
-    try {
-      await notificationAPI.markRead(notifId);
-      await loadNotifications();
-    } catch (error) {
-      console.error('Bildirim işaretlenemedi:', error);
-    }
-  };
-
-  const markAllNotificationsRead = async () => {
-    try {
-      await notificationAPI.markAllRead();
-      await loadNotifications();
-    } catch (error) {
-      console.error('Bildirimler işaretlenemedi:', error);
-    }
-  };
-
-
   // CRUD Functions
   const addOrUpdateMeeting = async () => {
     if (!newMeeting.title || !newMeeting.date) return;
@@ -368,9 +267,8 @@ const FocusProApp = () => {
       setEditingMeeting(null);
       setShowMeetingModal(false);
       setSelectedDate(null);
-      toast.success(editingMeeting ? '✅ Görüşme güncellendi' : '✅ Görüşme eklendi');
     } catch (error) {
-      toast.error('İşlem başarısız!');
+      alert('İşlem başarısız!');
     }
   };
 
@@ -379,7 +277,7 @@ const FocusProApp = () => {
       await meetingAPI.delete(id);
       await loadMeetings();
     } catch (error) {
-      toast.error('Silme işlemi başarısız!');
+      alert('Silme işlemi başarısız!');
     }
   };
 
@@ -398,7 +296,7 @@ const FocusProApp = () => {
       setEditingTask(null);
       setShowTaskModal(false);
     } catch (error) {
-      toast.error('İşlem başarısız!');
+      alert('İşlem başarısız!');
     }
   };
 
@@ -407,7 +305,7 @@ const FocusProApp = () => {
       await taskAPI.delete(id);
       await loadTasks();
     } catch (error) {
-      toast.error('Silme işlemi başarısız!');
+      alert('Silme işlemi başarısız!');
     }
   };
 
@@ -416,7 +314,7 @@ const FocusProApp = () => {
       await taskAPI.updateStatus(id, status);
       await loadTasks();
     } catch (error) {
-      toast.error('Güncelleme başarısız!');
+      alert('Güncelleme başarısız!');
     }
   };
 
@@ -429,7 +327,7 @@ const FocusProApp = () => {
       setNewGoal({ title: '', type: 'daily', target: '', deadline: '', current: 0 });
       setShowGoalModal(false);
     } catch (error) {
-      toast.error('İşlem başarısız!');
+      alert('İşlem başarısız!');
     }
   };
 
@@ -438,7 +336,7 @@ const FocusProApp = () => {
       await goalAPI.delete(id);
       await loadGoals();
     } catch (error) {
-      toast.error('Silme işlemi başarısız!');
+      alert('Silme işlemi başarısız!');
     }
   };
 
@@ -451,7 +349,7 @@ const FocusProApp = () => {
       setNewReason({ title: '', description: '' });
       setShowReasonModal(false);
     } catch (error) {
-      toast.error('İşlem başarısız!');
+      alert('İşlem başarısız!');
     }
   };
 
@@ -460,7 +358,7 @@ const FocusProApp = () => {
       await reasonAPI.delete(id);
       await loadReasons();
     } catch (error) {
-      toast.error('Silme işlemi başarısız!');
+      alert('Silme işlemi başarısız!');
     }
   };
 
@@ -479,7 +377,7 @@ const FocusProApp = () => {
       setEditingProspect(null);
       setShowProspectModal(false);
     } catch (error) {
-      toast.error('İşlem başarısız!');
+      alert('İşlem başarısız!');
     }
   };
 
@@ -488,7 +386,7 @@ const FocusProApp = () => {
       await prospectAPI.delete(id);
       await loadProspects();
     } catch (error) {
-      toast.error('Silme işlemi başarısız!');
+      alert('Silme işlemi başarısız!');
     }
   };
 
@@ -507,7 +405,7 @@ const FocusProApp = () => {
       setEditingPartner(null);
       setShowPartnerModal(false);
     } catch (error) {
-      toast.error('İşlem başarısız!');
+      alert('İşlem başarısız!');
     }
   };
 
@@ -516,7 +414,7 @@ const FocusProApp = () => {
       await partnerAPI.delete(id);
       await loadPartners();
     } catch (error) {
-      toast.error('Silme işlemi başarısız!');
+      alert('Silme işlemi başarısız!');
     }
   };
 
@@ -535,7 +433,7 @@ const FocusProApp = () => {
       setEditingVideo(null);
       setShowVideoModal(false);
     } catch (error) {
-      toast.error('İşlem başarısız!');
+      alert('İşlem başarısız!');
     }
   };
 
@@ -544,7 +442,7 @@ const FocusProApp = () => {
       await videoAPI.delete(id);
       await loadVideos();
     } catch (error) {
-      toast.error('Silme işlemi başarısız!');
+      alert('Silme işlemi başarısız!');
     }
   };
 
@@ -569,7 +467,7 @@ const FocusProApp = () => {
 
   const deleteUser = async (id) => {
     if (id === currentUser.id) {
-      toast.error('Kendi hesabınızı silemezsiniz!');
+      alert('Kendi hesabınızı silemezsiniz!');
       return;
     }
     
@@ -577,7 +475,7 @@ const FocusProApp = () => {
       await userAPI.delete(id);
       await loadUsers();
     } catch (error) {
-      toast.error('Silme işlemi başarısız!');
+      alert('Silme işlemi başarısız!');
     }
   };
 
@@ -596,7 +494,7 @@ const FocusProApp = () => {
       setEditingEvent(null);
       setShowEventModal(false);
     } catch (error) {
-      toast.error('İşlem başarısız!');
+      alert('İşlem başarısız!');
     }
   };
 
@@ -605,73 +503,15 @@ const FocusProApp = () => {
       await eventAPI.delete(id);
       await loadEvents();
     } catch (error) {
-      toast.error('Silme işlemi başarısız!');
+      alert('Silme işlemi başarısız!');
     }
   };
-
-
-  const addOrUpdateRecommendation = async () => {
-    if (!newRecommendation.title || !newRecommendation.type) return;
-    
-    try {
-      if (editingRecommendation) {
-        await recommendationAPI.update(editingRecommendation.id, newRecommendation);
-      } else {
-        await recommendationAPI.create(newRecommendation);
-      }
-      
-      await loadRecommendations();
-      setNewRecommendation({ title: '', type: 'book', description: '', cover_image: '', link: '', author: '', duration: '', category: '' });
-      setEditingRecommendation(null);
-      setShowRecommendationModal(false);
-    } catch (error) {
-      toast.error('İşlem başarısız!');
-    }
-  };
-
-  const deleteRecommendation = async (id) => {
-    try {
-      await recommendationAPI.delete(id);
-      await loadRecommendations();
-    } catch (error) {
-      toast.error('Silme işlemi başarısız!');
-    }
-  };
-
-  const addOrUpdateBlog = async () => {
-    if (!newBlog.title || !newBlog.content) return;
-    
-    try {
-      if (editingBlog) {
-        await blogAPI.update(editingBlog.id, newBlog);
-      } else {
-        await blogAPI.create(newBlog);
-      }
-      
-      await loadBlogs();
-      setNewBlog({ title: '', content: '', cover_image: '', excerpt: '', category: '', tags: [], published: false });
-      setEditingBlog(null);
-      setShowBlogModal(false);
-    } catch (error) {
-      toast.error('İşlem başarısız!');
-    }
-  };
-
-  const deleteBlog = async (id) => {
-    try {
-      await blogAPI.delete(id);
-      await loadBlogs();
-    } catch (error) {
-      toast.error('Silme işlemi başarısız!');
-    }
-  };
-
 
   const registerForEvent = async (eventId) => {
     try {
       await eventRegistrationAPI.register(eventId);
       await loadEventRegistrations();
-      toast.success('✅ Etkinliğe katılım talebiniz gönderildi!');
+      alert('Etkinliğe katılım talebiniz gönderildi!');
     } catch (error) {
       alert(error.response?.data?.detail || 'İşlem başarısız!');
     }
@@ -682,7 +522,7 @@ const FocusProApp = () => {
       await eventRegistrationAPI.updateStatus(id, status);
       await loadEventRegistrations();
     } catch (error) {
-      toast.error('Güncelleme başarısız!');
+      alert('Güncelleme başarısız!');
     }
   };
 
@@ -691,7 +531,7 @@ const FocusProApp = () => {
       await habitAPI.update(id, completed);
       await loadDailyHabits();
     } catch (error) {
-      toast.error('Güncelleme başarısız!');
+      alert('Güncelleme başarısız!');
     }
   };
 
@@ -706,7 +546,7 @@ const FocusProApp = () => {
 
   const handleVideoComplete = async () => {
     if (!selectedVideo || !comment.trim() || !videoWatched) {
-      toast.warning('Lütfen videoyu izleyip yorum yazınız!');
+      alert('Lütfen videoyu izleyip yorum yazınız!');
       return;
     }
 
@@ -717,9 +557,9 @@ const FocusProApp = () => {
       setComment('');
       setVideoWatched(false);
       setSelectedVideo(null);
-      toast.success('🎉 Tebrikler! Video tamamlandı.');
+      alert('Tebrikler! Video tamamlandı.');
     } catch (error) {
-      toast.error('İşlem başarısız!');
+      alert('İşlem başarısız!');
     }
   };
 
@@ -897,28 +737,9 @@ const FocusProApp = () => {
 
   // MAIN APP UI
   return (
-    <>
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: darkMode ? '#1f2937' : '#fff',
-            color: darkMode ? '#fff' : '#000',
-          },
-        }}
-      />
-      <div className={`flex h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} overflow-hidden`}>
-      {/* Mobile Overlay */}
-      {sidebarOpen && window.innerWidth <= 768 && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
+    <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 ${sidebarOpen ? 'w-64' : 'md:w-20'} w-64 bg-gradient-to-b from-purple-700 to-indigo-800 text-white transition-all duration-300 flex flex-col fixed md:relative h-full z-50`}>
+      <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-gradient-to-b from-purple-700 to-indigo-800 text-white transition-all duration-300 flex flex-col`}>
         <div className="p-4 flex items-center justify-between">
           {sidebarOpen && (
             <div className="flex items-center gap-2">
@@ -1022,26 +843,6 @@ const FocusProApp = () => {
             {sidebarOpen && <span>Nedenlerim</span>}
           </button>
 
-          <button
-            onClick={() => setCurrentPage('recommendations')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-              currentPage === 'recommendations' ? 'bg-white/20' : 'hover:bg-white/10'
-            }`}
-          >
-            <Bookmark size={20} />
-            {sidebarOpen && <span>Tavsiyeler</span>}
-          </button>
-
-          <button
-            onClick={() => setCurrentPage('blogs')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-              currentPage === 'blogs' ? 'bg-white/20' : 'hover:bg-white/10'
-            }`}
-          >
-            <FileText size={20} />
-            {sidebarOpen && <span>Blog</span>}
-          </button>
-
           {currentUser?.role === 'admin' && (
             <button
               onClick={() => setCurrentPage('admin')}
@@ -1073,138 +874,12 @@ const FocusProApp = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto flex flex-col">
-        {/* Top Navbar */}
-        <div className="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-30">
-          <div className="flex items-center gap-4 flex-1">
-            <button 
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
-            >
-              <Menu size={24} />
-            </button>
-            
-            {/* Search Bar */}
-            <div className="relative flex-1 max-w-xl">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="text"
-                placeholder="Ara... (isim, video, kitap, blog)"
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-              
-              {/* Search Results Dropdown */}
-              {showSearchResults && searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50">
-                  {searchResults.map((result, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => {
-                        if (result.type === 'video') setCurrentPage('videos');
-                        else if (result.type === 'prospect') setCurrentPage('prospects');
-                        else if (result.type === 'partner') setCurrentPage('partners');
-                        else if (result.type === 'recommendation') setCurrentPage('recommendations');
-                        else if (result.type === 'blog') setCurrentPage('blogs');
-                        setShowSearchResults(false);
-                        setSearchQuery('');
-                      }}
-                      className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-medium">
-                          {result.type === 'video' ? 'Video' :
-                           result.type === 'prospect' ? 'Potansiyel' :
-                           result.type === 'partner' ? 'Partner' :
-                           result.type === 'recommendation' ? 'Tavsiye' :
-                           result.type === 'blog' ? 'Blog' : result.type}
-                        </span>
-                        <span className="text-sm font-medium text-gray-800">{result.data.title || result.data.name}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Dark Mode Toggle & Notifications */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              {darkMode ? <Sun size={20} className="text-yellow-500" /> : <Moon size={20} className="text-gray-700" />}
-            </button>
-
-            {/* Notifications */}
-          <div className="relative">
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 hover:bg-gray-100 rounded-lg"
-            >
-              <Bell size={24} className="text-gray-700" />
-              {unreadCount > 0 && (
-                <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </button>
-
-            {/* Notifications Dropdown */}
-            {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 md:w-96 bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-y-auto z-50">
-                <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                  <h3 className="font-bold text-gray-800">Bildirimler</h3>
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={markAllNotificationsRead}
-                      className="text-sm text-purple-600 hover:underline"
-                    >
-                      Tümünü Okundu İşaretle
-                    </button>
-                  )}
-                </div>
-                <div className="divide-y divide-gray-100">
-                  {notifications.length === 0 ? (
-                    <div className="p-8 text-center text-gray-500">
-                      Henüz bildirim yok
-                    </div>
-                  ) : (
-                    notifications.map(notif => (
-                      <div
-                        key={notif.id}
-                        onClick={() => !notif.read && markNotificationRead(notif.id)}
-                        className={`p-4 cursor-pointer hover:bg-gray-50 ${!notif.read ? 'bg-purple-50' : ''}`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className={`w-2 h-2 rounded-full mt-2 ${!notif.read ? 'bg-purple-600' : 'bg-gray-300'}`} />
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-gray-800 text-sm">{notif.title}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{notif.message}</p>
-                            <p className="text-xs text-gray-400 mt-2">
-                              {new Date(notif.created_at).toLocaleDateString('tr-TR', { 
-                                day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-auto p-4 md:p-8">
+      <div className="flex-1 overflow-auto">
+        <div className="p-8">
           {/* DASHBOARD PAGE */}
           {currentPage === 'dashboard' && (
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Dashboard</h2>
+              <h2 className="text-3xl font-bold text-gray-800 mb-6">Dashboard</h2>
               
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -1961,259 +1636,6 @@ const FocusProApp = () => {
               </div>
             </div>
           )}
-
-
-          {/* RECOMMENDATIONS PAGE */}
-          {currentPage === 'recommendations' && (
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Tavsiyeler</h2>
-                {currentUser?.role === 'admin' && (
-                  <button
-                    onClick={() => {
-                      setShowRecommendationModal(true);
-                      setEditingRecommendation(null);
-                      setNewRecommendation({ title: '', type: 'book', description: '', cover_image: '', link: '', author: '', duration: '', category: '' });
-                    }}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
-                  >
-                    <Plus size={20} />
-                    Yeni Tavsiye
-                  </button>
-                )}
-              </div>
-
-              {/* Filter Tabs */}
-              <div className="flex gap-2 mb-6 overflow-x-auto">
-                {['all', 'book', 'video', 'movie'].map(type => (
-                  <button
-                    key={type}
-                    onClick={async () => {
-                      const response = await recommendationAPI.getAll(type === 'all' ? null : type);
-                      setRecommendations(response.data);
-                    }}
-                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 whitespace-nowrap"
-                  >
-                    {type === 'all' ? 'Tümü' : type === 'book' ? '📚 Kitaplar' : type === 'video' ? '🎥 Videolar' : '🎬 Filmler'}
-                  </button>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {recommendations.map(rec => (
-                  <div key={rec.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
-                    {rec.cover_image && (
-                      <img 
-                        src={rec.cover_image} 
-                        alt={rec.title}
-                        className="w-full h-48 object-cover"
-                      />
-                    )}
-                    <div className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-2xl">
-                          {rec.type === 'book' ? '📚' : rec.type === 'video' ? '🎥' : '🎬'}
-                        </span>
-                        <span className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
-                          {rec.category}
-                        </span>
-                      </div>
-                      <h3 className="font-bold text-gray-800 mb-2">{rec.title}</h3>
-                      {rec.author && (
-                        <p className="text-sm text-gray-600 mb-2">Yazar: {rec.author}</p>
-                      )}
-                      {rec.duration && (
-                        <p className="text-sm text-gray-600 mb-2">Süre: {rec.duration}</p>
-                      )}
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-3">{rec.description}</p>
-                      <div className="flex gap-2">
-                        {rec.link && (
-                          <a
-                            href={rec.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 bg-purple-600 text-white py-2 px-3 rounded-lg text-sm text-center hover:bg-purple-700"
-                          >
-                            Görüntüle
-                          </a>
-                        )}
-                        {currentUser?.role === 'admin' && (
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => {
-                                setEditingRecommendation(rec);
-                                setNewRecommendation(rec);
-                                setShowRecommendationModal(true);
-                              }}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button
-                              onClick={() => deleteRecommendation(rec.id)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {recommendations.length === 0 && (
-                  <div className="col-span-full text-center py-12 text-gray-500">
-                    Henüz tavsiye eklenmemiş
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* BLOGS PAGE */}
-          {currentPage === 'blogs' && !selectedBlog && (
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Blog</h2>
-                {currentUser?.role === 'admin' && (
-                  <button
-                    onClick={() => {
-                      setShowBlogModal(true);
-                      setEditingBlog(null);
-                      setNewBlog({ title: '', content: '', cover_image: '', excerpt: '', category: '', tags: [], published: false });
-                    }}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
-                  >
-                    <Plus size={20} />
-                    Yeni Blog
-                  </button>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {blogs.filter(b => b.published || currentUser?.role === 'admin').map(blog => (
-                  <div key={blog.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-                    {blog.cover_image && (
-                      <img 
-                        src={blog.cover_image} 
-                        alt={blog.title}
-                        className="w-full h-48 object-cover"
-                      />
-                    )}
-                    <div className="p-6">
-                      <div className="flex items-center gap-2 mb-3">
-                        {blog.category && (
-                          <span className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
-                            {blog.category}
-                          </span>
-                        )}
-                        {!blog.published && (
-                          <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full">
-                            Taslak
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">{blog.title}</h3>
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                        {blog.excerpt || blog.content.substring(0, 150) + '...'}
-                      </p>
-                      <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                        <span>{blog.author_name}</span>
-                        <span>{new Date(blog.created_at).toLocaleDateString('tr-TR')}</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={async () => {
-                            const response = await blogAPI.getOne(blog.id);
-                            setSelectedBlog(response.data);
-                          }}
-                          className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
-                        >
-                          Oku
-                        </button>
-                        {currentUser?.role === 'admin' && (
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => {
-                                setEditingBlog(blog);
-                                setNewBlog(blog);
-                                setShowBlogModal(true);
-                              }}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button
-                              onClick={() => deleteBlog(blog.id)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {blogs.filter(b => b.published || currentUser?.role === 'admin').length === 0 && (
-                  <div className="col-span-full text-center py-12 text-gray-500">
-                    Henüz blog yazısı yok
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* BLOG DETAIL VIEW */}
-          {currentPage === 'blogs' && selectedBlog && (
-            <div>
-              <button
-                onClick={() => setSelectedBlog(null)}
-                className="mb-6 flex items-center gap-2 text-purple-600 hover:underline"
-              >
-                <ChevronLeft size={20} />
-                Geri Dön
-              </button>
-
-              <article className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden max-w-4xl mx-auto">
-                {selectedBlog.cover_image && (
-                  <img 
-                    src={selectedBlog.cover_image} 
-                    alt={selectedBlog.title}
-                    className="w-full h-64 md:h-96 object-cover"
-                  />
-                )}
-                <div className="p-6 md:p-12">
-                  {selectedBlog.category && (
-                    <span className="inline-block text-sm px-3 py-1 bg-purple-100 text-purple-700 rounded-full mb-4">
-                      {selectedBlog.category}
-                    </span>
-                  )}
-                  <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">{selectedBlog.title}</h1>
-                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-8 pb-8 border-b border-gray-200">
-                    <span>Yazar: {selectedBlog.author_name}</span>
-                    <span>•</span>
-                    <span>{new Date(selectedBlog.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                  </div>
-                  <div className="prose max-w-none text-gray-700 whitespace-pre-wrap leading-relaxed">
-                    {selectedBlog.content}
-                  </div>
-                  {selectedBlog.tags && selectedBlog.tags.length > 0 && (
-                    <div className="mt-8 pt-8 border-t border-gray-200">
-                      <div className="flex flex-wrap gap-2">
-                        {selectedBlog.tags.map((tag, idx) => (
-                          <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </article>
-            </div>
-          )}
-
 
           {/* CALENDAR PAGE */}
           {currentPage === 'calendar' && (
@@ -3071,178 +2493,7 @@ const FocusProApp = () => {
           </div>
         </div>
       )}
-
-
-      {/* Recommendation Modal (Admin) */}
-      {showRecommendationModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 my-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
-              {editingRecommendation ? 'Tavsiye Düzenle' : 'Yeni Tavsiye'}
-            </h3>
-            <div className="space-y-4">
-              <input
-                type="text"
-                value={newRecommendation.title}
-                onChange={(e) => setNewRecommendation({...newRecommendation, title: e.target.value})}
-                placeholder="Başlık"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <select
-                value={newRecommendation.type}
-                onChange={(e) => setNewRecommendation({...newRecommendation, type: e.target.value})}
-                className="w-full px-4 py-2 border rounded-lg"
-              >
-                <option value="book">Kitap</option>
-                <option value="video">Video</option>
-                <option value="movie">Film</option>
-              </select>
-              <input
-                type="text"
-                value={newRecommendation.cover_image}
-                onChange={(e) => setNewRecommendation({...newRecommendation, cover_image: e.target.value})}
-                placeholder="Kapak Resmi URL"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <input
-                type="text"
-                value={newRecommendation.category}
-                onChange={(e) => setNewRecommendation({...newRecommendation, category: e.target.value})}
-                placeholder="Kategori"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <input
-                type="text"
-                value={newRecommendation.author}
-                onChange={(e) => setNewRecommendation({...newRecommendation, author: e.target.value})}
-                placeholder="Yazar/Yönetmen"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <input
-                type="text"
-                value={newRecommendation.duration}
-                onChange={(e) => setNewRecommendation({...newRecommendation, duration: e.target.value})}
-                placeholder="Süre (video/film için)"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <textarea
-                value={newRecommendation.description}
-                onChange={(e) => setNewRecommendation({...newRecommendation, description: e.target.value})}
-                placeholder="Açıklama"
-                rows={3}
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <input
-                type="url"
-                value={newRecommendation.link}
-                onChange={(e) => setNewRecommendation({...newRecommendation, link: e.target.value})}
-                placeholder="Link (opsiyonel)"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <div className="flex gap-3">
-                <button
-                  onClick={addOrUpdateRecommendation}
-                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
-                >
-                  {editingRecommendation ? 'Güncelle' : 'Kaydet'}
-                </button>
-                <button
-                  onClick={() => {
-                    setShowRecommendationModal(false);
-                    setEditingRecommendation(null);
-                  }}
-                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
-                >
-                  İptal
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Blog Modal (Admin) */}
-      {showBlogModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 my-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
-              {editingBlog ? 'Blog Düzenle' : 'Yeni Blog'}
-            </h3>
-            <div className="space-y-4">
-              <input
-                type="text"
-                value={newBlog.title}
-                onChange={(e) => setNewBlog({...newBlog, title: e.target.value})}
-                placeholder="Blog Başlığı"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <input
-                type="text"
-                value={newBlog.cover_image}
-                onChange={(e) => setNewBlog({...newBlog, cover_image: e.target.value})}
-                placeholder="Kapak Resmi URL"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <input
-                type="text"
-                value={newBlog.category}
-                onChange={(e) => setNewBlog({...newBlog, category: e.target.value})}
-                placeholder="Kategori"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <textarea
-                value={newBlog.excerpt}
-                onChange={(e) => setNewBlog({...newBlog, excerpt: e.target.value})}
-                placeholder="Kısa Özet"
-                rows={2}
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <textarea
-                value={newBlog.content}
-                onChange={(e) => setNewBlog({...newBlog, content: e.target.value})}
-                placeholder="Blog İçeriği"
-                rows={10}
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <input
-                type="text"
-                value={newBlog.tags.join(', ')}
-                onChange={(e) => setNewBlog({...newBlog, tags: e.target.value.split(',').map(t => t.trim()).filter(t => t)})}
-                placeholder="Etiketler (virgülle ayırın)"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={newBlog.published}
-                  onChange={(e) => setNewBlog({...newBlog, published: e.target.checked})}
-                  className="w-4 h-4"
-                />
-                <span className="text-sm text-gray-700">Yayınla</span>
-              </label>
-              <div className="flex gap-3">
-                <button
-                  onClick={addOrUpdateBlog}
-                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
-                >
-                  {editingBlog ? 'Güncelle' : 'Kaydet'}
-                </button>
-                <button
-                  onClick={() => {
-                    setShowBlogModal(false);
-                    setEditingBlog(null);
-                  }}
-                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
-                >
-                  İptal
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      </div>
-    </>
+    </div>
   );
 };
 
