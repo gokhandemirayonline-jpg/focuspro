@@ -154,6 +154,9 @@ const FocusProApp = () => {
         loadPartners(),
         loadEvents(),
         loadEventRegistrations(),
+        loadNotifications(),
+        loadRecommendations(),
+        loadBlogs(),
         currentUser?.role === 'admin' ? loadUsers() : Promise.resolve()
       ]);
     } catch (error) {
