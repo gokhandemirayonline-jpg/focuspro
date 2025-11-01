@@ -897,7 +897,18 @@ const FocusProApp = () => {
 
   // MAIN APP UI
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: darkMode ? '#1f2937' : '#fff',
+            color: darkMode ? '#fff' : '#000',
+          },
+        }}
+      />
+      <div className={`flex h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} overflow-hidden`}>
       {/* Mobile Overlay */}
       {sidebarOpen && window.innerWidth <= 768 && (
         <div 
