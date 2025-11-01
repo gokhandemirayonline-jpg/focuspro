@@ -272,6 +272,72 @@ const FocusProApp = () => {
     }
   };
 
+
+  const loadNotifications = async () => {
+    try {
+      const response = await notificationAPI.getAll();
+      setNotifications(response.data);
+      const countResponse = await notificationAPI.getUnreadCount();
+      setUnreadCount(countResponse.data.count);
+    } catch (error) {
+      console.error('Notifications yüklenemedi:', error);
+    }
+  };
+
+  const loadRecommendations = async () => {
+    try {
+      const response = await recommendationAPI.getAll();
+      setRecommendations(response.data);
+    } catch (error) {
+      console.error('Recommendations yüklenemedi:', error);
+    }
+  };
+
+  const loadBlogs = async () => {
+    try {
+      const response = await blogAPI.getAll();
+      setBlogs(response.data);
+    } catch (error) {
+      console.error('Blogs yüklenemedi:', error);
+    }
+  };
+
+  const handleSearch = async (query) => {
+    setSearchQuery(query);
+    if (query.length < 2) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    try {
+      const response = await searchAPI.search(query);
+      setSearchResults(response.data.results);
+      setShowSearchResults(true);
+    } catch (error) {
+      console.error('Arama hatası:', error);
+    }
+  };
+
+  const markNotificationRead = async (notifId) => {
+    try {
+      await notificationAPI.markRead(notifId);
+      await loadNotifications();
+    } catch (error) {
+      console.error('Bildirim işaretlenemedi:', error);
+    }
+  };
+
+  const markAllNotificationsRead = async () => {
+    try {
+      await notificationAPI.markAllRead();
+      await loadNotifications();
+    } catch (error) {
+      console.error('Bildirimler işaretlenemedi:', error);
+    }
+  };
+
+
   // CRUD Functions
   const addOrUpdateMeeting = async () => {
     if (!newMeeting.title || !newMeeting.date) return;
