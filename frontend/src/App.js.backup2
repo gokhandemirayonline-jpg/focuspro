@@ -1,0 +1,2500 @@
+import React, { useState, useEffect } from 'react';
+import { Home, Calendar, Users, GraduationCap, User, Play, Lock, Check, Shield, Plus, Trash2, Target, ListChecks, MessageSquare, BarChart3, LogOut, Eye, EyeOff, TrendingUp, Clock, CheckCircle2, Menu, X, Edit, ChevronLeft, ChevronRight, CalendarDays, UserPlus } from 'lucide-react';
+import { authAPI, userAPI, videoAPI, progressAPI, meetingAPI, taskAPI, goalAPI, reasonAPI, prospectAPI, partnerAPI, habitAPI, eventAPI, eventRegistrationAPI } from './services/api';
+import './App.css';
+
+const FocusProApp = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '', role: 'user' });
+  const [showRegister, setShowRegister] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [calendarView, setCalendarView] = useState('week');
+
+  const [videos, setVideos] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [userProgress, setUserProgress] = useState([]);
+  const [meetings, setMeetings] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [goals, setGoals] = useState([]);
+  const [reasons, setReasons] = useState([]);
+  const [prospects, setProspects] = useState([]);
+  const [dailyHabits, setDailyHabits] = useState([]);
+  const [partners, setPartners] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [eventRegistrations, setEventRegistrations] = useState([]);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [comment, setComment] = useState('');
+  const [videoWatched, setVideoWatched] = useState(false);
+  
+  const [showMeetingModal, setShowMeetingModal] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  const [showReasonModal, setShowReasonModal] = useState(false);
+  const [showProspectModal, setShowProspectModal] = useState(false);
+  const [showPartnerModal, setShowPartnerModal] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editingVideo, setEditingVideo] = useState(null);
+  const [editingMeeting, setEditingMeeting] = useState(null);
+  const [editingTask, setEditingTask] = useState(null);
+  const [editingProspect, setEditingProspect] = useState(null);
+  const [editingPartner, setEditingPartner] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
+
+  const [newMeeting, setNewMeeting] = useState({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled' });
+  const [newTask, setNewTask] = useState({ title: '', date: '', priority: 'medium', status: 'todo', description: '', assignee: '' });
+  const [newGoal, setNewGoal] = useState({ title: '', type: 'daily', target: '', deadline: '', current: 0 });
+  const [newReason, setNewReason] = useState({ title: '', description: '' });
+  const [newProspect, setNewProspect] = useState({ name: '', phone: '', email: '', status: 'new', notes: '', source: '' });
+  const [newPartner, setNewPartner] = useState({ name: '', phone: '', email: '', rank: '', join_date: '', performance: '', status: 'active' });
+  const [newVideo, setNewVideo] = useState({ title: '', youtube_id: '', description: '', duration: '', category: '' });
+  const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'user' });
+  const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '', location: '', description: '', max_participants: '' });
+
+  useEffect(() => {
+    checkAutoLogin();
+  }, []);
+
+  useEffect(() => {
+    if (isLoggedIn && currentUser) {
+      loadAllData();
+    }
+  }, [isLoggedIn, currentUser]);
+
+  const checkAutoLogin = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const response = await authAPI.getMe();
+        setCurrentUser(response.data);
+        setIsLoggedIn(true);
+      }
+    } catch (error) {
+      console.log('No auto login');
+      localStorage.removeItem('token');
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      const response = await authAPI.login(loginForm.email, loginForm.password);
+      const { access_token, user } = response.data;
+      
+      localStorage.setItem('token', access_token);
+      setCurrentUser(user);
+      setIsLoggedIn(true);
+      setLoginForm({ email: '', password: '' });
+    } catch (error) {
+      alert('Email veya şifre hatalı!');
+    }
+  };
+
+  const handleRegister = async () => {
+    if (!registerForm.name || !registerForm.email || !registerForm.password) {
+      alert('Tüm alanları doldurun!');
+      return;
+    }
+    
+    try {
+      await authAPI.register(registerForm.name, registerForm.email, registerForm.password, registerForm.role);
+      setRegisterForm({ name: '', email: '', password: '', role: 'user' });
+      setShowRegister(false);
+      alert('Kayıt başarılı! Giriş yapabilirsiniz.');
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Kayıt başarısız!');
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+    localStorage.removeItem('token');
+    setCurrentPage('dashboard');
+  };
+
+  const loadAllData = async () => {
+    try {
+      await Promise.all([
+        loadVideos(),
+        loadUserProgress(),
+        loadMeetings(),
+        loadTasks(),
+        loadGoals(),
+        loadReasons(),
+        loadProspects(),
+        loadDailyHabits(),
+        loadPartners(),
+        loadEvents(),
+        loadEventRegistrations(),
+        currentUser?.role === 'admin' ? loadUsers() : Promise.resolve()
+      ]);
+    } catch (error) {
+      console.error('Veri yükleme hatası:', error);
+    }
+  };
+
+  const loadUsers = async () => {
+    try {
+      const response = await userAPI.getAll();
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Kullanıcılar yüklenemedi:', error);
+    }
+  };
+
+  const loadVideos = async () => {
+    try {
+      const response = await videoAPI.getAll();
+      setVideos(response.data);
+    } catch (error) {
+      console.error('Videolar yüklenemedi:', error);
+    }
+  };
+
+  const loadUserProgress = async () => {
+    try {
+      const response = await progressAPI.get();
+      setUserProgress(response.data);
+    } catch (error) {
+      console.error('Progress yüklenemedi:', error);
+    }
+  };
+
+  const loadMeetings = async () => {
+    try {
+      const response = await meetingAPI.getAll();
+      setMeetings(response.data);
+    } catch (error) {
+      console.error('Meetings yüklenemedi:', error);
+    }
+  };
+
+  const loadTasks = async () => {
+    try {
+      const response = await taskAPI.getAll();
+      setTasks(response.data);
+    } catch (error) {
+      console.error('Tasks yüklenemedi:', error);
+    }
+  };
+
+  const loadGoals = async () => {
+    try {
+      const response = await goalAPI.getAll();
+      setGoals(response.data);
+    } catch (error) {
+      console.error('Goals yüklenemedi:', error);
+    }
+  };
+
+  const loadReasons = async () => {
+    try {
+      const response = await reasonAPI.getAll();
+      setReasons(response.data);
+    } catch (error) {
+      console.error('Reasons yüklenemedi:', error);
+    }
+  };
+
+  const loadProspects = async () => {
+    try {
+      const response = await prospectAPI.getAll();
+      setProspects(response.data);
+    } catch (error) {
+      console.error('Prospects yüklenemedi:', error);
+    }
+  };
+
+  const loadDailyHabits = async () => {
+    try {
+      const response = await habitAPI.getAll();
+      setDailyHabits(response.data);
+    } catch (error) {
+      console.error('Habits yüklenemedi:', error);
+    }
+  };
+
+  const loadPartners = async () => {
+    try {
+      const response = await partnerAPI.getAll();
+      setPartners(response.data);
+    } catch (error) {
+      console.error('Partners yüklenemedi:', error);
+    }
+  };
+
+  const loadEvents = async () => {
+    try {
+      const response = await eventAPI.getAll();
+      setEvents(response.data);
+    } catch (error) {
+      console.error('Events yüklenemedi:', error);
+    }
+  };
+
+  const loadEventRegistrations = async () => {
+    try {
+      const response = await eventRegistrationAPI.getAll();
+      setEventRegistrations(response.data);
+    } catch (error) {
+      console.error('Event registrations yüklenemedi:', error);
+    }
+  };
+
+  // CRUD Functions
+  const addOrUpdateMeeting = async () => {
+    if (!newMeeting.title || !newMeeting.date) return;
+    
+    try {
+      if (editingMeeting) {
+        await meetingAPI.update(editingMeeting.id, newMeeting);
+      } else {
+        await meetingAPI.create(newMeeting);
+      }
+      
+      await loadMeetings();
+      setNewMeeting({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled' });
+      setEditingMeeting(null);
+      setShowMeetingModal(false);
+      setSelectedDate(null);
+    } catch (error) {
+      alert('İşlem başarısız!');
+    }
+  };
+
+  const deleteMeeting = async (id) => {
+    try {
+      await meetingAPI.delete(id);
+      await loadMeetings();
+    } catch (error) {
+      alert('Silme işlemi başarısız!');
+    }
+  };
+
+  const addOrUpdateTask = async () => {
+    if (!newTask.title) return;
+    
+    try {
+      if (editingTask) {
+        await taskAPI.update(editingTask.id, newTask);
+      } else {
+        await taskAPI.create(newTask);
+      }
+      
+      await loadTasks();
+      setNewTask({ title: '', date: '', priority: 'medium', status: 'todo', description: '', assignee: '' });
+      setEditingTask(null);
+      setShowTaskModal(false);
+    } catch (error) {
+      alert('İşlem başarısız!');
+    }
+  };
+
+  const deleteTask = async (id) => {
+    try {
+      await taskAPI.delete(id);
+      await loadTasks();
+    } catch (error) {
+      alert('Silme işlemi başarısız!');
+    }
+  };
+
+  const updateTaskStatus = async (id, status) => {
+    try {
+      await taskAPI.updateStatus(id, status);
+      await loadTasks();
+    } catch (error) {
+      alert('Güncelleme başarısız!');
+    }
+  };
+
+  const addGoal = async () => {
+    if (!newGoal.title || !newGoal.target) return;
+    
+    try {
+      await goalAPI.create(newGoal);
+      await loadGoals();
+      setNewGoal({ title: '', type: 'daily', target: '', deadline: '', current: 0 });
+      setShowGoalModal(false);
+    } catch (error) {
+      alert('İşlem başarısız!');
+    }
+  };
+
+  const deleteGoal = async (id) => {
+    try {
+      await goalAPI.delete(id);
+      await loadGoals();
+    } catch (error) {
+      alert('Silme işlemi başarısız!');
+    }
+  };
+
+  const addReason = async () => {
+    if (!newReason.title) return;
+    
+    try {
+      await reasonAPI.create(newReason);
+      await loadReasons();
+      setNewReason({ title: '', description: '' });
+      setShowReasonModal(false);
+    } catch (error) {
+      alert('İşlem başarısız!');
+    }
+  };
+
+  const deleteReason = async (id) => {
+    try {
+      await reasonAPI.delete(id);
+      await loadReasons();
+    } catch (error) {
+      alert('Silme işlemi başarısız!');
+    }
+  };
+
+  const addOrUpdateProspect = async () => {
+    if (!newProspect.name) return;
+    
+    try {
+      if (editingProspect) {
+        await prospectAPI.update(editingProspect.id, newProspect);
+      } else {
+        await prospectAPI.create(newProspect);
+      }
+      
+      await loadProspects();
+      setNewProspect({ name: '', phone: '', email: '', status: 'new', notes: '', source: '' });
+      setEditingProspect(null);
+      setShowProspectModal(false);
+    } catch (error) {
+      alert('İşlem başarısız!');
+    }
+  };
+
+  const deleteProspect = async (id) => {
+    try {
+      await prospectAPI.delete(id);
+      await loadProspects();
+    } catch (error) {
+      alert('Silme işlemi başarısız!');
+    }
+  };
+
+  const addOrUpdatePartner = async () => {
+    if (!newPartner.name) return;
+    
+    try {
+      if (editingPartner) {
+        await partnerAPI.update(editingPartner.id, newPartner);
+      } else {
+        await partnerAPI.create(newPartner);
+      }
+      
+      await loadPartners();
+      setNewPartner({ name: '', phone: '', email: '', rank: '', join_date: '', performance: '', status: 'active' });
+      setEditingPartner(null);
+      setShowPartnerModal(false);
+    } catch (error) {
+      alert('İşlem başarısız!');
+    }
+  };
+
+  const deletePartner = async (id) => {
+    try {
+      await partnerAPI.delete(id);
+      await loadPartners();
+    } catch (error) {
+      alert('Silme işlemi başarısız!');
+    }
+  };
+
+  const addOrUpdateVideo = async () => {
+    if (!newVideo.title || !newVideo.youtube_id) return;
+    
+    try {
+      if (editingVideo) {
+        await videoAPI.update(editingVideo.id, newVideo);
+      } else {
+        await videoAPI.create(newVideo);
+      }
+      
+      await loadVideos();
+      setNewVideo({ title: '', youtube_id: '', description: '', duration: '', category: '' });
+      setEditingVideo(null);
+      setShowVideoModal(false);
+    } catch (error) {
+      alert('İşlem başarısız!');
+    }
+  };
+
+  const deleteVideo = async (id) => {
+    try {
+      await videoAPI.delete(id);
+      await loadVideos();
+    } catch (error) {
+      alert('Silme işlemi başarısız!');
+    }
+  };
+
+  const addOrUpdateUser = async () => {
+    if (!newUser.name || !newUser.email) return;
+    
+    try {
+      if (editingUser) {
+        await userAPI.update(editingUser.id, newUser);
+      } else {
+        await userAPI.create(newUser);
+      }
+      
+      await loadUsers();
+      setNewUser({ name: '', email: '', password: '', role: 'user' });
+      setEditingUser(null);
+      setShowUserModal(false);
+    } catch (error) {
+      alert(error.response?.data?.detail || 'İşlem başarısız!');
+    }
+  };
+
+  const deleteUser = async (id) => {
+    if (id === currentUser.id) {
+      alert('Kendi hesabınızı silemezsiniz!');
+      return;
+    }
+    
+    try {
+      await userAPI.delete(id);
+      await loadUsers();
+    } catch (error) {
+      alert('Silme işlemi başarısız!');
+    }
+  };
+
+  const addOrUpdateEvent = async () => {
+    if (!newEvent.title || !newEvent.date) return;
+    
+    try {
+      if (editingEvent) {
+        await eventAPI.update(editingEvent.id, newEvent);
+      } else {
+        await eventAPI.create(newEvent);
+      }
+      
+      await loadEvents();
+      setNewEvent({ title: '', date: '', time: '', location: '', description: '', max_participants: '' });
+      setEditingEvent(null);
+      setShowEventModal(false);
+    } catch (error) {
+      alert('İşlem başarısız!');
+    }
+  };
+
+  const deleteEvent = async (id) => {
+    try {
+      await eventAPI.delete(id);
+      await loadEvents();
+    } catch (error) {
+      alert('Silme işlemi başarısız!');
+    }
+  };
+
+  const registerForEvent = async (eventId) => {
+    try {
+      await eventRegistrationAPI.register(eventId);
+      await loadEventRegistrations();
+      alert('Etkinliğe katılım talebiniz gönderildi!');
+    } catch (error) {
+      alert(error.response?.data?.detail || 'İşlem başarısız!');
+    }
+  };
+
+  const updateRegistrationStatus = async (id, status) => {
+    try {
+      await eventRegistrationAPI.updateStatus(id, status);
+      await loadEventRegistrations();
+    } catch (error) {
+      alert('Güncelleme başarısız!');
+    }
+  };
+
+  const updateHabit = async (id, completed) => {
+    try {
+      await habitAPI.update(id, completed);
+      await loadDailyHabits();
+    } catch (error) {
+      alert('Güncelleme başarısız!');
+    }
+  };
+
+  const getVideoProgress = (videoId) => {
+    return userProgress.find(p => p.video_id === videoId);
+  };
+
+  const isVideoUnlocked = (videoId) => {
+    const progress = getVideoProgress(videoId);
+    return progress?.unlocked || false;
+  };
+
+  const handleVideoComplete = async () => {
+    if (!selectedVideo || !comment.trim() || !videoWatched) {
+      alert('Lütfen videoyu izleyip yorum yazınız!');
+      return;
+    }
+
+    try {
+      await progressAPI.complete(selectedVideo.id, comment);
+      await loadUserProgress();
+      
+      setComment('');
+      setVideoWatched(false);
+      setSelectedVideo(null);
+      alert('Tebrikler! Video tamamlandı.');
+    } catch (error) {
+      alert('İşlem başarısız!');
+    }
+  };
+
+  const openVideo = (video) => {
+    if (isVideoUnlocked(video.id)) {
+      setSelectedVideo(video);
+      setVideoWatched(false);
+      const progress = getVideoProgress(video.id);
+      setComment(progress?.comment || '');
+    }
+  };
+
+  const getDaysInWeek = (date) => {
+    const days = [];
+    const current = new Date(date);
+    const dayOfWeek = current.getDay();
+    const diff = current.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(current.setDate(diff + i));
+      days.push(new Date(day));
+    }
+    return days;
+  };
+
+  const getTimeSlots = () => {
+    const slots = [];
+    for (let hour = 0; hour < 24; hour++) {
+      slots.push(`${hour.toString().padStart(2, '0')}:00`);
+    }
+    return slots;
+  };
+
+  const getMeetingsForDay = (date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return meetings.filter(m => m.date === dateStr);
+  };
+
+  const calculateStats = () => {
+    const totalTasks = meetings.length + tasks.length + prospects.length;
+    const completedTasks = meetings.filter(m => m.status === 'completed').length + 
+                           tasks.filter(t => t.status === 'done').length;
+    const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    const todayMeetings = meetings.filter(m => m.date === new Date().toISOString().split('T')[0]).length;
+    const activePartners = partners.filter(p => p.status === 'active').length;
+
+    return { totalTasks, completedTasks, completionRate, todayMeetings, activePartners };
+  };
+
+  // LOGIN/REGISTER UI
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Target className="text-white" size={40} />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-800">Focus Pro</h1>
+            <p className="text-gray-600 mt-2">Network Marketing Yönetim Platformu</p>
+          </div>
+
+          {!showRegister ? (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input
+                  type="email"
+                  value={loginForm.email}
+                  onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
+                  onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="email@example.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Şifre</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={loginForm.password}
+                    onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                    onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={handleLogin}
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
+              >
+                Giriş Yap
+              </button>
+              <button
+                onClick={() => setShowRegister(true)}
+                className="w-full border-2 border-purple-600 text-purple-600 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-all"
+              >
+                Kayıt Ol
+              </button>
+              <div className="text-center text-sm text-gray-500 mt-4">
+                <p>Test Hesabı:</p>
+                <p>Email: admin@focuspro.com</p>
+                <p>Şifre: admin123</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Ad Soyad</label>
+                <input
+                  type="text"
+                  value={registerForm.name}
+                  onChange={(e) => setRegisterForm({...registerForm, name: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Adınız Soyadınız"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input
+                  type="email"
+                  value={registerForm.email}
+                  onChange={(e) => setRegisterForm({...registerForm, email: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="email@example.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Şifre</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={registerForm.password}
+                    onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={handleRegister}
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
+              >
+                Kayıt Ol
+              </button>
+              <button
+                onClick={() => setShowRegister(false)}
+                className="w-full border-2 border-purple-600 text-purple-600 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-all"
+              >
+                Geri Dön
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  const stats = calculateStats();
+
+  // MAIN APP UI
+  return (
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-gradient-to-b from-purple-700 to-indigo-800 text-white transition-all duration-300 flex flex-col`}>
+        <div className="p-4 flex items-center justify-between">
+          {sidebarOpen && (
+            <div className="flex items-center gap-2">
+              <Target size={32} />
+              <h1 className="text-xl font-bold">Focus Pro</h1>
+            </div>
+          )}
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-white/10 rounded-lg">
+            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+
+        <nav className="flex-1 px-2 py-4 space-y-2">
+          <button
+            onClick={() => setCurrentPage('dashboard')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              currentPage === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <Home size={20} />
+            {sidebarOpen && <span>Dashboard</span>}
+          </button>
+
+          <button
+            onClick={() => setCurrentPage('calendar')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              currentPage === 'calendar' ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <Calendar size={20} />
+            {sidebarOpen && <span>Takvim</span>}
+          </button>
+
+          <button
+            onClick={() => setCurrentPage('tasks')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              currentPage === 'tasks' ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <ListChecks size={20} />
+            {sidebarOpen && <span>Görevler</span>}
+          </button>
+
+          <button
+            onClick={() => setCurrentPage('videos')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              currentPage === 'videos' ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <GraduationCap size={20} />
+            {sidebarOpen && <span>Eğitimler</span>}
+          </button>
+
+          <button
+            onClick={() => setCurrentPage('prospects')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              currentPage === 'prospects' ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <UserPlus size={20} />
+            {sidebarOpen && <span>Potansiyeller</span>}
+          </button>
+
+          <button
+            onClick={() => setCurrentPage('partners')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              currentPage === 'partners' ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <Users size={20} />
+            {sidebarOpen && <span>Partnerler</span>}
+          </button>
+
+          <button
+            onClick={() => setCurrentPage('events')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              currentPage === 'events' ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <CalendarDays size={20} />
+            {sidebarOpen && <span>Etkinlikler</span>}
+          </button>
+
+          <button
+            onClick={() => setCurrentPage('goals')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              currentPage === 'goals' ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <Target size={20} />
+            {sidebarOpen && <span>Hedefler</span>}
+          </button>
+
+          <button
+            onClick={() => setCurrentPage('reasons')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              currentPage === 'reasons' ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <MessageSquare size={20} />
+            {sidebarOpen && <span>Nedenlerim</span>}
+          </button>
+
+          {currentUser?.role === 'admin' && (
+            <button
+              onClick={() => setCurrentPage('admin')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                currentPage === 'admin' ? 'bg-white/20' : 'hover:bg-white/10'
+              }`}
+            >
+              <Shield size={20} />
+              {sidebarOpen && <span>Admin Panel</span>}
+            </button>
+          )}
+        </nav>
+
+        <div className="p-4 border-t border-white/20">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-all"
+          >
+            <LogOut size={20} />
+            {sidebarOpen && <span>Çıkış Yap</span>}
+          </button>
+          {sidebarOpen && (
+            <div className="mt-4 text-sm text-white/60">
+              <p className="font-semibold text-white">{currentUser?.name}</p>
+              <p>{currentUser?.email}</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto">
+        <div className="p-8">
+          {/* DASHBOARD PAGE */}
+          {currentPage === 'dashboard' && (
+            <div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-6">Dashboard</h2>
+              
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-500 text-sm">Toplam Görev</p>
+                      <p className="text-3xl font-bold text-gray-800 mt-2">{stats.totalTasks}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <ListChecks className="text-purple-600" size={24} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-500 text-sm">Tamamlanan</p>
+                      <p className="text-3xl font-bold text-green-600 mt-2">{stats.completedTasks}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                      <CheckCircle2 className="text-green-600" size={24} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-500 text-sm">Bugünkü Görüşmeler</p>
+                      <p className="text-3xl font-bold text-blue-600 mt-2">{stats.todayMeetings}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Calendar className="text-blue-600" size={24} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-500 text-sm">Aktif Partnerler</p>
+                      <p className="text-3xl font-bold text-indigo-600 mt-2">{stats.activePartners}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                      <Users className="text-indigo-600" size={24} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Daily Habits */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Günlük Alışkanlıklar</h3>
+                <div className="space-y-4">
+                  {dailyHabits.map(habit => (
+                    <div key={habit.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-800">{habit.title}</p>
+                        <div className="flex items-center gap-4 mt-2">
+                          <div className="flex-1 bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-purple-600 h-2 rounded-full transition-all"
+                              style={{ width: `${(habit.completed / habit.target) * 100}%` }}
+                            />
+                          </div>
+                          <span className="text-sm text-gray-600">{habit.completed}/{habit.target}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 ml-4">
+                        <button
+                          onClick={() => updateHabit(habit.id, Math.max(0, habit.completed - 1))}
+                          className="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300"
+                        >
+                          -
+                        </button>
+                        <button
+                          onClick={() => updateHabit(habit.id, habit.completed + 1)}
+                          className="w-8 h-8 bg-purple-600 text-white rounded-lg flex items-center justify-center hover:bg-purple-700"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recent Tasks */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-gray-800">Son Görevler</h3>
+                    <button
+                      onClick={() => setCurrentPage('tasks')}
+                      className="text-purple-600 text-sm hover:underline"
+                    >
+                      Tümünü Gör
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {tasks.slice(0, 5).map(task => (
+                      <div key={task.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-800">{task.title}</p>
+                          <p className="text-sm text-gray-500">{task.date}</p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          task.status === 'done' ? 'bg-green-100 text-green-700' :
+                          task.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {task.status === 'done' ? 'Tamamlandı' :
+                           task.status === 'in_progress' ? 'Devam Ediyor' : 'Bekliyor'}
+                        </span>
+                      </div>
+                    ))}
+                    {tasks.length === 0 && (
+                      <p className="text-gray-500 text-center py-8">Henüz görev yok</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-gray-800">Yaklaşan Görüşmeler</h3>
+                    <button
+                      onClick={() => setCurrentPage('calendar')}
+                      className="text-purple-600 text-sm hover:underline"
+                    >
+                      Takvim
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {meetings.slice(0, 5).map(meeting => (
+                      <div key={meeting.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-800">{meeting.title}</p>
+                          <p className="text-sm text-gray-500">{meeting.date} {meeting.start_time}</p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          meeting.status === 'completed' ? 'bg-green-100 text-green-700' :
+                          meeting.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                          'bg-blue-100 text-blue-700'
+                        }`}>
+                          {meeting.status === 'completed' ? 'Tamamlandı' :
+                           meeting.status === 'cancelled' ? 'İptal' : 'Planlandı'}
+                        </span>
+                      </div>
+                    ))}
+                    {meetings.length === 0 && (
+                      <p className="text-gray-500 text-center py-8">Henüz görüşme yok</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* VIDEOS PAGE */}
+          {currentPage === 'videos' && (
+            <div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-6">Eğitim Videoları</h2>
+              
+              {selectedVideo ? (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <button
+                    onClick={() => setSelectedVideo(null)}
+                    className="mb-4 flex items-center gap-2 text-purple-600 hover:underline"
+                  >
+                    <ChevronLeft size={20} />
+                    Geri Dön
+                  </button>
+
+                  <div className="aspect-video bg-black rounded-lg mb-6">
+                    <iframe
+                      className="w-full h-full rounded-lg"
+                      src={`https://www.youtube.com/embed/${selectedVideo.youtube_id}`}
+                      title={selectedVideo.title}
+                      allowFullScreen
+                      onLoad={() => setVideoWatched(true)}
+                    />
+                  </div>
+
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{selectedVideo.title}</h3>
+                  <p className="text-gray-600 mb-6">{selectedVideo.description}</p>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Yorumunuz (Video tamamlamak için gerekli)
+                      </label>
+                      <textarea
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        rows={4}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="Bu videodan neler öğrendiniz?"
+                      />
+                    </div>
+                    
+                    <button
+                      onClick={handleVideoComplete}
+                      disabled={!videoWatched || !comment.trim()}
+                      className={`w-full py-3 rounded-lg font-semibold ${
+                        videoWatched && comment.trim()
+                          ? 'bg-purple-600 text-white hover:bg-purple-700'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Videoyu Tamamla
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {videos.map(video => {
+                    const progress = getVideoProgress(video.id);
+                    const unlocked = isVideoUnlocked(video.id);
+
+                    return (
+                      <div
+                        key={video.id}
+                        className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden ${
+                          unlocked ? 'cursor-pointer hover:shadow-lg' : 'opacity-50'
+                        } transition-all`}
+                        onClick={() => unlocked && openVideo(video)}
+                      >
+                        <div className="relative aspect-video bg-gray-200">
+                          <img
+                            src={`https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg`}
+                            alt={video.title}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            {unlocked ? (
+                              progress?.watched ? (
+                                <Check className="text-green-400" size={48} />
+                              ) : (
+                                <Play className="text-white" size={48} />
+                              )
+                            ) : (
+                              <Lock className="text-white" size={48} />
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="p-4">
+                          <h3 className="font-bold text-gray-800 mb-2">{video.title}</h3>
+                          <p className="text-sm text-gray-600 mb-2">{video.description}</p>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-500">{video.duration}</span>
+                            <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">
+                              {video.category}
+                            </span>
+                          </div>
+                          {progress?.watched && (
+                            <div className="mt-3 pt-3 border-t border-gray-100">
+                              <p className="text-sm text-gray-600 line-clamp-2">{progress.comment}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {videos.length === 0 && (
+                    <div className="col-span-3 text-center py-12 text-gray-500">
+                      Henüz video eklenmemiş
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TASKS PAGE */}
+          {currentPage === 'tasks' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-3xl font-bold text-gray-800">Görevler</h2>
+                <button
+                  onClick={() => {
+                    setShowTaskModal(true);
+                    setEditingTask(null);
+                    setNewTask({ title: '', date: '', priority: 'medium', status: 'todo', description: '', assignee: '' });
+                  }}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                >
+                  <Plus size={20} />
+                  Yeni Görev
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {['todo', 'in_progress', 'done'].map(status => (
+                  <div key={status} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 className="font-bold text-gray-800 mb-4">
+                      {status === 'todo' ? 'Yapılacak' : status === 'in_progress' ? 'Devam Ediyor' : 'Tamamlandı'}
+                      <span className="ml-2 text-sm text-gray-500">
+                        ({tasks.filter(t => t.status === status).length})
+                      </span>
+                    </h3>
+                    <div className="space-y-3">
+                      {tasks.filter(t => t.status === status).map(task => (
+                        <div key={task.id} className="p-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-start justify-between mb-2">
+                            <h4 className="font-semibold text-gray-800">{task.title}</h4>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  setEditingTask(task);
+                                  setNewTask(task);
+                                  setShowTaskModal(true);
+                                }}
+                                className="text-blue-600 hover:text-blue-700"
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button
+                                onClick={() => deleteTask(task.id)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">{task.description}</p>
+                          <div className="flex items-center justify-between text-xs text-gray-500">
+                            <span>{task.date}</span>
+                            <span className={`px-2 py-1 rounded-full ${
+                              task.priority === 'high' ? 'bg-red-100 text-red-700' :
+                              task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-green-100 text-green-700'
+                            }`}>
+                              {task.priority === 'high' ? 'Yüksek' : task.priority === 'medium' ? 'Orta' : 'Düşük'}
+                            </span>
+                          </div>
+                          {status !== 'done' && (
+                            <button
+                              onClick={() => updateTaskStatus(task.id, status === 'todo' ? 'in_progress' : 'done')}
+                              className="mt-3 w-full bg-purple-600 text-white py-2 rounded-lg text-sm hover:bg-purple-700"
+                            >
+                              {status === 'todo' ? 'Başla' : 'Tamamla'}
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* PROSPECTS PAGE */}
+          {currentPage === 'prospects' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-3xl font-bold text-gray-800">Potansiyel Müşteriler</h2>
+                <button
+                  onClick={() => {
+                    setShowProspectModal(true);
+                    setEditingProspect(null);
+                    setNewProspect({ name: '', phone: '', email: '', status: 'new', notes: '', source: '' });
+                  }}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                >
+                  <Plus size={20} />
+                  Yeni Potansiyel
+                </button>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İsim</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Telefon</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kaynak</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {prospects.map(prospect => (
+                      <tr key={prospect.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="font-medium text-gray-900">{prospect.name}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{prospect.phone}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{prospect.email}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            prospect.status === 'converted' ? 'bg-green-100 text-green-700' :
+                            prospect.status === 'interested' ? 'bg-blue-100 text-blue-700' :
+                            prospect.status === 'contacted' ? 'bg-yellow-100 text-yellow-700' :
+                            prospect.status === 'lost' ? 'bg-red-100 text-red-700' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>
+                            {prospect.status === 'new' ? 'Yeni' :
+                             prospect.status === 'contacted' ? 'İletişimde' :
+                             prospect.status === 'interested' ? 'İlgili' :
+                             prospect.status === 'converted' ? 'Dönüştü' : 'Kayıp'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{prospect.source}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <button
+                            onClick={() => {
+                              setEditingProspect(prospect);
+                              setNewProspect(prospect);
+                              setShowProspectModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-700 mr-3"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => deleteProspect(prospect.id)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {prospects.length === 0 && (
+                  <div className="text-center py-12 text-gray-500">
+                    Henüz potansiyel müşteri eklenmemiş
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* PARTNERS PAGE */}
+          {currentPage === 'partners' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-3xl font-bold text-gray-800">Partnerler</h2>
+                <button
+                  onClick={() => {
+                    setShowPartnerModal(true);
+                    setEditingPartner(null);
+                    setNewPartner({ name: '', phone: '', email: '', rank: '', join_date: '', performance: '', status: 'active' });
+                  }}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                >
+                  <Plus size={20} />
+                  Yeni Partner
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {partners.map(partner => (
+                  <div key={partner.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-800">{partner.name}</h3>
+                        <p className="text-sm text-gray-600">{partner.rank}</p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        partner.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        {partner.status === 'active' ? 'Aktif' : 'Pasif'}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 text-sm text-gray-600 mb-4">
+                      <p>📞 {partner.phone}</p>
+                      <p>📧 {partner.email}</p>
+                      <p>📅 Katılım: {partner.join_date}</p>
+                      <p>📊 Performans: {partner.performance}</p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingPartner(partner);
+                          setNewPartner(partner);
+                          setShowPartnerModal(true);
+                        }}
+                        className="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm hover:bg-blue-700"
+                      >
+                        Düzenle
+                      </button>
+                      <button
+                        onClick={() => deletePartner(partner.id)}
+                        className="px-4 bg-red-600 text-white py-2 rounded-lg text-sm hover:bg-red-700"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {partners.length === 0 && (
+                  <div className="col-span-3 text-center py-12 text-gray-500">
+                    Henüz partner eklenmemiş
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* EVENTS PAGE */}
+          {currentPage === 'events' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-3xl font-bold text-gray-800">Etkinlikler</h2>
+                {currentUser?.role === 'admin' && (
+                  <button
+                    onClick={() => {
+                      setShowEventModal(true);
+                      setEditingEvent(null);
+                      setNewEvent({ title: '', date: '', time: '', location: '', description: '', max_participants: '' });
+                    }}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                  >
+                    <Plus size={20} />
+                    Yeni Etkinlik
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {events.map(event => {
+                  const userRegistration = eventRegistrations.find(r => r.event_id === event.id && r.user_id === currentUser.id);
+                  const allRegistrations = eventRegistrations.filter(r => r.event_id === event.id);
+
+                  return (
+                    <div key={event.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">{event.title}</h3>
+                      <div className="space-y-2 text-sm text-gray-600 mb-4">
+                        <p>📅 {event.date}</p>
+                        <p>🕐 {event.time}</p>
+                        <p>📍 {event.location}</p>
+                        <p className="text-gray-700">{event.description}</p>
+                        {event.max_participants && (
+                          <p>👥 Katılımcı: {allRegistrations.length}/{event.max_participants}</p>
+                        )}
+                      </div>
+
+                      {currentUser?.role === 'admin' ? (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setEditingEvent(event);
+                              setNewEvent(event);
+                              setShowEventModal(true);
+                            }}
+                            className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                          >
+                            Düzenle
+                          </button>
+                          <button
+                            onClick={() => deleteEvent(event.id)}
+                            className="px-4 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ) : userRegistration ? (
+                        <div className={`py-2 rounded-lg text-center font-medium ${
+                          userRegistration.status === 'approved' ? 'bg-green-100 text-green-700' :
+                          userRegistration.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                          'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {userRegistration.status === 'approved' ? 'Onaylandı' :
+                           userRegistration.status === 'rejected' ? 'Reddedildi' : 'Beklemede'}
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => registerForEvent(event.id)}
+                          className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                        >
+                          Katıl
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+                {events.length === 0 && (
+                  <div className="col-span-3 text-center py-12 text-gray-500">
+                    Henüz etkinlik eklenmemiş
+                  </div>
+                )}
+              </div>
+
+              {currentUser?.role === 'admin' && eventRegistrations.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Katılım Talepleri</h3>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <table className="w-full">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Etkinlik</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Katılımcı</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {eventRegistrations.map(reg => {
+                          const event = events.find(e => e.id === reg.event_id);
+                          return (
+                            <tr key={reg.id}>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{event?.title}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{reg.user_name}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{reg.user_email}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  reg.status === 'approved' ? 'bg-green-100 text-green-700' :
+                                  reg.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                  'bg-yellow-100 text-yellow-700'
+                                }`}>
+                                  {reg.status === 'approved' ? 'Onaylandı' :
+                                   reg.status === 'rejected' ? 'Reddedildi' : 'Beklemede'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                {reg.status === 'pending' && (
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => updateRegistrationStatus(reg.id, 'approved')}
+                                      className="text-green-600 hover:text-green-700"
+                                    >
+                                      Onayla
+                                    </button>
+                                    <button
+                                      onClick={() => updateRegistrationStatus(reg.id, 'rejected')}
+                                      className="text-red-600 hover:text-red-700"
+                                    >
+                                      Reddet
+                                    </button>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* GOALS PAGE */}
+          {currentPage === 'goals' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-3xl font-bold text-gray-800">Hedeflerim</h2>
+                <button
+                  onClick={() => {
+                    setShowGoalModal(true);
+                    setNewGoal({ title: '', type: 'daily', target: '', deadline: '', current: 0 });
+                  }}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                >
+                  <Plus size={20} />
+                  Yeni Hedef
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {goals.map(goal => {
+                  const progress = (parseInt(goal.current) / parseInt(goal.target)) * 100;
+                  return (
+                    <div key={goal.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-800">{goal.title}</h3>
+                          <span className="text-xs text-gray-500">{goal.type === 'daily' ? 'Günlük' : goal.type === 'weekly' ? 'Haftalık' : 'Aylık'}</span>
+                        </div>
+                        <button
+                          onClick={() => deleteGoal(goal.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+
+                      <div className="mb-4">
+                        <div className="flex justify-between text-sm text-gray-600 mb-2">
+                          <span>{goal.current} / {goal.target}</span>
+                          <span>{Math.round(progress)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3">
+                          <div
+                            className="bg-purple-600 h-3 rounded-full transition-all"
+                            style={{ width: `${Math.min(progress, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {goal.deadline && (
+                        <p className="text-sm text-gray-600">📅 Hedef Tarih: {goal.deadline}</p>
+                      )}
+                    </div>
+                  );
+                })}
+                {goals.length === 0 && (
+                  <div className="col-span-3 text-center py-12 text-gray-500">
+                    Henüz hedef eklenmemiş
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* REASONS PAGE */}
+          {currentPage === 'reasons' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-3xl font-bold text-gray-800">Nedenlerim</h2>
+                <button
+                  onClick={() => {
+                    setShowReasonModal(true);
+                    setNewReason({ title: '', description: '' });
+                  }}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                >
+                  <Plus size={20} />
+                  Yeni Neden
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {reasons.map(reason => (
+                  <div key={reason.id} className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl shadow-sm border border-purple-100 p-6">
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className="text-xl font-bold text-gray-800">{reason.title}</h3>
+                      <button
+                        onClick={() => deleteReason(reason.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                    <p className="text-gray-700">{reason.description}</p>
+                  </div>
+                ))}
+                {reasons.length === 0 && (
+                  <div className="col-span-2 text-center py-12 text-gray-500">
+                    Neden bu işi yapıyorsunuz? Nedenlerinizi ekleyin!
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* CALENDAR PAGE */}
+          {currentPage === 'calendar' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-3xl font-bold text-gray-800">Takvim</h2>
+                <button
+                  onClick={() => {
+                    setShowMeetingModal(true);
+                    setEditingMeeting(null);
+                    if (selectedDate) {
+                      setNewMeeting({ ...newMeeting, date: selectedDate.toISOString().split('T')[0] });
+                    }
+                  }}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                >
+                  <Plus size={20} />
+                  Yeni Görüşme
+                </button>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <button
+                    onClick={() => setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() - 7)))}
+                    className="p-2 hover:bg-gray-100 rounded-lg"
+                  >
+                    <ChevronLeft />
+                  </button>
+                  <h3 className="text-xl font-bold text-gray-800">
+                    {currentDate.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
+                  </h3>
+                  <button
+                    onClick={() => setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() + 7)))}
+                    className="p-2 hover:bg-gray-100 rounded-lg"
+                  >
+                    <ChevronRight />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-7 gap-2 mb-4">
+                  {['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map(day => (
+                    <div key={day} className="text-center font-semibold text-gray-600 py-2">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-7 gap-2">
+                  {getDaysInWeek(currentDate).map(day => {
+                    const dayMeetings = getMeetingsForDay(day);
+                    const isToday = day.toDateString() === new Date().toDateString();
+
+                    return (
+                      <div
+                        key={day.toISOString()}
+                        onClick={() => {
+                          setSelectedDate(day);
+                          setShowMeetingModal(true);
+                          setNewMeeting({ ...newMeeting, date: day.toISOString().split('T')[0] });
+                        }}
+                        className={`min-h-[120px] p-2 rounded-lg border-2 cursor-pointer transition-all ${
+                          isToday ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
+                        }`}
+                      >
+                        <div className={`text-center font-semibold mb-2 ${isToday ? 'text-purple-600' : 'text-gray-700'}`}>
+                          {day.getDate()}
+                        </div>
+                        <div className="space-y-1">
+                          {dayMeetings.slice(0, 3).map(meeting => (
+                            <div
+                              key={meeting.id}
+                              className="text-xs p-1 bg-purple-100 text-purple-700 rounded truncate"
+                              title={meeting.title}
+                            >
+                              {meeting.start_time} {meeting.title}
+                            </div>
+                          ))}
+                          {dayMeetings.length > 3 && (
+                            <div className="text-xs text-gray-500">+{dayMeetings.length - 3} daha</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Tüm Görüşmeler</h3>
+                <div className="space-y-3">
+                  {meetings.map(meeting => (
+                    <div key={meeting.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-800">{meeting.title}</h4>
+                        <p className="text-sm text-gray-600">
+                          {meeting.date} • {meeting.start_time} - {meeting.end_time}
+                        </p>
+                        <p className="text-sm text-gray-600">Kişi: {meeting.person}</p>
+                        {meeting.notes && <p className="text-sm text-gray-500 mt-1">{meeting.notes}</p>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          meeting.status === 'completed' ? 'bg-green-100 text-green-700' :
+                          meeting.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                          'bg-blue-100 text-blue-700'
+                        }`}>
+                          {meeting.status === 'completed' ? 'Tamamlandı' :
+                           meeting.status === 'cancelled' ? 'İptal' : 'Planlandı'}
+                        </span>
+                        <button
+                          onClick={() => {
+                            setEditingMeeting(meeting);
+                            setNewMeeting(meeting);
+                            setShowMeetingModal(true);
+                          }}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => deleteMeeting(meeting.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {meetings.length === 0 && (
+                    <p className="text-center py-8 text-gray-500">Henüz görüşme eklenmemiş</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ADMIN PAGE */}
+          {currentPage === 'admin' && currentUser?.role === 'admin' && (
+            <div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-6">Admin Panel</h2>
+
+              {/* Users Management */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-gray-800">Kullanıcı Yönetimi</h3>
+                  <button
+                    onClick={() => {
+                      setShowUserModal(true);
+                      setEditingUser(null);
+                      setNewUser({ name: '', email: '', password: '', role: 'user' });
+                    }}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                  >
+                    <Plus size={20} />
+                    Yeni Kullanıcı
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İsim</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kayıt Tarihi</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {users.map(user => (
+                        <tr key={user.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'
+                            }`}>
+                              {user.role === 'admin' ? 'Admin' : 'Kullanıcı'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {new Date(user.created_at).toLocaleDateString('tr-TR')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <button
+                              onClick={() => {
+                                setEditingUser(user);
+                                setNewUser({ ...user, password: '' });
+                                setShowUserModal(true);
+                              }}
+                              className="text-blue-600 hover:text-blue-700 mr-3"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => deleteUser(user.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Videos Management */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-gray-800">Video Yönetimi</h3>
+                  <button
+                    onClick={() => {
+                      setShowVideoModal(true);
+                      setEditingVideo(null);
+                      setNewVideo({ title: '', youtube_id: '', description: '', duration: '', category: '' });
+                    }}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                  >
+                    <Plus size={20} />
+                    Yeni Video
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {videos.map((video, index) => (
+                    <div key={video.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <span className="text-2xl font-bold text-gray-400">#{index + 1}</span>
+                        <div>
+                          <h4 className="font-semibold text-gray-800">{video.title}</h4>
+                          <p className="text-sm text-gray-600">{video.category} • {video.duration}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setEditingVideo(video);
+                            setNewVideo(video);
+                            setShowVideoModal(true);
+                          }}
+                          className="text-blue-600 hover:text-blue-700"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => deleteVideo(video.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* MODALS */}
+      
+      {/* Meeting Modal */}
+      {showMeetingModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              {editingMeeting ? 'Görüşme Düzenle' : 'Yeni Görüşme'}
+            </h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={newMeeting.title}
+                onChange={(e) => setNewMeeting({...newMeeting, title: e.target.value})}
+                placeholder="Başlık"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="date"
+                value={newMeeting.date}
+                onChange={(e) => setNewMeeting({...newMeeting, date: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  type="time"
+                  value={newMeeting.start_time}
+                  onChange={(e) => setNewMeeting({...newMeeting, start_time: e.target.value})}
+                  placeholder="Başlangıç"
+                  className="w-full px-4 py-2 border rounded-lg"
+                />
+                <input
+                  type="time"
+                  value={newMeeting.end_time}
+                  onChange={(e) => setNewMeeting({...newMeeting, end_time: e.target.value})}
+                  placeholder="Bitiş"
+                  className="w-full px-4 py-2 border rounded-lg"
+                />
+              </div>
+              <input
+                type="text"
+                value={newMeeting.person}
+                onChange={(e) => setNewMeeting({...newMeeting, person: e.target.value})}
+                placeholder="Kişi"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <textarea
+                value={newMeeting.notes}
+                onChange={(e) => setNewMeeting({...newMeeting, notes: e.target.value})}
+                placeholder="Notlar"
+                rows={3}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <select
+                value={newMeeting.status}
+                onChange={(e) => setNewMeeting({...newMeeting, status: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg"
+              >
+                <option value="scheduled">Planlandı</option>
+                <option value="completed">Tamamlandı</option>
+                <option value="cancelled">İptal</option>
+              </select>
+              <div className="flex gap-3">
+                <button
+                  onClick={addOrUpdateMeeting}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                >
+                  {editingMeeting ? 'Güncelle' : 'Kaydet'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowMeetingModal(false);
+                    setEditingMeeting(null);
+                    setSelectedDate(null);
+                  }}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Task Modal */}
+      {showTaskModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              {editingTask ? 'Görev Düzenle' : 'Yeni Görev'}
+            </h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={newTask.title}
+                onChange={(e) => setNewTask({...newTask, title: e.target.value})}
+                placeholder="Görev Başlığı"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <textarea
+                value={newTask.description}
+                onChange={(e) => setNewTask({...newTask, description: e.target.value})}
+                placeholder="Açıklama"
+                rows={3}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="date"
+                value={newTask.date}
+                onChange={(e) => setNewTask({...newTask, date: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <select
+                value={newTask.priority}
+                onChange={(e) => setNewTask({...newTask, priority: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg"
+              >
+                <option value="low">Düşük Öncelik</option>
+                <option value="medium">Orta Öncelik</option>
+                <option value="high">Yüksek Öncelik</option>
+              </select>
+              <input
+                type="text"
+                value={newTask.assignee}
+                onChange={(e) => setNewTask({...newTask, assignee: e.target.value})}
+                placeholder="Atanan Kişi"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={addOrUpdateTask}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                >
+                  {editingTask ? 'Güncelle' : 'Kaydet'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowTaskModal(false);
+                    setEditingTask(null);
+                  }}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Goal Modal */}
+      {showGoalModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Yeni Hedef</h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={newGoal.title}
+                onChange={(e) => setNewGoal({...newGoal, title: e.target.value})}
+                placeholder="Hedef Başlığı"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <select
+                value={newGoal.type}
+                onChange={(e) => setNewGoal({...newGoal, type: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg"
+              >
+                <option value="daily">Günlük</option>
+                <option value="weekly">Haftalık</option>
+                <option value="monthly">Aylık</option>
+              </select>
+              <input
+                type="number"
+                value={newGoal.target}
+                onChange={(e) => setNewGoal({...newGoal, target: e.target.value})}
+                placeholder="Hedef Sayı"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="date"
+                value={newGoal.deadline}
+                onChange={(e) => setNewGoal({...newGoal, deadline: e.target.value})}
+                placeholder="Son Tarih"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={addGoal}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                >
+                  Kaydet
+                </button>
+                <button
+                  onClick={() => setShowGoalModal(false)}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reason Modal */}
+      {showReasonModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Yeni Neden</h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={newReason.title}
+                onChange={(e) => setNewReason({...newReason, title: e.target.value})}
+                placeholder="Başlık"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <textarea
+                value={newReason.description}
+                onChange={(e) => setNewReason({...newReason, description: e.target.value})}
+                placeholder="Açıklama"
+                rows={4}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={addReason}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                >
+                  Kaydet
+                </button>
+                <button
+                  onClick={() => setShowReasonModal(false)}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Prospect Modal */}
+      {showProspectModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              {editingProspect ? 'Potansiyel Düzenle' : 'Yeni Potansiyel'}
+            </h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={newProspect.name}
+                onChange={(e) => setNewProspect({...newProspect, name: e.target.value})}
+                placeholder="İsim"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="tel"
+                value={newProspect.phone}
+                onChange={(e) => setNewProspect({...newProspect, phone: e.target.value})}
+                placeholder="Telefon"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="email"
+                value={newProspect.email}
+                onChange={(e) => setNewProspect({...newProspect, email: e.target.value})}
+                placeholder="Email"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <select
+                value={newProspect.status}
+                onChange={(e) => setNewProspect({...newProspect, status: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg"
+              >
+                <option value="new">Yeni</option>
+                <option value="contacted">İletişimde</option>
+                <option value="interested">İlgili</option>
+                <option value="converted">Dönüştü</option>
+                <option value="lost">Kayıp</option>
+              </select>
+              <input
+                type="text"
+                value={newProspect.source}
+                onChange={(e) => setNewProspect({...newProspect, source: e.target.value})}
+                placeholder="Kaynak"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <textarea
+                value={newProspect.notes}
+                onChange={(e) => setNewProspect({...newProspect, notes: e.target.value})}
+                placeholder="Notlar"
+                rows={3}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={addOrUpdateProspect}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                >
+                  {editingProspect ? 'Güncelle' : 'Kaydet'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowProspectModal(false);
+                    setEditingProspect(null);
+                  }}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Partner Modal */}
+      {showPartnerModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              {editingPartner ? 'Partner Düzenle' : 'Yeni Partner'}
+            </h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={newPartner.name}
+                onChange={(e) => setNewPartner({...newPartner, name: e.target.value})}
+                placeholder="İsim"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="tel"
+                value={newPartner.phone}
+                onChange={(e) => setNewPartner({...newPartner, phone: e.target.value})}
+                placeholder="Telefon"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="email"
+                value={newPartner.email}
+                onChange={(e) => setNewPartner({...newPartner, email: e.target.value})}
+                placeholder="Email"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="text"
+                value={newPartner.rank}
+                onChange={(e) => setNewPartner({...newPartner, rank: e.target.value})}
+                placeholder="Rütbe"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="date"
+                value={newPartner.join_date}
+                onChange={(e) => setNewPartner({...newPartner, join_date: e.target.value})}
+                placeholder="Katılım Tarihi"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="text"
+                value={newPartner.performance}
+                onChange={(e) => setNewPartner({...newPartner, performance: e.target.value})}
+                placeholder="Performans"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <select
+                value={newPartner.status}
+                onChange={(e) => setNewPartner({...newPartner, status: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg"
+              >
+                <option value="active">Aktif</option>
+                <option value="inactive">Pasif</option>
+              </select>
+              <div className="flex gap-3">
+                <button
+                  onClick={addOrUpdatePartner}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                >
+                  {editingPartner ? 'Güncelle' : 'Kaydet'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowPartnerModal(false);
+                    setEditingPartner(null);
+                  }}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video Modal (Admin) */}
+      {showVideoModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              {editingVideo ? 'Video Düzenle' : 'Yeni Video'}
+            </h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={newVideo.title}
+                onChange={(e) => setNewVideo({...newVideo, title: e.target.value})}
+                placeholder="Video Başlığı"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="text"
+                value={newVideo.youtube_id}
+                onChange={(e) => setNewVideo({...newVideo, youtube_id: e.target.value})}
+                placeholder="YouTube Video ID"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <textarea
+                value={newVideo.description}
+                onChange={(e) => setNewVideo({...newVideo, description: e.target.value})}
+                placeholder="Açıklama"
+                rows={3}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="text"
+                value={newVideo.duration}
+                onChange={(e) => setNewVideo({...newVideo, duration: e.target.value})}
+                placeholder="Süre (ör: 15:30)"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="text"
+                value={newVideo.category}
+                onChange={(e) => setNewVideo({...newVideo, category: e.target.value})}
+                placeholder="Kategori"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={addOrUpdateVideo}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                >
+                  {editingVideo ? 'Güncelle' : 'Kaydet'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowVideoModal(false);
+                    setEditingVideo(null);
+                  }}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* User Modal (Admin) */}
+      {showUserModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              {editingUser ? 'Kullanıcı Düzenle' : 'Yeni Kullanıcı'}
+            </h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={newUser.name}
+                onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                placeholder="İsim"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="email"
+                value={newUser.email}
+                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                placeholder="Email"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="password"
+                value={newUser.password}
+                onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                placeholder={editingUser ? "Şifre (boş bırakın değiştirmemek için)" : "Şifre"}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <select
+                value={newUser.role}
+                onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg"
+              >
+                <option value="user">Kullanıcı</option>
+                <option value="admin">Admin</option>
+              </select>
+              <div className="flex gap-3">
+                <button
+                  onClick={addOrUpdateUser}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                >
+                  {editingUser ? 'Güncelle' : 'Kaydet'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowUserModal(false);
+                    setEditingUser(null);
+                  }}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Event Modal (Admin) */}
+      {showEventModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              {editingEvent ? 'Etkinlik Düzenle' : 'Yeni Etkinlik'}
+            </h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={newEvent.title}
+                onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
+                placeholder="Etkinlik Başlığı"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="date"
+                value={newEvent.date}
+                onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="time"
+                value={newEvent.time}
+                onChange={(e) => setNewEvent({...newEvent, time: e.target.value})}
+                placeholder="Saat"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="text"
+                value={newEvent.location}
+                onChange={(e) => setNewEvent({...newEvent, location: e.target.value})}
+                placeholder="Konum"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <textarea
+                value={newEvent.description}
+                onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
+                placeholder="Açıklama"
+                rows={3}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="number"
+                value={newEvent.max_participants}
+                onChange={(e) => setNewEvent({...newEvent, max_participants: e.target.value})}
+                placeholder="Maksimum Katılımcı"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={addOrUpdateEvent}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                >
+                  {editingEvent ? 'Güncelle' : 'Kaydet'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowEventModal(false);
+                    setEditingEvent(null);
+                  }}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default FocusProApp;
