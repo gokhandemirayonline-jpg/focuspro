@@ -369,7 +369,7 @@ const FocusProApp = () => {
       setShowMeetingModal(false);
       setSelectedDate(null);
     } catch (error) {
-      alert('İşlem başarısız!');
+      toast.error('İşlem başarısız!');
     }
   };
 
@@ -378,7 +378,7 @@ const FocusProApp = () => {
       await meetingAPI.delete(id);
       await loadMeetings();
     } catch (error) {
-      alert('Silme işlemi başarısız!');
+      toast.error('Silme işlemi başarısız!');
     }
   };
 
@@ -397,7 +397,7 @@ const FocusProApp = () => {
       setEditingTask(null);
       setShowTaskModal(false);
     } catch (error) {
-      alert('İşlem başarısız!');
+      toast.error('İşlem başarısız!');
     }
   };
 
@@ -406,7 +406,7 @@ const FocusProApp = () => {
       await taskAPI.delete(id);
       await loadTasks();
     } catch (error) {
-      alert('Silme işlemi başarısız!');
+      toast.error('Silme işlemi başarısız!');
     }
   };
 
@@ -415,7 +415,7 @@ const FocusProApp = () => {
       await taskAPI.updateStatus(id, status);
       await loadTasks();
     } catch (error) {
-      alert('Güncelleme başarısız!');
+      toast.error('Güncelleme başarısız!');
     }
   };
 
@@ -428,7 +428,7 @@ const FocusProApp = () => {
       setNewGoal({ title: '', type: 'daily', target: '', deadline: '', current: 0 });
       setShowGoalModal(false);
     } catch (error) {
-      alert('İşlem başarısız!');
+      toast.error('İşlem başarısız!');
     }
   };
 
@@ -437,7 +437,7 @@ const FocusProApp = () => {
       await goalAPI.delete(id);
       await loadGoals();
     } catch (error) {
-      alert('Silme işlemi başarısız!');
+      toast.error('Silme işlemi başarısız!');
     }
   };
 
@@ -450,7 +450,7 @@ const FocusProApp = () => {
       setNewReason({ title: '', description: '' });
       setShowReasonModal(false);
     } catch (error) {
-      alert('İşlem başarısız!');
+      toast.error('İşlem başarısız!');
     }
   };
 
@@ -459,7 +459,7 @@ const FocusProApp = () => {
       await reasonAPI.delete(id);
       await loadReasons();
     } catch (error) {
-      alert('Silme işlemi başarısız!');
+      toast.error('Silme işlemi başarısız!');
     }
   };
 
@@ -478,7 +478,7 @@ const FocusProApp = () => {
       setEditingProspect(null);
       setShowProspectModal(false);
     } catch (error) {
-      alert('İşlem başarısız!');
+      toast.error('İşlem başarısız!');
     }
   };
 
@@ -487,7 +487,7 @@ const FocusProApp = () => {
       await prospectAPI.delete(id);
       await loadProspects();
     } catch (error) {
-      alert('Silme işlemi başarısız!');
+      toast.error('Silme işlemi başarısız!');
     }
   };
 
@@ -506,7 +506,7 @@ const FocusProApp = () => {
       setEditingPartner(null);
       setShowPartnerModal(false);
     } catch (error) {
-      alert('İşlem başarısız!');
+      toast.error('İşlem başarısız!');
     }
   };
 
@@ -515,7 +515,7 @@ const FocusProApp = () => {
       await partnerAPI.delete(id);
       await loadPartners();
     } catch (error) {
-      alert('Silme işlemi başarısız!');
+      toast.error('Silme işlemi başarısız!');
     }
   };
 
@@ -534,7 +534,7 @@ const FocusProApp = () => {
       setEditingVideo(null);
       setShowVideoModal(false);
     } catch (error) {
-      alert('İşlem başarısız!');
+      toast.error('İşlem başarısız!');
     }
   };
 
@@ -543,7 +543,7 @@ const FocusProApp = () => {
       await videoAPI.delete(id);
       await loadVideos();
     } catch (error) {
-      alert('Silme işlemi başarısız!');
+      toast.error('Silme işlemi başarısız!');
     }
   };
 
@@ -568,7 +568,7 @@ const FocusProApp = () => {
 
   const deleteUser = async (id) => {
     if (id === currentUser.id) {
-      alert('Kendi hesabınızı silemezsiniz!');
+      toast.error('Kendi hesabınızı silemezsiniz!');
       return;
     }
     
@@ -576,7 +576,7 @@ const FocusProApp = () => {
       await userAPI.delete(id);
       await loadUsers();
     } catch (error) {
-      alert('Silme işlemi başarısız!');
+      toast.error('Silme işlemi başarısız!');
     }
   };
 
@@ -595,7 +595,7 @@ const FocusProApp = () => {
       setEditingEvent(null);
       setShowEventModal(false);
     } catch (error) {
-      alert('İşlem başarısız!');
+      toast.error('İşlem başarısız!');
     }
   };
 
@@ -604,7 +604,7 @@ const FocusProApp = () => {
       await eventAPI.delete(id);
       await loadEvents();
     } catch (error) {
-      alert('Silme işlemi başarısız!');
+      toast.error('Silme işlemi başarısız!');
     }
   };
 
@@ -624,7 +624,7 @@ const FocusProApp = () => {
       setEditingRecommendation(null);
       setShowRecommendationModal(false);
     } catch (error) {
-      alert('İşlem başarısız!');
+      toast.error('İşlem başarısız!');
     }
   };
 
@@ -633,7 +633,7 @@ const FocusProApp = () => {
       await recommendationAPI.delete(id);
       await loadRecommendations();
     } catch (error) {
-      alert('Silme işlemi başarısız!');
+      toast.error('Silme işlemi başarısız!');
     }
   };
 
@@ -652,7 +652,7 @@ const FocusProApp = () => {
       setEditingBlog(null);
       setShowBlogModal(false);
     } catch (error) {
-      alert('İşlem başarısız!');
+      toast.error('İşlem başarısız!');
     }
   };
 
@@ -661,7 +661,7 @@ const FocusProApp = () => {
       await blogAPI.delete(id);
       await loadBlogs();
     } catch (error) {
-      alert('Silme işlemi başarısız!');
+      toast.error('Silme işlemi başarısız!');
     }
   };
 
@@ -670,7 +670,7 @@ const FocusProApp = () => {
     try {
       await eventRegistrationAPI.register(eventId);
       await loadEventRegistrations();
-      alert('Etkinliğe katılım talebiniz gönderildi!');
+      toast.success('✅ Etkinliğe katılım talebiniz gönderildi!');
     } catch (error) {
       alert(error.response?.data?.detail || 'İşlem başarısız!');
     }
@@ -681,7 +681,7 @@ const FocusProApp = () => {
       await eventRegistrationAPI.updateStatus(id, status);
       await loadEventRegistrations();
     } catch (error) {
-      alert('Güncelleme başarısız!');
+      toast.error('Güncelleme başarısız!');
     }
   };
 
@@ -690,7 +690,7 @@ const FocusProApp = () => {
       await habitAPI.update(id, completed);
       await loadDailyHabits();
     } catch (error) {
-      alert('Güncelleme başarısız!');
+      toast.error('Güncelleme başarısız!');
     }
   };
 
@@ -705,7 +705,7 @@ const FocusProApp = () => {
 
   const handleVideoComplete = async () => {
     if (!selectedVideo || !comment.trim() || !videoWatched) {
-      alert('Lütfen videoyu izleyip yorum yazınız!');
+      toast.warning('Lütfen videoyu izleyip yorum yazınız!');
       return;
     }
 
@@ -716,9 +716,9 @@ const FocusProApp = () => {
       setComment('');
       setVideoWatched(false);
       setSelectedVideo(null);
-      alert('Tebrikler! Video tamamlandı.');
+      toast.success('🎉 Tebrikler! Video tamamlandı.');
     } catch (error) {
-      alert('İşlem başarısız!');
+      toast.error('İşlem başarısız!');
     }
   };
 
