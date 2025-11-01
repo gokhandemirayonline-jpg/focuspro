@@ -125,8 +125,9 @@ const FocusProApp = () => {
       setCurrentUser(user);
       setIsLoggedIn(true);
       setLoginForm({ email: '', password: '' });
+      toast.success(`Hoş geldiniz, ${user.name}! 👋`);
     } catch (error) {
-      alert('Email veya şifre hatalı!');
+      toast.error('Email veya şifre hatalı!');
     }
   };
 
