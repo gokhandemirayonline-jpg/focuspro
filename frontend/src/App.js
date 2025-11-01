@@ -102,6 +102,16 @@ const FocusProApp = () => {
       }
     } catch (error) {
       console.log('No auto login');
+
+
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    localStorage.setItem('darkMode', newMode);
+    document.documentElement.classList.toggle('dark', newMode);
+    toast.success(newMode ? '🌙 Dark mode aktif' : '☀️ Light mode aktif');
+  };
+
       localStorage.removeItem('token');
     }
   };
