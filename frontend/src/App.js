@@ -45,6 +45,7 @@ const FocusProApp = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
   
   const [showMeetingModal, setShowMeetingModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
