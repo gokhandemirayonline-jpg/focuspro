@@ -1130,7 +1130,16 @@ const FocusProApp = () => {
             </div>
           </div>
 
-          {/* Notifications */}
+          {/* Dark Mode Toggle & Notifications */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              {darkMode ? <Sun size={20} className="text-yellow-500" /> : <Moon size={20} className="text-gray-700" />}
+            </button>
+
+            {/* Notifications */}
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
