@@ -76,6 +76,8 @@ const FocusProApp = () => {
   const [newVideo, setNewVideo] = useState({ title: '', youtube_id: '', description: '', duration: '', category: '' });
   const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'user' });
   const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '', location: '', description: '', max_participants: '' });
+  const [newRecommendation, setNewRecommendation] = useState({ title: '', type: 'book', description: '', cover_image: '', link: '', author: '', duration: '', category: '' });
+  const [newBlog, setNewBlog] = useState({ title: '', content: '', cover_image: '', excerpt: '', category: '', tags: [], published: false });
 
   useEffect(() => {
     checkAutoLogin();
