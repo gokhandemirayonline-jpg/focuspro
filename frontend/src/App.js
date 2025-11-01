@@ -34,6 +34,17 @@ const FocusProApp = () => {
   const [comment, setComment] = useState('');
   const [videoWatched, setVideoWatched] = useState(false);
   
+  // New states for notifications, recommendations, blogs, search
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [recommendations, setRecommendations] = useState([]);
+  const [blogs, setBlogs] = useState([]);
+  const [selectedBlog, setSelectedBlog] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  
   const [showMeetingModal, setShowMeetingModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
