@@ -3241,7 +3241,6 @@ const FocusProApp = () => {
           </div>
         </div>
       )}
-      </div>
     </>
   );
 };
