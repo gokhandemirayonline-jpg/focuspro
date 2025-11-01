@@ -882,9 +882,17 @@ const FocusProApp = () => {
 
   // MAIN APP UI
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      {/* Mobile Overlay */}
+      {sidebarOpen && window.innerWidth <= 768 && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-gradient-to-b from-purple-700 to-indigo-800 text-white transition-all duration-300 flex flex-col`}>
+      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 ${sidebarOpen ? 'w-64' : 'md:w-20'} w-64 bg-gradient-to-b from-purple-700 to-indigo-800 text-white transition-all duration-300 flex flex-col fixed md:relative h-full z-50`}>
         <div className="p-4 flex items-center justify-between">
           {sidebarOpen && (
             <div className="flex items-center gap-2">
