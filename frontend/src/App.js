@@ -83,7 +83,8 @@ const FocusProApp = () => {
 
   useEffect(() => {
     checkAutoLogin();
-  }, []);
+    document.documentElement.classList.toggle('dark', darkMode);
+  }, [darkMode]);
 
   useEffect(() => {
     if (isLoggedIn && currentUser) {
