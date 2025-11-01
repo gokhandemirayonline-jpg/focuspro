@@ -23,7 +23,15 @@ const FocusProApp = () => {
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
-  const [calendarView, setCalendarView] = useState('week');
+  const [calendarView, setCalendarView] = useState('month');
+  const [showWeekends, setShowWeekends] = useState(true);
+  const [showRejected, setShowRejected] = useState(false);
+  const [showCompleted, setShowCompleted] = useState(true);
+  const [categoryFilters, setCategoryFilters] = useState({
+    work: true,
+    personal: true,
+    important: true
+  });
 
   const [videos, setVideos] = useState([]);
   const [users, setUsers] = useState([]);
