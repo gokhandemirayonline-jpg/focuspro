@@ -946,7 +946,7 @@ const FocusProApp = () => {
             }`}
           >
             <UserPlus size={20} />
-            {sidebarOpen && <span>Potansiyeller</span>}
+            {sidebarOpen && <span>İsim Listesi</span>}
           </button>
 
           <button
