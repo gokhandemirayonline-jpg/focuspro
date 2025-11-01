@@ -2834,6 +2834,163 @@ const FocusProApp = () => {
           </div>
         </div>
       )}
+
+
+      {/* Recommendation Modal (Admin) */}
+      {showRecommendationModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              {editingRecommendation ? 'Tavsiye Düzenle' : 'Yeni Tavsiye'}
+            </h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={newRecommendation.title}
+                onChange={(e) => setNewRecommendation({...newRecommendation, title: e.target.value})}
+                placeholder="Başlık"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <select
+                value={newRecommendation.type}
+                onChange={(e) => setNewRecommendation({...newRecommendation, type: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg"
+              >
+                <option value="book">Kitap</option>
+                <option value="video">Video</option>
+                <option value="movie">Film</option>
+              </select>
+              <input
+                type="text"
+                value={newRecommendation.cover_image}
+                onChange={(e) => setNewRecommendation({...newRecommendation, cover_image: e.target.value})}
+                placeholder="Kapak Resmi URL"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="text"
+                value={newRecommendation.category}
+                onChange={(e) => setNewRecommendation({...newRecommendation, category: e.target.value})}
+                placeholder="Kategori"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="text"
+                value={newRecommendation.author}
+                onChange={(e) => setNewRecommendation({...newRecommendation, author: e.target.value})}
+                placeholder="Yazar/Yönetmen"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <textarea
+                value={newRecommendation.description}
+                onChange={(e) => setNewRecommendation({...newRecommendation, description: e.target.value})}
+                placeholder="Açıklama"
+                rows={3}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="url"
+                value={newRecommendation.link}
+                onChange={(e) => setNewRecommendation({...newRecommendation, link: e.target.value})}
+                placeholder="Link"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={addOrUpdateRecommendation}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                >
+                  {editingRecommendation ? 'Güncelle' : 'Kaydet'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowRecommendationModal(false);
+                    setEditingRecommendation(null);
+                  }}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Blog Modal (Admin) */}
+      {showBlogModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 my-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              {editingBlog ? 'Blog Düzenle' : 'Yeni Blog'}
+            </h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={newBlog.title}
+                onChange={(e) => setNewBlog({...newBlog, title: e.target.value})}
+                placeholder="Blog Başlığı"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="text"
+                value={newBlog.cover_image}
+                onChange={(e) => setNewBlog({...newBlog, cover_image: e.target.value})}
+                placeholder="Kapak Resmi URL"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="text"
+                value={newBlog.category}
+                onChange={(e) => setNewBlog({...newBlog, category: e.target.value})}
+                placeholder="Kategori"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <textarea
+                value={newBlog.excerpt}
+                onChange={(e) => setNewBlog({...newBlog, excerpt: e.target.value})}
+                placeholder="Kısa Özet"
+                rows={2}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <textarea
+                value={newBlog.content}
+                onChange={(e) => setNewBlog({...newBlog, content: e.target.value})}
+                placeholder="Blog İçeriği"
+                rows={10}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={newBlog.published}
+                  onChange={(e) => setNewBlog({...newBlog, published: e.target.checked})}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm text-gray-700">Yayınla</span>
+              </label>
+              <div className="flex gap-3">
+                <button
+                  onClick={addOrUpdateBlog}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                >
+                  {editingBlog ? 'Güncelle' : 'Kaydet'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowBlogModal(false);
+                    setEditingBlog(null);
+                  }}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
