@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Home, Calendar, Users, GraduationCap, User, Play, Lock, Check, Shield, Plus, Trash2, Target, ListChecks, MessageSquare, BarChart3, LogOut, Eye, EyeOff, TrendingUp, Clock, CheckCircle2, Menu, X, Edit, ChevronLeft, ChevronRight, CalendarDays, UserPlus, Bell, Search, Book, Film, Bookmark, FileText } from 'lucide-react';
 import { authAPI, userAPI, videoAPI, progressAPI, meetingAPI, taskAPI, goalAPI, reasonAPI, prospectAPI, partnerAPI, habitAPI, eventAPI, eventRegistrationAPI, notificationAPI, recommendationAPI, blogAPI, searchAPI } from './services/api';
+import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
+import moment from 'moment';
+import 'moment/locale/tr';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './App.css';
+
+moment.locale('tr');
+const localizer = momentLocalizer(moment);
 
 const FocusProApp = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
