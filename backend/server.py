@@ -653,6 +653,222 @@ async def update_registration_status(registration_id: str, status: str, current_
     return {"message": "Registration status updated"}
 
 
+# ============= NOTIFICATION ENDPOINTS =============
+@api_router.get("/notifications", response_model=List[Notification])
+async def get_notifications(current_user: dict = Depends(get_current_user)):
+    notifications = await db.notifications.find({"user_id": current_user['id']}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return notifications
+
+@api_router.post("/notifications", response_model=Notification)
+async def create_notification(notification_data: NotificationCreate, user_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    notif_dict = notification_data.model_dump()
+    notif_dict['user_id'] = user_id
+    notif_obj = Notification(**notif_dict)
+    
+    doc = notif_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.notifications.insert_one(doc)
+    return notif_obj
+
+@api_router.patch("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.notifications.update_one(
+        {"id": notification_id, "user_id": current_user['id']},
+        {"$set": {"read": True}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    return {"message": "Notification marked as read"}
+
+@api_router.patch("/notifications/read-all")
+async def mark_all_notifications_read(current_user: dict = Depends(get_current_user)):
+    await db.notifications.update_many(
+        {"user_id": current_user['id'], "read": False},
+        {"$set": {"read": True}}
+    )
+    return {"message": "All notifications marked as read"}
+
+@api_router.get("/notifications/unread-count")
+async def get_unread_count(current_user: dict = Depends(get_current_user)):
+    count = await db.notifications.count_documents({"user_id": current_user['id'], "read": False})
+    return {"count": count}
+
+
+# ============= RECOMMENDATION ENDPOINTS =============
+@api_router.get("/recommendations", response_model=List[Recommendation])
+async def get_recommendations(type: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    query = {}
+    if type:
+        query['type'] = type
+    
+    recommendations = await db.recommendations.find(query, {"_id": 0}).to_list(1000)
+    return recommendations
+
+@api_router.post("/recommendations", response_model=Recommendation)
+async def create_recommendation(rec_data: RecommendationCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    rec_obj = Recommendation(**rec_data.model_dump())
+    doc = rec_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.recommendations.insert_one(doc)
+    return rec_obj
+
+@api_router.put("/recommendations/{rec_id}", response_model=Recommendation)
+async def update_recommendation(rec_id: str, rec_data: RecommendationCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.recommendations.update_one({"id": rec_id}, {"$set": rec_data.model_dump()})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Recommendation not found")
+    
+    updated_rec = await db.recommendations.find_one({"id": rec_id}, {"_id": 0})
+    return Recommendation(**updated_rec)
+
+@api_router.delete("/recommendations/{rec_id}")
+async def delete_recommendation(rec_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.recommendations.delete_one({"id": rec_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Recommendation not found")
+    
+    return {"message": "Recommendation deleted successfully"}
+
+
+# ============= BLOG ENDPOINTS =============
+@api_router.get("/blogs", response_model=List[Blog])
+async def get_blogs(published: Optional[bool] = None, current_user: dict = Depends(get_current_user)):
+    query = {}
+    if published is not None:
+        query['published'] = published
+    elif current_user['role'] != 'admin':
+        query['published'] = True
+    
+    blogs = await db.blogs.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return blogs
+
+@api_router.get("/blogs/{blog_id}", response_model=Blog)
+async def get_blog(blog_id: str, current_user: dict = Depends(get_current_user)):
+    blog = await db.blogs.find_one({"id": blog_id}, {"_id": 0})
+    if not blog:
+        raise HTTPException(status_code=404, detail="Blog not found")
+    
+    if not blog['published'] and current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Blog not published")
+    
+    return Blog(**blog)
+
+@api_router.post("/blogs", response_model=Blog)
+async def create_blog(blog_data: BlogCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    blog_dict = blog_data.model_dump()
+    blog_dict['author_id'] = current_user['id']
+    blog_dict['author_name'] = current_user['name']
+    blog_obj = Blog(**blog_dict)
+    
+    doc = blog_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['updated_at'] = doc['updated_at'].isoformat()
+    
+    await db.blogs.insert_one(doc)
+    return blog_obj
+
+@api_router.put("/blogs/{blog_id}", response_model=Blog)
+async def update_blog(blog_id: str, blog_data: BlogCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    update_dict = blog_data.model_dump()
+    update_dict['updated_at'] = datetime.utcnow().isoformat()
+    
+    result = await db.blogs.update_one({"id": blog_id}, {"$set": update_dict})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Blog not found")
+    
+    updated_blog = await db.blogs.find_one({"id": blog_id}, {"_id": 0})
+    return Blog(**updated_blog)
+
+@api_router.delete("/blogs/{blog_id}")
+async def delete_blog(blog_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.blogs.delete_one({"id": blog_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Blog not found")
+    
+    return {"message": "Blog deleted successfully"}
+
+
+# ============= SEARCH ENDPOINT =============
+@api_router.get("/search")
+async def search(q: str, current_user: dict = Depends(get_current_user)):
+    if not q or len(q) < 2:
+        return {"results": []}
+    
+    search_pattern = {"$regex": q, "$options": "i"}
+    
+    # Search users (admin only)
+    users_results = []
+    if current_user['role'] == 'admin':
+        users = await db.users.find(
+            {"$or": [{"name": search_pattern}, {"email": search_pattern}]},
+            {"_id": 0, "password": 0}
+        ).limit(10).to_list(10)
+        users_results = [{"type": "user", "data": user} for user in users]
+    
+    # Search videos
+    videos = await db.videos.find(
+        {"$or": [{"title": search_pattern}, {"description": search_pattern}, {"category": search_pattern}]},
+        {"_id": 0}
+    ).limit(10).to_list(10)
+    videos_results = [{"type": "video", "data": video} for video in videos]
+    
+    # Search prospects
+    prospects = await db.prospects.find(
+        {"$or": [{"name": search_pattern}, {"email": search_pattern}, {"phone": search_pattern}]},
+        {"_id": 0}
+    ).limit(10).to_list(10)
+    prospects_results = [{"type": "prospect", "data": prospect} for prospect in prospects]
+    
+    # Search partners
+    partners = await db.partners.find(
+        {"$or": [{"name": search_pattern}, {"email": search_pattern}, {"rank": search_pattern}]},
+        {"_id": 0}
+    ).limit(10).to_list(10)
+    partners_results = [{"type": "partner", "data": partner} for partner in partners]
+    
+    # Search recommendations
+    recommendations = await db.recommendations.find(
+        {"$or": [{"title": search_pattern}, {"description": search_pattern}, {"author": search_pattern}]},
+        {"_id": 0}
+    ).limit(10).to_list(10)
+    recommendations_results = [{"type": "recommendation", "data": rec} for rec in recommendations]
+    
+    # Search blogs
+    blogs = await db.blogs.find(
+        {"$or": [{"title": search_pattern}, {"content": search_pattern}, {"category": search_pattern}], "published": True},
+        {"_id": 0}
+    ).limit(10).to_list(10)
+    blogs_results = [{"type": "blog", "data": blog} for blog in blogs]
+    
+    all_results = users_results + videos_results + prospects_results + partners_results + recommendations_results + blogs_results
+    
+    return {"results": all_results[:50]}
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
