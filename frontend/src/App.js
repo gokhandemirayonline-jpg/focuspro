@@ -2223,7 +2223,7 @@ const FocusProApp = () => {
 
               {/* Calendar View */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4" style={{ height: '700px' }}>
-                <BigCalendar
+                <DnDCalendar
                   localizer={localizer}
                   events={meetings
                     .filter(m => {
