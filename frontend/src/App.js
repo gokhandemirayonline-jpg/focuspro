@@ -12,11 +12,11 @@ const FocusProApp = () => {
   const [showPassword, setShowPassword] = useState(false);
   
   const [currentPage, setCurrentPage] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
-  const [calendarView, setCalendarView] = useState('week');
+  const [calendarView, setCalendarView] = useState('month');
 
   const [videos, setVideos] = useState([]);
   const [users, setUsers] = useState([]);
