@@ -79,11 +79,20 @@ const FocusProApp = () => {
   const [editingVideo, setEditingVideo] = useState(null);
   const [editingMeeting, setEditingMeeting] = useState(null);
   const [editingTask, setEditingTask] = useState(null);
+  const [editingGoal, setEditingGoal] = useState(null);
+  const [editingReason, setEditingReason] = useState(null);
   const [editingProspect, setEditingProspect] = useState(null);
   const [editingPartner, setEditingPartner] = useState(null);
   const [editingEvent, setEditingEvent] = useState(null);
   const [editingRecommendation, setEditingRecommendation] = useState(null);
   const [editingBlog, setEditingBlog] = useState(null);
+  
+  // Dark mode and partner detail
+  const [darkMode, setDarkMode] = useState(false);
+  const [selectedPartner, setSelectedPartner] = useState(null);
+  const [showPartnerDetailModal, setShowPartnerDetailModal] = useState(false);
+  const [partnerDetails, setPartnerDetails] = useState({ goals: [], reasons: [], meetings: [] });
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const [newMeeting, setNewMeeting] = useState({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled', category: 'work', color: '#3b82f6', all_day: false });
   const [newTask, setNewTask] = useState({ title: '', date: '', priority: 'medium', status: 'todo', description: '', assignee: '' });
