@@ -229,14 +229,14 @@
 
 /* Dark mode react-big-calendar */
 .dark .rbc-calendar {
-  background-color: #242424 !important;
+  background-color: #2a2a2a !important;
   color: #e0e0e0 !important;
 }
 
 .dark .rbc-header {
-  background-color: #2a2a2a !important;
+  background-color: #333333 !important;
   color: #e0e0e0 !important;
-  border-color: #3a3a3a !important;
+  border-color: #4a4a4a !important;
 }
 
 .dark .rbc-today {
@@ -244,7 +244,7 @@
 }
 
 .dark .rbc-off-range-bg {
-  background-color: #1a1a1a !important;
+  background-color: #242424 !important;
 }
 
 .dark .rbc-off-range {
@@ -253,29 +253,29 @@
 
 .dark .rbc-month-view,
 .dark .rbc-time-view {
-  border-color: #3a3a3a !important;
+  border-color: #4a4a4a !important;
 }
 
 .dark .rbc-day-bg {
-  background-color: #242424 !important;
+  background-color: #2a2a2a !important;
 }
 
 .dark .rbc-time-content {
-  border-color: #3a3a3a !important;
+  border-color: #4a4a4a !important;
 }
 
 .dark .rbc-day-slot .rbc-time-slot {
-  border-color: #2a2a2a !important;
+  border-color: #333333 !important;
 }
 
 .dark .rbc-toolbar button {
-  background-color: #2a2a2a !important;
+  background-color: #333333 !important;
   border-color: #4a4a4a !important;
   color: #e0e0e0 !important;
 }
 
 .dark .rbc-toolbar button:hover {
-  background-color: #333333 !important;
+  background-color: #3a3a3a !important;
 }
 
 .dark .rbc-toolbar button.rbc-active {
