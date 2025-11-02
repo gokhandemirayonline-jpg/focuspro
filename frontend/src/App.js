@@ -474,18 +474,25 @@ const FocusProApp = () => {
     }
   };
 
-  const addReason = async () => {
+  const addOrUpdateReason = async () => {
     if (!newReason.title) return;
     
     try {
-      await reasonAPI.create(newReason);
+      if (editingReason) {
+        await reasonAPI.update(editingReason.id, newReason);
+      } else {
+        await reasonAPI.create(newReason);
+      }
       await loadReasons();
-      setNewReason({ title: '', description: '' });
+      setNewReason({ title: '', description: '', image: '' });
+      setEditingReason(null);
       setShowReasonModal(false);
     } catch (error) {
       alert('İşlem başarısız!');
     }
   };
+  
+  const addReason = addOrUpdateReason; // Backward compatibility
 
   const deleteReason = async (id) => {
     try {
@@ -493,6 +500,29 @@ const FocusProApp = () => {
       await loadReasons();
     } catch (error) {
       alert('Silme işlemi başarısız!');
+    }
+  };
+  
+  const handleImageUpload = async (event, setter) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Check file size (500KB max)
+    const fileSizeKB = file.size / 1024;
+    if (fileSizeKB > 500) {
+      alert(`Dosya boyutu çok büyük! Maksimum 500KB. Sizinki: ${fileSizeKB.toFixed(2)}KB`);
+      return;
+    }
+    
+    setUploadingImage(true);
+    try {
+      const response = await fileAPI.uploadImage(file);
+      setter(prev => ({ ...prev, image: response.data.data }));
+      alert(`Görsel yüklendi! (${response.data.size_kb}KB)`);
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Görsel yüklenirken hata oluştu');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
