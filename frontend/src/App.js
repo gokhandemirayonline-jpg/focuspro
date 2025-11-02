@@ -1006,16 +1006,22 @@ const FocusProApp = () => {
       
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-64' : 'w-16 md:w-20'} ${darkMode ? 'bg-[#2a2a2a]' : 'bg-gradient-to-b from-purple-700 to-indigo-800'} text-white transition-all duration-300 flex flex-col fixed md:relative h-full z-50`}>
-        <div className="p-4 flex items-center justify-between">
-          {sidebarOpen && (
-            <div className="flex items-center gap-2">
-              <Target size={32} />
-              <h1 className="text-xl font-bold">Focus Pro</h1>
+        <div className="p-4 flex items-center justify-center">
+          {sidebarOpen ? (
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2">
+                <Target size={32} />
+                <h1 className="text-xl font-bold">Focus Pro</h1>
+              </div>
+              <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-white/10 rounded-lg">
+                <X size={20} />
+              </button>
             </div>
+          ) : (
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-white/10 rounded-lg">
+              <Menu size={20} />
+            </button>
           )}
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-white/10 rounded-lg">
-            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
         </div>
 
         <nav className="flex-1 px-2 py-4 space-y-2">
