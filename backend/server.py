@@ -655,6 +655,11 @@ async def register_for_event(event_id: str, current_user: dict = Depends(get_cur
     if existing:
         raise HTTPException(status_code=400, detail="Already registered for this event")
     
+    # Get event details
+    event = await db.events.find_one({"id": event_id}, {"_id": 0})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
     registration_obj = EventRegistration(
         event_id=event_id,
         user_id=current_user['id'],
@@ -666,6 +671,21 @@ async def register_for_event(event_id: str, current_user: dict = Depends(get_cur
     doc['registered_at'] = doc['registered_at'].isoformat()
     
     await db.event_registrations.insert_one(doc)
+    
+    # Create notification for admin
+    admin_users = await db.users.find({"role": "admin"}, {"_id": 0}).to_list(100)
+    for admin in admin_users:
+        notification = Notification(
+            user_id=admin['id'],
+            title="Yeni Etkinlik Kaydı",
+            message=f"{current_user['name']} '{event['title']}' etkinliğine katılmak istiyor.",
+            type="event_registration",
+            link=f"/events"
+        )
+        notif_doc = notification.model_dump()
+        notif_doc['created_at'] = notif_doc['created_at'].isoformat()
+        await db.notifications.insert_one(notif_doc)
+    
     return {"message": "Registration successful"}
 
 @api_router.patch("/event-registrations/{registration_id}/status")
