@@ -2625,6 +2625,7 @@ const FocusProApp = () => {
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID No</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İsim</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
@@ -2635,6 +2636,9 @@ const FocusProApp = () => {
                     <tbody className="divide-y divide-gray-200">
                       {users.map(user => (
                         <tr key={user.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-purple-600">
+                            #{user.user_number || 'N/A'}
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
                           <td className="px-6 py-4 whitespace-nowrap">
