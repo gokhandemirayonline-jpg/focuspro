@@ -101,6 +101,21 @@
 }
 
 .dark .hover\:bg-gray-100:hover {
+
+/* Dark mode - override any white backgrounds */
+.dark .bg-white:not(.bg-purple-600):not(.bg-gradient-to-r) {
+  background-color: #2a2a2a !important;
+}
+
+/* Dark mode - force input fields styling */
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: #333333 !important;
+  border-color: #4a4a4a !important;
+  color: #e0e0e0 !important;
+}
+
   background-color: #333333 !important;
 }
 
