@@ -2971,7 +2971,10 @@ const FocusProApp = () => {
                           ? 'border-white shadow-lg ring-2 ring-purple-300' 
                           : 'border-gray-300 hover:border-gray-400'
                       }`}
-                      style={{ backgroundColor: color }}
+                      style={{ 
+                        backgroundColor: color,
+                        borderColor: newMeeting.color === color ? '#ffffff' : '#d1d5db'
+                      }}
                       title={color}
                     />
                   ))}
