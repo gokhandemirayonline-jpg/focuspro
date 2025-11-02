@@ -2023,15 +2023,16 @@ const FocusProApp = () => {
             </div>
           )}
 
-          {/* REASONS PAGE */}
+          {/* REASONS PAGE - Vision Board Style */}
           {currentPage === 'reasons' && (
             <div>
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold text-gray-800">Nedenlerim</h2>
+                <h2 className="text-3xl font-bold text-gray-800">Nedenlerim - Hayal Panom</h2>
                 <button
                   onClick={() => {
+                    setEditingReason(null);
                     setShowReasonModal(true);
-                    setNewReason({ title: '', description: '' });
+                    setNewReason({ title: '', description: '', image: '' });
                   }}
                   className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
                 >
@@ -2040,24 +2041,56 @@ const FocusProApp = () => {
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {reasons.map(reason => (
-                  <div key={reason.id} className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl shadow-sm border border-purple-100 p-6">
-                    <div className="flex items-start justify-between mb-3">
-                      <h3 className="text-xl font-bold text-gray-800">{reason.title}</h3>
-                      <button
-                        onClick={() => deleteReason(reason.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                  <div key={reason.id} className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow">
+                    {/* Image Section */}
+                    {reason.image && (
+                      <div className="relative h-48 bg-gradient-to-br from-purple-100 to-indigo-100">
+                        <img 
+                          src={reason.image} 
+                          alt={reason.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    {!reason.image && (
+                      <div className="h-48 bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+                        <div className="text-6xl">🎯</div>
+                      </div>
+                    )}
+                    
+                    {/* Content Section */}
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="text-xl font-bold text-gray-800">{reason.title}</h3>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setEditingReason(reason);
+                              setNewReason(reason);
+                              setShowReasonModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => deleteReason(reason.id)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-gray-700 text-sm">{reason.description}</p>
                     </div>
-                    <p className="text-gray-700">{reason.description}</p>
                   </div>
                 ))}
                 {reasons.length === 0 && (
-                  <div className="col-span-2 text-center py-12 text-gray-500">
-                    Neden bu işi yapıyorsunuz? Nedenlerinizi ekleyin!
+                  <div className="col-span-3 text-center py-12 text-gray-500">
+                    <div className="text-6xl mb-4">💭</div>
+                    <p>Neden bu işi yapıyorsunuz? Hayallerinizi ve nedenlerinizi ekleyin!</p>
                   </div>
                 )}
               </div>
