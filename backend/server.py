@@ -96,10 +96,17 @@ async def init_default_admin():
             "email": "admin@focuspro.com",
             "password": hash_password("admin123"),
             "role": "admin",
+            "user_number": 0,  # Admin'e 0 numarası
             "created_at": datetime.utcnow().isoformat()
         }
         await db.users.insert_one(default_admin)
         logger.info("Default admin user created")
+    elif not admin.get('user_number'):
+        # Mevcut admin'e user_number ekle
+        await db.users.update_one(
+            {"email": "admin@focuspro.com"},
+            {"$set": {"user_number": 0}}
+        )
 
 
 # Root endpoint
