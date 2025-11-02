@@ -35,6 +35,7 @@ const FocusProApp = () => {
     personal: true,
     important: true
   });
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const [videos, setVideos] = useState([]);
   const [users, setUsers] = useState([]);
