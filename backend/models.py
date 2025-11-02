@@ -20,6 +20,7 @@ class UserLogin(BaseModel):
 class User(UserBase):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_number: int = Field(default=0)  # ID numarası
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class UserResponse(BaseModel):
@@ -27,6 +28,7 @@ class UserResponse(BaseModel):
     name: str
     email: str
     role: str
+    user_number: int
     created_at: datetime
 
 
