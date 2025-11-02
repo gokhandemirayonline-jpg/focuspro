@@ -148,4 +148,19 @@ export const searchAPI = {
   search: (query) => api.get('/search', { params: { q: query } }),
 };
 
+// File Upload API
+export const fileAPI = {
+  uploadImage: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const token = localStorage.getItem('token');
+    return axios.post(`${API_URL}/upload-image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  }
+};
+
 export default api;
