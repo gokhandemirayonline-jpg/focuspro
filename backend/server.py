@@ -162,6 +162,9 @@ async def login(credentials: UserLogin):
 
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(current_user: dict = Depends(get_current_user)):
+    # Eğer user_number yoksa 0 olarak ayarla
+    if 'user_number' not in current_user:
+        current_user['user_number'] = 0
     return UserResponse(**current_user)
 
 
