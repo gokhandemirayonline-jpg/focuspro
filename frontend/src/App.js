@@ -2347,7 +2347,8 @@ const FocusProApp = () => {
 
               {/* Filters Section */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
-                <div className="flex flex-wrap gap-4 items-center">
+                {/* Desktop Filters */}
+                <div className="hidden md:flex flex-wrap gap-4 items-center">
                   <span className="font-semibold text-gray-700">Filtreler:</span>
                   
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -2410,6 +2411,84 @@ const FocusProApp = () => {
                       <span className="text-xs text-gray-700 bg-red-100 px-2 py-1 rounded">Önemli</span>
                     </label>
                   </div>
+                </div>
+
+                {/* Mobile Filters Dropdown */}
+                <div className="md:hidden">
+                  <button
+                    onClick={() => setShowMobileFilters(!showMobileFilters)}
+                    className="w-full flex items-center justify-between p-2 text-gray-700 border rounded-lg"
+                  >
+                    <span className="font-semibold">Filtreler</span>
+                    <ChevronRight className={`transform transition-transform ${showMobileFilters ? 'rotate-90' : ''}`} size={20} />
+                  </button>
+                  
+                  {showMobileFilters && (
+                    <div className="mt-4 space-y-3 border-t pt-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={showWeekends}
+                          onChange={(e) => setShowWeekends(e.target.checked)}
+                          className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                        />
+                        <span className="text-sm text-gray-700">Hafta sonlarını göster</span>
+                      </label>
+                      
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={showRejected}
+                          onChange={(e) => setShowRejected(e.target.checked)}
+                          className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                        />
+                        <span className="text-sm text-gray-700">Reddedilen etkinlikleri göster</span>
+                      </label>
+                      
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={showCompleted}
+                          onChange={(e) => setShowCompleted(e.target.checked)}
+                          className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                        />
+                        <span className="text-sm text-gray-700">Tamamlanan görevleri göster</span>
+                      </label>
+
+                      <div className="space-y-2">
+                        <span className="text-sm font-semibold text-gray-700">Kategoriler:</span>
+                        <div className="flex flex-wrap gap-2">
+                          <label className="flex items-center gap-1 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={categoryFilters.work}
+                              onChange={(e) => setCategoryFilters({...categoryFilters, work: e.target.checked})}
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-xs text-gray-700 bg-blue-100 px-2 py-1 rounded">İş</span>
+                          </label>
+                          <label className="flex items-center gap-1 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={categoryFilters.personal}
+                              onChange={(e) => setCategoryFilters({...categoryFilters, personal: e.target.checked})}
+                              className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                            />
+                            <span className="text-xs text-gray-700 bg-green-100 px-2 py-1 rounded">Kişisel</span>
+                          </label>
+                          <label className="flex items-center gap-1 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={categoryFilters.important}
+                              onChange={(e) => setCategoryFilters({...categoryFilters, important: e.target.checked})}
+                              className="w-4 h-4 text-red-600 rounded focus:ring-red-500"
+                            />
+                            <span className="text-xs text-gray-700 bg-red-100 px-2 py-1 rounded">Önemli</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
