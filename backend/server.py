@@ -116,9 +116,16 @@ async def register(user_data: UserCreate):
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
+    # Get next user number
+    last_user = await db.users.find({}, {"_id": 0}).sort("user_number", -1).limit(1).to_list(1)
+    next_user_number = 1
+    if last_user and last_user[0].get('user_number'):
+        next_user_number = last_user[0]['user_number'] + 1
+    
     # Create new user
     user_dict = user_data.model_dump()
     user_dict['password'] = hash_password(user_dict['password'])
+    user_dict['user_number'] = next_user_number
     user_obj = User(**user_dict)
     
     doc = user_obj.model_dump()
