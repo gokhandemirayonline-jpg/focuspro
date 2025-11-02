@@ -1021,7 +1021,7 @@ const FocusProApp = () => {
         <nav className="flex-1 px-2 py-4 space-y-2">
           <button
             onClick={() => setCurrentPage('dashboard')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
               currentPage === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/10'
             }`}
           >
@@ -1031,7 +1031,7 @@ const FocusProApp = () => {
 
           <button
             onClick={() => setCurrentPage('calendar')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
               currentPage === 'calendar' ? 'bg-white/20' : 'hover:bg-white/10'
             }`}
           >
@@ -1041,7 +1041,7 @@ const FocusProApp = () => {
 
           <button
             onClick={() => setCurrentPage('tasks')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
               currentPage === 'tasks' ? 'bg-white/20' : 'hover:bg-white/10'
             }`}
           >
@@ -1051,7 +1051,7 @@ const FocusProApp = () => {
 
           <button
             onClick={() => setCurrentPage('videos')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
               currentPage === 'videos' ? 'bg-white/20' : 'hover:bg-white/10'
             }`}
           >
@@ -1061,7 +1061,7 @@ const FocusProApp = () => {
 
           <button
             onClick={() => setCurrentPage('prospects')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
               currentPage === 'prospects' ? 'bg-white/20' : 'hover:bg-white/10'
             }`}
           >
@@ -1071,7 +1071,7 @@ const FocusProApp = () => {
 
           <button
             onClick={() => setCurrentPage('partners')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
               currentPage === 'partners' ? 'bg-white/20' : 'hover:bg-white/10'
             }`}
           >
