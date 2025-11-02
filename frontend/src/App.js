@@ -116,6 +116,26 @@ const FocusProApp = () => {
     }
   }, [isLoggedIn, currentUser]);
 
+  // Dark mode
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setDarkMode(savedDarkMode);
+    if (savedDarkMode) {
+      document.body.classList.add('dark');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('dark');
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      document.body.classList.remove('dark');
+      localStorage.setItem('darkMode', 'false');
+    }
+  }, [darkMode]);
+
+
   const checkAutoLogin = async () => {
     try {
       const token = localStorage.getItem('token');
