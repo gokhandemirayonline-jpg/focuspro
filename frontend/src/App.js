@@ -1975,12 +1975,24 @@ const FocusProApp = () => {
                           <h3 className="text-lg font-bold text-gray-800">{goal.title}</h3>
                           <span className="text-xs text-gray-500">{goal.type === 'daily' ? 'Günlük' : goal.type === 'weekly' ? 'Haftalık' : 'Aylık'}</span>
                         </div>
-                        <button
-                          onClick={() => deleteGoal(goal.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setEditingGoal(goal);
+                              setNewGoal(goal);
+                              setShowGoalModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => deleteGoal(goal.id)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </div>
 
                       <div className="mb-4">
