@@ -2875,8 +2875,10 @@ const FocusProApp = () => {
       {/* Reason Modal */}
       {showReasonModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Yeni Neden</h3>
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              {editingReason ? 'Nedeni Düzenle' : 'Yeni Neden'}
+            </h3>
             <div className="space-y-4">
               <input
                 type="text"
@@ -2892,15 +2894,52 @@ const FocusProApp = () => {
                 rows={4}
                 className="w-full px-4 py-2 border rounded-lg"
               />
+              
+              {/* Image Upload Section */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Görsel Yükle (Maks. 500KB)
+                </label>
+                {newReason.image && (
+                  <div className="mb-3 relative">
+                    <img 
+                      src={newReason.image} 
+                      alt="Preview" 
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                    <button
+                      onClick={() => setNewReason({...newReason, image: ''})}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                  onChange={(e) => handleImageUpload(e, setNewReason)}
+                  disabled={uploadingImage}
+                  className="w-full px-4 py-2 border rounded-lg"
+                />
+                {uploadingImage && (
+                  <p className="text-sm text-gray-500 mt-1">Görsel yükleniyor...</p>
+                )}
+              </div>
+              
               <div className="flex gap-3">
                 <button
-                  onClick={addReason}
-                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                  onClick={addOrUpdateReason}
+                  disabled={uploadingImage}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50"
                 >
-                  Kaydet
+                  {editingReason ? 'Güncelle' : 'Kaydet'}
                 </button>
                 <button
-                  onClick={() => setShowReasonModal(false)}
+                  onClick={() => {
+                    setShowReasonModal(false);
+                    setEditingReason(null);
+                  }}
                   className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
                 >
                   İptal
