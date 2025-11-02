@@ -2516,6 +2516,7 @@ const FocusProApp = () => {
                   onView={(view) => setCalendarView(view)}
                   date={currentDate}
                   onNavigate={(date) => setCurrentDate(date)}
+                  toolbar={false}
                   onSelectSlot={(slotInfo) => {
                     setShowMeetingModal(true);
                     setEditingMeeting(null);
