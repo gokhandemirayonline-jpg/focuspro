@@ -2885,7 +2885,11 @@ const FocusProApp = () => {
                       key={color}
                       type="button"
                       onClick={() => setNewMeeting({...newMeeting, color})}
-                      className={`w-10 h-10 rounded-full border-2 ${newMeeting.color === color ? 'border-white' : 'border-gray-400'}`}
+                      className={`w-10 h-10 rounded-full border-2 transition-all ${
+                        newMeeting.color === color 
+                          ? 'border-white shadow-lg ring-2 ring-purple-300' 
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
                       style={{ backgroundColor: color }}
                       title={color}
                     />
