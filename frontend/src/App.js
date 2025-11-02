@@ -121,15 +121,20 @@ const FocusProApp = () => {
     }
   }, [isLoggedIn, currentUser]);
 
-  // Dark mode
+  // Dark mode initialization - sayfa yüklendiğinde
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode') === 'true';
     setDarkMode(savedDarkMode);
+    
+    // Body class'ını hemen ayarla
     if (savedDarkMode) {
       document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
     }
   }, []);
 
+  // Dark mode değiştiğinde localStorage ve body class güncelle
   useEffect(() => {
     if (darkMode) {
       document.body.classList.add('dark');
