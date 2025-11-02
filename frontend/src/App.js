@@ -901,14 +901,14 @@ const FocusProApp = () => {
           {!showRegister ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email veya ID Numarası</label>
                 <input
-                  type="email"
+                  type="text"
                   value={loginForm.email}
                   onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
                   onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="email@example.com"
+                  placeholder="email@example.com veya ID numarası (örn: 0)"
                 />
               </div>
               <div>
@@ -945,7 +945,7 @@ const FocusProApp = () => {
               </button>
               <div className="text-center text-sm text-gray-500 mt-4">
                 <p>Test Hesabı:</p>
-                <p>Email: admin@focuspro.com</p>
+                <p>Email: admin@focuspro.com veya ID: 0</p>
                 <p>Şifre: admin123</p>
               </div>
             </div>
