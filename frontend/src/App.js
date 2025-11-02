@@ -2309,8 +2309,11 @@ const FocusProApp = () => {
               {/* Mobile Overlay for outside click */}
               {showMobileCalendar && (
                 <div 
-                  className="fixed inset-0 z-40 sm:hidden"
-                  onClick={() => setShowMobileCalendar(false)}
+                  className="fixed inset-0 z-40 sm:hidden bg-black bg-opacity-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowMobileCalendar(false);
+                  }}
                 />
               )}
 
