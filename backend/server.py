@@ -143,9 +143,19 @@ async def register(user_data: UserCreate):
 
 @api_router.post("/auth/login")
 async def login(credentials: UserLogin):
-    user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
+    # Email veya ID numarası ile arama
+    user = None
+    
+    # Eğer girilen değer sayıysa ID numarası olarak ara
+    if credentials.email_or_id.isdigit():
+        user_number = int(credentials.email_or_id)
+        user = await db.users.find_one({"user_number": user_number}, {"_id": 0})
+    else:
+        # Email olarak ara
+        user = await db.users.find_one({"email": credentials.email_or_id}, {"_id": 0})
+    
     if not user or not verify_password(credentials.password, user['password']):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+        raise HTTPException(status_code=401, detail="Geçersiz email/ID veya şifre")
     
     access_token = create_access_token(data={"sub": user['id'], "role": user['role']})
     
