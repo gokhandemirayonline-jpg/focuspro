@@ -2323,40 +2323,62 @@ const FocusProApp = () => {
 
               {/* Calendar Navigation Header */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     {/* Navigation Arrows */}
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => {
-                          const newDate = moment(currentDate).subtract(1, 'month').toDate();
+                          let newDate;
+                          if (calendarView === 'month') {
+                            newDate = moment(currentDate).subtract(1, 'month').toDate();
+                          } else if (calendarView === 'week' || calendarView === 'work_week') {
+                            newDate = moment(currentDate).subtract(1, 'week').toDate();
+                          } else if (calendarView === 'day') {
+                            newDate = moment(currentDate).subtract(1, 'day').toDate();
+                          } else {
+                            newDate = moment(currentDate).subtract(1, 'month').toDate();
+                          }
                           setCurrentDate(newDate);
                         }}
                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        title="Önceki Ay"
+                        title="Önceki"
                       >
                         <ChevronLeft size={20} className="text-gray-600" />
                       </button>
                       <button
                         onClick={() => {
-                          const newDate = moment(currentDate).add(1, 'month').toDate();
+                          let newDate;
+                          if (calendarView === 'month') {
+                            newDate = moment(currentDate).add(1, 'month').toDate();
+                          } else if (calendarView === 'week' || calendarView === 'work_week') {
+                            newDate = moment(currentDate).add(1, 'week').toDate();
+                          } else if (calendarView === 'day') {
+                            newDate = moment(currentDate).add(1, 'day').toDate();
+                          } else {
+                            newDate = moment(currentDate).add(1, 'month').toDate();
+                          }
                           setCurrentDate(newDate);
                         }}
                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        title="Sonraki Ay"
+                        title="Sonraki"
                       >
                         <ChevronRight size={20} className="text-gray-600" />
                       </button>
                     </div>
                     
-                    {/* Month and Year Display */}
+                    {/* Date Display - Dynamic based on view */}
                     <div className="flex items-center gap-2">
-                      <h3 className="text-2xl font-semibold text-gray-800">
-                        {moment(currentDate).format('MMMM YYYY')}
+                      <h3 className="text-lg sm:text-2xl font-semibold text-gray-800">
+                        {calendarView === 'month' && moment(currentDate).format('MMMM YYYY')}
+                        {calendarView === 'week' && `${moment(currentDate).startOf('week').format('DD MMM')} - ${moment(currentDate).endOf('week').format('DD MMM YYYY')}`}
+                        {calendarView === 'work_week' && `${moment(currentDate).startOf('isoWeek').format('DD MMM')} - ${moment(currentDate).endOf('isoWeek').subtract(2, 'days').format('DD MMM YYYY')}`}
+                        {calendarView === 'day' && moment(currentDate).format('DD MMMM YYYY')}
+                        {calendarView === 'agenda' && moment(currentDate).format('MMMM YYYY')}
                       </h3>
                       <button
                         onClick={() => setCurrentDate(new Date())}
-                        className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                        className="px-2 sm:px-3 py-1 text-xs sm:text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                       >
                         Bugün
                       </button>
