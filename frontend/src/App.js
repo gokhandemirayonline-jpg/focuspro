@@ -171,7 +171,10 @@ const FocusProApp = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await authAPI.login(loginForm.email, loginForm.password);
+      const response = await authAPI.login({
+        email_or_id: loginForm.email,
+        password: loginForm.password
+      });
       const { access_token, user } = response.data;
       
       localStorage.setItem('token', access_token);
@@ -179,7 +182,7 @@ const FocusProApp = () => {
       setIsLoggedIn(true);
       setLoginForm({ email: '', password: '' });
     } catch (error) {
-      alert('Email veya şifre hatalı!');
+      alert('Email/ID veya şifre hatalı!');
     }
   };
 
