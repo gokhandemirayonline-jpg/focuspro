@@ -347,6 +347,22 @@ async def create_meeting(meeting_data: MeetingCreate, current_user: dict = Depen
     doc['created_at'] = doc['created_at'].isoformat()
     
     await db.meetings.insert_one(doc)
+    
+    # Notify admin if user is not admin
+    if current_user['role'] != 'admin':
+        admin_users = await db.users.find({"role": "admin"}, {"_id": 0}).to_list(100)
+        for admin in admin_users:
+            notification = Notification(
+                user_id=admin['id'],
+                title="Yeni Görüşme Planlandı",
+                message=f"{current_user['name']} yeni bir görüşme planladı: '{meeting_data.title}'",
+                type="meeting_created",
+                link=f"/calendar"
+            )
+            notif_doc = notification.model_dump()
+            notif_doc['created_at'] = notif_doc['created_at'].isoformat()
+            await db.notifications.insert_one(notif_doc)
+    
     return meeting_obj
 
 @api_router.put("/meetings/{meeting_id}", response_model=Meeting)
