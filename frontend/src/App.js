@@ -2407,7 +2407,7 @@ const FocusProApp = () => {
 
                       {/* Mobile Calendar Dropdown */}
                       {showMobileCalendar && (
-                        <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50 min-w-[280px]">
+                        <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-[60] min-w-[280px]">
                           {/* Mini Calendar */}
                           <div className="grid grid-cols-7 gap-1 text-center text-xs">
                             {/* Days header */}
