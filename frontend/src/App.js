@@ -2306,6 +2306,14 @@ const FocusProApp = () => {
           {/* CALENDAR PAGE */}
           {currentPage === 'calendar' && (
             <div>
+              {/* Mobile Overlay for outside click */}
+              {showMobileCalendar && (
+                <div 
+                  className="fixed inset-0 z-40 sm:hidden"
+                  onClick={() => setShowMobileCalendar(false)}
+                />
+              )}
+
               {/* Page Title */}
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-3xl font-bold text-gray-800">Takvim</h2>
