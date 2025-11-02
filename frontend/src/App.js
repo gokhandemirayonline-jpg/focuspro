@@ -2305,17 +2305,54 @@ const FocusProApp = () => {
           {/* CALENDAR PAGE */}
           {currentPage === 'calendar' && (
             <div>
-              {/* Header with View Selector and Filters */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                <h2 className="text-3xl font-bold text-gray-800">Takvim</h2>
-                
-                <div className="flex items-center gap-3">
-                  {/* View Selector - Dropdown */}
-                  <div className="relative">
+              {/* Calendar Navigation Header */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    {/* Navigation Arrows */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => {
+                          const newDate = moment(currentDate).subtract(1, 'month').toDate();
+                          setCurrentDate(newDate);
+                        }}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Önceki Ay"
+                      >
+                        <ChevronLeft size={20} className="text-gray-600" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          const newDate = moment(currentDate).add(1, 'month').toDate();
+                          setCurrentDate(newDate);
+                        }}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Sonraki Ay"
+                      >
+                        <ChevronRight size={20} className="text-gray-600" />
+                      </button>
+                    </div>
+                    
+                    {/* Month and Year Display */}
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-2xl font-semibold text-gray-800">
+                        {moment(currentDate).format('MMMM YYYY')}
+                      </h3>
+                      <button
+                        onClick={() => setCurrentDate(new Date())}
+                        className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                      >
+                        Bugün
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* View Selector */}
+                  <div className="flex items-center gap-2">
                     <select
                       value={calendarView}
                       onChange={(e) => setCalendarView(e.target.value)}
-                      className="appearance-none bg-white border-2 border-gray-300 rounded-lg px-4 py-2 pr-10 font-medium text-gray-700 focus:outline-none focus:border-purple-500"
+                      className="appearance-none bg-white border border-gray-300 rounded-lg px-3 py-2 pr-8 text-sm font-medium text-gray-700 focus:outline-none focus:border-purple-500"
                     >
                       <option value="day">Gün</option>
                       <option value="week">Hafta</option>
@@ -2323,21 +2360,7 @@ const FocusProApp = () => {
                       <option value="month">Ay</option>
                       <option value="agenda">Planlama</option>
                     </select>
-                    <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-gray-500 pointer-events-none" size={16} />
                   </div>
-                  
-                  {/* Add Meeting Button */}
-                  <button
-                    onClick={() => {
-                      setShowMeetingModal(true);
-                      setEditingMeeting(null);
-                      setNewMeeting({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled', category: 'work', color: '#3b82f6', all_day: false });
-                    }}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
-                  >
-                    <Plus size={20} />
-                    <span className="hidden md:inline">Yeni Görüşme</span>
-                  </button>
                 </div>
               </div>
 
