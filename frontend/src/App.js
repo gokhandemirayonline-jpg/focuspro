@@ -1160,7 +1160,7 @@ const FocusProApp = () => {
       </div>
 
       {/* Main Content */}
-      <div className={`flex-1 overflow-auto flex flex-col w-full ${sidebarOpen ? 'md:ml-0' : 'md:ml-20'} transition-all duration-300`}>
+      <div className={`flex-1 overflow-auto flex flex-col w-full ${sidebarOpen ? 'ml-64 md:ml-0' : 'ml-16 md:ml-20'} transition-all duration-300`}>
         {/* Top Navbar - Arama ve Bildirimler */}
         <div className="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-4 flex-1">
