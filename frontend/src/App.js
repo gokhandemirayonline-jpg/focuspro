@@ -2369,17 +2369,89 @@ const FocusProApp = () => {
                     </div>
                     
                     {/* Date Display - Dynamic based on view */}
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-lg sm:text-2xl font-semibold text-gray-800">
+                    <div className="flex items-center gap-2 relative">
+                      {/* Desktop: Normal display */}
+                      <h3 className="hidden sm:block text-lg sm:text-2xl font-semibold text-gray-800">
                         {calendarView === 'month' && moment(currentDate).format('MMMM YYYY')}
                         {calendarView === 'week' && `${moment(currentDate).startOf('week').format('DD MMM')} - ${moment(currentDate).endOf('week').format('DD MMM YYYY')}`}
                         {calendarView === 'work_week' && `${moment(currentDate).startOf('isoWeek').format('DD MMM')} - ${moment(currentDate).endOf('isoWeek').subtract(2, 'days').format('DD MMM YYYY')}`}
                         {calendarView === 'day' && moment(currentDate).format('DD MMMM YYYY')}
                         {calendarView === 'agenda' && moment(currentDate).format('MMMM YYYY')}
                       </h3>
+
+                      {/* Mobile: Clickable dropdown */}
+                      <button
+                        onClick={() => setShowMobileCalendar(!showMobileCalendar)}
+                        className="sm:hidden flex items-center gap-1 text-lg font-semibold text-gray-800 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors"
+                      >
+                        <span>
+                          {calendarView === 'month' && moment(currentDate).format('MMMM YYYY')}
+                          {calendarView === 'week' && moment(currentDate).format('MMM YYYY')}
+                          {calendarView === 'work_week' && moment(currentDate).format('MMM YYYY')}
+                          {calendarView === 'day' && moment(currentDate).format('DD MMMM')}
+                          {calendarView === 'agenda' && moment(currentDate).format('MMMM YYYY')}
+                        </span>
+                        <ChevronRight className={`transform transition-transform ${showMobileCalendar ? 'rotate-90' : ''}`} size={16} />
+                      </button>
+
+                      {/* Mobile Calendar Dropdown */}
+                      {showMobileCalendar && (
+                        <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50 min-w-[280px]">
+                          {/* Mini Calendar */}
+                          <div className="grid grid-cols-7 gap-1 text-center text-xs">
+                            {/* Days header */}
+                            {['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map(day => (
+                              <div key={day} className="p-2 font-semibold text-gray-600">
+                                {day}
+                              </div>
+                            ))}
+                            
+                            {/* Calendar days */}
+                            {Array.from({ length: 42 }, (_, i) => {
+                              const startOfMonth = moment(currentDate).startOf('month');
+                              const startOfCalendar = startOfMonth.clone().startOf('week');
+                              const day = startOfCalendar.clone().add(i, 'days');
+                              const isCurrentMonth = day.month() === moment(currentDate).month();
+                              const isToday = day.isSame(moment(), 'day');
+                              const isSelected = day.isSame(moment(currentDate), 'day');
+                              
+                              return (
+                                <button
+                                  key={i}
+                                  onClick={() => {
+                                    setCurrentDate(day.toDate());
+                                    setShowMobileCalendar(false);
+                                  }}
+                                  className={`p-2 rounded-lg text-sm transition-colors ${
+                                    isSelected ? 'bg-purple-600 text-white' :
+                                    isToday ? 'bg-purple-100 text-purple-700' :
+                                    isCurrentMonth ? 'text-gray-700 hover:bg-gray-100' : 'text-gray-400'
+                                  }`}
+                                >
+                                  {day.date()}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          
+                          {/* Quick actions */}
+                          <div className="mt-4 pt-4 border-t border-gray-200">
+                            <button
+                              onClick={() => {
+                                setCurrentDate(new Date());
+                                setShowMobileCalendar(false);
+                              }}
+                              className="w-full text-center py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                            >
+                              Bugüne Git
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
                       <button
                         onClick={() => setCurrentDate(new Date())}
-                        className="px-2 sm:px-3 py-1 text-xs sm:text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                        className="hidden sm:block px-2 sm:px-3 py-1 text-xs sm:text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                       >
                         Bugün
                       </button>
