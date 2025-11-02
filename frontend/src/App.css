@@ -153,7 +153,7 @@
 
 /* Dark mode buttons */
 .dark button:not(.bg-purple-600):not(.bg-gradient-to-r) {
-  background-color: #2a2a2a !important;
+  background-color: #333333 !important;
   color: #e0e0e0 !important;
 }
 
