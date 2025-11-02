@@ -2857,13 +2857,16 @@ const FocusProApp = () => {
               />
               <div className="flex gap-3">
                 <button
-                  onClick={addGoal}
+                  onClick={addOrUpdateGoal}
                   className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
                 >
-                  Kaydet
+                  {editingGoal ? 'Güncelle' : 'Kaydet'}
                 </button>
                 <button
-                  onClick={() => setShowGoalModal(false)}
+                  onClick={() => {
+                    setShowGoalModal(false);
+                    setEditingGoal(null);
+                  }}
                   className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
                 >
                   İptal
