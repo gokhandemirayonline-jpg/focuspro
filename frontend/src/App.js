@@ -87,8 +87,13 @@ const FocusProApp = () => {
   const [editingRecommendation, setEditingRecommendation] = useState(null);
   const [editingBlog, setEditingBlog] = useState(null);
   
-  // Dark mode and partner detail
-  const [darkMode, setDarkMode] = useState(false);
+  // Dark mode state - localStorage'dan initial değeri al
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('darkMode') === 'true';
+    }
+    return false;
+  });
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [showPartnerDetailModal, setShowPartnerDetailModal] = useState(false);
   const [partnerDetails, setPartnerDetails] = useState({ goals: [], reasons: [], meetings: [] });
