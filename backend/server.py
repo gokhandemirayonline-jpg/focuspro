@@ -917,6 +917,43 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+# File Upload endpoint
+@app.post("/api/upload-image")
+async def upload_image(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload image and return base64 encoded string"""
+    try:
+        # Check file size (max 500KB)
+        contents = await file.read()
+        file_size_kb = len(contents) / 1024
+        
+        if file_size_kb > 500:
+            raise HTTPException(status_code=400, detail=f"Dosya boyutu çok büyük. Maksimum 500KB. Sizinki: {file_size_kb:.2f}KB")
+        
+        # Check file type
+        allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+        if file.content_type not in allowed_types:
+            raise HTTPException(status_code=400, detail="Sadece resim dosyaları yüklenebilir (JPEG, PNG, GIF, WEBP)")
+        
+        # Convert to base64
+        base64_encoded = base64.b64encode(contents).decode('utf-8')
+        data_url = f"data:{file.content_type};base64,{base64_encoded}"
+        
+        return {
+            "success": True,
+            "data": data_url,
+            "size_kb": round(file_size_kb, 2),
+            "filename": file.filename
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error uploading file: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Dosya yüklenirken hata oluştu: {str(e)}")
+
 @app.on_event("startup")
 async def startup_event():
     await init_default_admin()
