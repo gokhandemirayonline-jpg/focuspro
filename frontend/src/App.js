@@ -452,18 +452,25 @@ const FocusProApp = () => {
     }
   };
 
-  const addGoal = async () => {
+  const addOrUpdateGoal = async () => {
     if (!newGoal.title || !newGoal.target) return;
     
     try {
-      await goalAPI.create(newGoal);
+      if (editingGoal) {
+        await goalAPI.update(editingGoal.id, newGoal);
+      } else {
+        await goalAPI.create(newGoal);
+      }
       await loadGoals();
       setNewGoal({ title: '', type: 'daily', target: '', deadline: '', current: 0 });
+      setEditingGoal(null);
       setShowGoalModal(false);
     } catch (error) {
       alert('İşlem başarısız!');
     }
   };
+  
+  const addGoal = addOrUpdateGoal; // Backward compatibility
 
   const deleteGoal = async (id) => {
     try {
