@@ -289,17 +289,39 @@
 }
 
 .dark .rbc-month-view,
-/* Dark mode - Color picker buttons */
-.dark .border-gray-300 {
+/* Dark mode - Color picker buttons - more aggressive */
+.dark .border-gray-300,
+.dark .fixed .border-gray-300,
+.dark .modal .border-gray-300,
+.dark [style*="background"] {
   border-color: #4a4a4a !important;
 }
 
-.dark .hover\:border-gray-400:hover {
+.dark .hover\:border-gray-400:hover,
+.dark .fixed .hover\:border-gray-400:hover {
   border-color: #6b7280 !important;
 }
 
-.dark .ring-purple-300 {
+.dark .ring-purple-300,
+.dark .fixed .ring-purple-300 {
   --tw-ring-color: rgba(147, 51, 234, 0.5) !important;
+}
+
+/* Force color visibility in dark mode */
+.dark button[style*="backgroundColor"] {
+  border: 2px solid #4a4a4a !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark button[style*="backgroundColor"]:hover {
+  border-color: #6b7280 !important;
+  transform: scale(1.05);
+}
+
+/* Selected color button in dark mode */
+.dark button[style*="backgroundColor"].ring-2 {
+  border-color: #ffffff !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(147, 51, 234, 0.5) !important;
 }
 .dark .rbc-time-view {
   border-color: #4a4a4a !important;
