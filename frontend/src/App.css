@@ -159,15 +159,15 @@
 
 /* Dark mode gradients */
 .dark .bg-gradient-to-br {
-  background: linear-gradient(to bottom right, #2a2a2a, #333333) !important;
+  background: linear-gradient(to bottom right, #333333, #3a3a3a) !important;
 }
 
 .dark .from-purple-50 {
-  --tw-gradient-from: #2a2a2a !important;
+  --tw-gradient-from: #333333 !important;
 }
 
 .dark .to-indigo-50 {
-  --tw-gradient-to: #333333 !important;
+  --tw-gradient-to: #3a3a3a !important;
 }
 
 /* Dark mode specific elements */
