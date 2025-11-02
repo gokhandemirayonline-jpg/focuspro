@@ -14,7 +14,7 @@ class UserCreate(UserBase):
     password: str
 
 class UserLogin(BaseModel):
-    email: str
+    email_or_id: str  # Email veya ID numarası
     password: str
 
 class User(UserBase):
