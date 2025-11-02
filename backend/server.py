@@ -175,6 +175,10 @@ async def get_users(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Admin access required")
     
     users = await db.users.find({}, {"_id": 0, "password": 0}).to_list(1000)
+    # User'larda user_number yoksa 0 olarak ayarla
+    for user in users:
+        if 'user_number' not in user:
+            user['user_number'] = 0
     return users
 
 @api_router.post("/users", response_model=UserResponse)
