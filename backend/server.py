@@ -11,6 +11,7 @@ from typing import List, Optional
 import jwt
 from datetime import datetime, timedelta
 import bcrypt
+import base64
 
 from models import (
     UserCreate, UserLogin, User, UserResponse,
