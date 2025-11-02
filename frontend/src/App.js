@@ -2305,6 +2305,22 @@ const FocusProApp = () => {
           {/* CALENDAR PAGE */}
           {currentPage === 'calendar' && (
             <div>
+              {/* Page Title */}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-3xl font-bold text-gray-800">Takvim</h2>
+                <button
+                  onClick={() => {
+                    setShowMeetingModal(true);
+                    setEditingMeeting(null);
+                    setNewMeeting({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled', category: 'work', color: '#3b82f6', all_day: false });
+                  }}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                >
+                  <Plus size={20} />
+                  <span className="hidden sm:inline">Yeni Görüşme</span>
+                </button>
+              </div>
+
               {/* Calendar Navigation Header */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
                 <div className="flex items-center justify-between">
