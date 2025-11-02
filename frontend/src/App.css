@@ -102,18 +102,31 @@
 
 .dark .hover\:bg-gray-100:hover {
 
-/* Dark mode - override any white backgrounds */
-.dark .bg-white:not(.bg-purple-600):not(.bg-gradient-to-r) {
-  background-color: #2a2a2a !important;
-}
-
-/* Dark mode - force input fields styling */
-.dark input,
+/* Dark mode - force input fields styling - more specific */
+.dark input:not([type="checkbox"]):not([type="radio"]),
 .dark select,
 .dark textarea {
   background-color: #333333 !important;
   border-color: #4a4a4a !important;
   color: #e0e0e0 !important;
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]):focus,
+.dark select:focus,
+.dark textarea:focus {
+  background-color: #3a3a3a !important;
+  border-color: #8b5cf6 !important;
+  color: #e0e0e0 !important;
+}
+
+/* Dark mode - override any white backgrounds more aggressively */
+.dark .bg-white:not(.bg-purple-600):not(.bg-gradient-to-r):not(.text-white) {
+  background-color: #2a2a2a !important;
+}
+
+/* Dark mode - modal backgrounds */
+.dark .fixed.inset-0 .bg-white {
+  background-color: #2a2a2a !important;
 }
 
   background-color: #333333 !important;
