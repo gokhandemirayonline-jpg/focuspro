@@ -123,15 +123,23 @@ const FocusProApp = () => {
 
   // Dark mode initialization - sayfa yüklendiğinde
   useEffect(() => {
+    // Önce localStorage'dan oku
     const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-    setDarkMode(savedDarkMode);
     
-    // Body class'ını hemen ayarla
+    // Eğer state ile localStorage arasında fark varsa, localStorage'ı öncelikli al
+    if (savedDarkMode !== darkMode) {
+      setDarkMode(savedDarkMode);
+    }
+    
+    // Body class'ını hemen ayarla - state'e bakılmaksızın localStorage değeri kullan
     if (savedDarkMode) {
       document.body.classList.add('dark');
     } else {
       document.body.classList.remove('dark');
     }
+    
+    // Console log debug için
+    console.log('Dark mode initialized:', savedDarkMode);
   }, []);
 
   // Dark mode değiştiğinde localStorage ve body class güncelle
