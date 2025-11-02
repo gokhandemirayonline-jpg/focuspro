@@ -124,6 +124,7 @@ class Goal(GoalBase):
 class ReasonBase(BaseModel):
     title: str
     description: str = ""
+    image: str = ""  # Base64 encoded image or file path
 
 class ReasonCreate(ReasonBase):
     pass
