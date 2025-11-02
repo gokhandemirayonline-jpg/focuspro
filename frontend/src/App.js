@@ -545,6 +545,34 @@ const FocusProApp = () => {
       
       await loadProspects();
       setNewProspect({ name: '', phone: '', email: '', status: 'new', notes: '', source: '' });
+
+  const viewPartnerDetails = async (partner) => {
+    setSelectedPartner(partner);
+    setShowPartnerDetailModal(true);
+    
+    // Load partner's goals, reasons, and meetings
+    try {
+      const [goalsRes, reasonsRes, meetingsRes] = await Promise.all([
+        goalAPI.getAll(),
+        reasonAPI.getAll(), 
+        meetingAPI.getAll()
+      ]);
+      
+      // Filter by partner's user_id (assuming partner has user_id field)
+      const partnerGoals = goalsRes.data.filter(g => g.user_id === partner.user_id);
+      const partnerReasons = reasonsRes.data.filter(r => r.user_id === partner.user_id);
+      const partnerMeetings = meetingsRes.data.filter(m => m.user_id === partner.user_id);
+      
+      setPartnerDetails({
+        goals: partnerGoals,
+        reasons: partnerReasons,
+        meetings: partnerMeetings
+      });
+    } catch (error) {
+      console.error('Partner detayları yüklenemedi:', error);
+    }
+  };
+
       setEditingProspect(null);
       setShowProspectModal(false);
     } catch (error) {
