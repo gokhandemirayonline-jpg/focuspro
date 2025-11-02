@@ -1189,13 +1189,6 @@ const FocusProApp = () => {
         {/* Top Navbar - Arama ve Bildirimler */}
         <div className="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-4 flex-1">
-            <button 
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
-            >
-              <Menu size={24} />
-            </button>
-            
             {/* Search Bar */}
             <div className="relative flex-1 max-w-xl">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
