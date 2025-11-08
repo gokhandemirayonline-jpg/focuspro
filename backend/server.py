@@ -14,7 +14,7 @@ import bcrypt
 import base64
 
 from models import (
-    UserCreate, UserLogin, User, UserResponse, UserUpdate, ChangePassword,
+    UserCreate, UserLogin, User, UserResponse, UserUpdate, UserAdminUpdate, ChangePassword,
     VideoCreate, Video,
     VideoProgress, VideoProgressBase,
     MeetingCreate, Meeting,
