@@ -589,6 +589,12 @@ const FocusProApp = () => {
       
       await loadProspects();
       setNewProspect({ name: '', phone: '', email: '', status: 'new', notes: '', source: '' });
+      setEditingProspect(null);
+      setShowProspectModal(false);
+    } catch (error) {
+      alert('İşlem başarısız!');
+    }
+  };
 
   const viewPartnerDetails = async (partner) => {
     setSelectedPartner(partner);
@@ -616,8 +622,6 @@ const FocusProApp = () => {
       console.error('Partner detayları yüklenemedi:', error);
     }
   };
-
-      setEditingProspect(null);
   // Profile functions
   const loadProfile = () => {
     if (currentUser) {
