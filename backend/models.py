@@ -9,6 +9,20 @@ class UserBase(BaseModel):
     name: str
     email: str
     role: str = "user"  # user or admin
+    
+    # Profil bilgileri
+    profile_photo: str = ""  # Base64 encoded image
+    career_title: str = ""   # Kariyer/Unvan
+    phone: str = ""
+    city: str = ""
+    country: str = ""
+    language: str = "tr"     # Dil ayarı
+    
+    # Sosyal medya bağlantıları
+    linkedin_url: str = ""
+    twitter_url: str = ""
+    instagram_url: str = ""
+    facebook_url: str = ""
 
 class UserCreate(UserBase):
     password: str
@@ -16,6 +30,23 @@ class UserCreate(UserBase):
 class UserLogin(BaseModel):
     email_or_id: str  # Email veya ID numarası
     password: str
+
+class UserUpdate(BaseModel):
+    name: str = None
+    career_title: str = None
+    phone: str = None
+    city: str = None
+    country: str = None
+    language: str = None
+    linkedin_url: str = None
+    twitter_url: str = None
+    instagram_url: str = None
+    facebook_url: str = None
+    profile_photo: str = None
+
+class ChangePassword(BaseModel):
+    current_password: str
+    new_password: str
 
 class User(UserBase):
     model_config = ConfigDict(extra="ignore")
@@ -30,6 +61,16 @@ class UserResponse(BaseModel):
     role: str
     user_number: int
     created_at: datetime
+    profile_photo: str = ""
+    career_title: str = ""
+    phone: str = ""
+    city: str = ""
+    country: str = ""
+    language: str = "tr"
+    linkedin_url: str = ""
+    twitter_url: str = ""
+    instagram_url: str = ""
+    facebook_url: str = ""
 
 
 # Video Models
