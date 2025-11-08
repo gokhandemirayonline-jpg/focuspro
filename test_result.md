@@ -241,6 +241,21 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "DnD Calendar entegre edildi, onEventDrop ve onEventResize fonksiyonları eklendi. Manuel test gerekiyor."
+  
+  - task: "Profil sayfası (Profilim)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "updateProfilePhoto is not defined hatası veriyordu."
+      - working: true
+        agent: "main"
+        comment: "Frontend fonksiyon yapısı düzeltildi. addOrUpdateProspect ve viewPartnerDetails fonksiyonları ayrıldı. Gereksiz kod bloğu kaldırıldı. Login endpoint'i user_number dahil tüm profil bilgilerini döndürüyor. Profil sayfası başarıyla açılıyor ve ID numarası görünüyor."
 
 metadata:
   created_by: "main_agent"
