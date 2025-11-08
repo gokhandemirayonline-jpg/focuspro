@@ -916,6 +916,11 @@ class FocusProAPITester:
         # Test profile photo persistence (specific test requested)
         photo_persistence_success = self.test_profile_photo_persistence()
         
+        # Test admin user management functionality
+        admin_user_update_success = self.test_admin_user_update_without_password()
+        admin_password_update_success = self.test_admin_user_password_update()
+        admin_role_update_success = self.test_admin_user_role_update()
+        
         # Test search functionality
         search_success = self.test_search_functionality()
         
@@ -940,6 +945,12 @@ class FocusProAPITester:
             critical_failures.append("Authentication token validation failing")
         if not photo_persistence_success:
             critical_failures.append("Profile photo persistence not working")
+        if not admin_user_update_success:
+            critical_failures.append("Admin user update (without password) not working")
+        if not admin_password_update_success:
+            critical_failures.append("Admin user password update not working")
+        if not admin_role_update_success:
+            critical_failures.append("Admin user role update not working")
         
         if critical_failures:
             print("\n🚨 CRITICAL ISSUES:")
