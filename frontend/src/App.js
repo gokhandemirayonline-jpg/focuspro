@@ -618,6 +618,73 @@ const FocusProApp = () => {
   };
 
       setEditingProspect(null);
+  // Profile functions
+  const loadProfile = () => {
+    if (currentUser) {
+      setProfileData({
+        name: currentUser.name || '',
+        career_title: currentUser.career_title || '',
+        phone: currentUser.phone || '',
+        city: currentUser.city || '',
+        country: currentUser.country || '',
+        language: currentUser.language || 'tr',
+        linkedin_url: currentUser.linkedin_url || '',
+        twitter_url: currentUser.twitter_url || '',
+        instagram_url: currentUser.instagram_url || '',
+        facebook_url: currentUser.facebook_url || '',
+        profile_photo: currentUser.profile_photo || ''
+      });
+    }
+  };
+
+  const updateProfile = async () => {
+    try {
+      const response = await authAPI.updateProfile(profileData);
+      setCurrentUser(response.data);
+      alert('Profil başarıyla güncellendi!');
+    } catch (error) {
+      alert('Profil güncellenirken hata oluştu!');
+    }
+  };
+
+  const changePassword = async () => {
+    if (passwordData.new_password !== passwordData.confirm_password) {
+      alert('Yeni şifreler eşleşmiyor!');
+      return;
+    }
+
+    try {
+      await authAPI.changePassword({
+        current_password: passwordData.current_password,
+        new_password: passwordData.new_password
+      });
+      setPasswordData({ current_password: '', new_password: '', confirm_password: '' });
+      alert('Şifre başarıyla değiştirildi!');
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Şifre değiştirilirken hata oluştu!');
+    }
+  };
+
+  const updateProfilePhoto = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    setUploadingImage(true);
+    try {
+      const response = await fileAPI.uploadImage(file);
+      setProfileData(prev => ({ ...prev, profile_photo: response.data.data }));
+      alert('Profil fotoğrafı yüklendi!');
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Profil fotoğrafı yüklenirken hata oluştu');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Load profile when currentUser changes
+  useEffect(() => {
+    loadProfile();
+  }, [currentUser]);
       setShowProspectModal(false);
     } catch (error) {
       alert('İşlem başarısız!');
