@@ -962,7 +962,7 @@ async def search(q: str, current_user: dict = Depends(get_current_user)):
     blogs_results = [{"type": "blog", "data": blog} for blog in blogs]
     
     # Combine all results
-    all_results = videos_results + meetings_results + tasks_results + goals_results + reasons_results + prospects_results + partners_results + recommendations_results + blogs_results
+    all_results = users_results + videos_results + prospects_results + partners_results + recommendations_results + blogs_results
     
     return {"results": all_results[:20]}  # Limit to 20 results
 
