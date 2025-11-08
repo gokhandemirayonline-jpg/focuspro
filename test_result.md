@@ -123,6 +123,42 @@ backend:
       - working: true
         agent: "main"
         comment: "Meeting modeline category, color ve all_day alanları eklendi"
+  
+  - task: "Profil güncelleme endpoint'i"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "UserUpdate ve ChangePassword modelleri eklendi. /auth/profile ve /auth/change-password endpoint'leri implement edildi. Backend syntax hataları düzeltildi."
+  
+  - task: "Login ile email veya ID desteği"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Login endpoint'i güncellendi, artık email veya user_number ile giriş yapılabiliyor."
+  
+  - task: "Search endpoint düzeltmeleri"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Search endpoint'indeki undefined değişkenler düzeltildi. Gereksiz kod bloğu kaldırıldı."
 
 frontend:
   - task: "react-big-calendar kütüphanesi entegrasyonu"
