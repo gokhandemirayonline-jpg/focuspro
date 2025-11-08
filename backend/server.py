@@ -1012,15 +1012,6 @@ async def change_password(password_data: ChangePassword, current_user: dict = De
     )
     
     return {"message": "Şifre başarıyla değiştirildi"}
-    blogs = await db.blogs.find(
-        {"$or": [{"title": search_pattern}, {"content": search_pattern}, {"category": search_pattern}], "published": True},
-        {"_id": 0}
-    ).limit(10).to_list(10)
-    blogs_results = [{"type": "blog", "data": blog} for blog in blogs]
-    
-    all_results = users_results + videos_results + prospects_results + partners_results + recommendations_results + blogs_results
-    
-    return {"results": all_results[:50]}
 
 
 # Include the router in the main app
