@@ -372,6 +372,158 @@ class FocusProAPITester:
             )
         return False
     
+    def test_profile_photo_persistence(self):
+        """Test profile photo persistence through login sessions"""
+        if not self.auth_token:
+            self.log_test("Profile Photo Persistence", False, "No auth token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            
+            # Step 1: Create base64 test image data (small PNG image)
+            test_image_base64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            
+            print("   Step 1: Adding profile photo...")
+            
+            # Step 2: Update profile with photo
+            profile_data = {
+                "profile_photo": test_image_base64
+            }
+            
+            response = self.session.put(f"{API_BASE}/auth/profile", json=profile_data, headers=headers)
+            
+            if response.status_code != 200:
+                self.log_test(
+                    "Profile Photo Persistence", 
+                    False, 
+                    f"Profile update failed with status {response.status_code}",
+                    {"response": response.text}
+                )
+                return False
+            
+            update_data = response.json()
+            if "profile_photo" not in update_data or update_data["profile_photo"] != test_image_base64:
+                self.log_test(
+                    "Profile Photo Persistence", 
+                    False, 
+                    "Profile photo not returned in update response",
+                    {"response": update_data}
+                )
+                return False
+            
+            print("   Step 2: Profile photo updated successfully")
+            
+            # Step 3: Verify photo via /auth/me endpoint
+            me_response = self.session.get(f"{API_BASE}/auth/me", headers=headers)
+            
+            if me_response.status_code != 200:
+                self.log_test(
+                    "Profile Photo Persistence", 
+                    False, 
+                    f"/auth/me failed with status {me_response.status_code}",
+                    {"response": me_response.text}
+                )
+                return False
+            
+            me_data = me_response.json()
+            if "profile_photo" not in me_data or me_data["profile_photo"] != test_image_base64:
+                self.log_test(
+                    "Profile Photo Persistence", 
+                    False, 
+                    "Profile photo not found in /auth/me response",
+                    {"response": me_data}
+                )
+                return False
+            
+            print("   Step 3: Profile photo verified via /auth/me")
+            
+            # Step 4: Login again and check persistence
+            login_data = {
+                "email_or_id": "admin@focuspro.com",
+                "password": "admin123"
+            }
+            
+            login_response = self.session.post(f"{API_BASE}/auth/login", json=login_data)
+            
+            if login_response.status_code != 200:
+                self.log_test(
+                    "Profile Photo Persistence", 
+                    False, 
+                    f"Re-login failed with status {login_response.status_code}",
+                    {"response": login_response.text}
+                )
+                return False
+            
+            login_result = login_response.json()
+            
+            # Check if profile photo is in login response
+            if "user" not in login_result or "profile_photo" not in login_result["user"]:
+                self.log_test(
+                    "Profile Photo Persistence", 
+                    False, 
+                    "Profile photo not found in login response",
+                    {"response": login_result}
+                )
+                return False
+            
+            if login_result["user"]["profile_photo"] != test_image_base64:
+                self.log_test(
+                    "Profile Photo Persistence", 
+                    False, 
+                    "Profile photo in login response doesn't match saved photo",
+                    {
+                        "expected_length": len(test_image_base64),
+                        "actual_length": len(login_result["user"]["profile_photo"]),
+                        "matches": login_result["user"]["profile_photo"] == test_image_base64
+                    }
+                )
+                return False
+            
+            print("   Step 4: Profile photo persisted through login")
+            
+            # Step 5: Update auth token and verify via /auth/me again
+            self.auth_token = login_result["access_token"]
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            
+            final_me_response = self.session.get(f"{API_BASE}/auth/me", headers=headers)
+            
+            if final_me_response.status_code != 200:
+                self.log_test(
+                    "Profile Photo Persistence", 
+                    False, 
+                    f"Final /auth/me check failed with status {final_me_response.status_code}",
+                    {"response": final_me_response.text}
+                )
+                return False
+            
+            final_me_data = final_me_response.json()
+            if "profile_photo" not in final_me_data or final_me_data["profile_photo"] != test_image_base64:
+                self.log_test(
+                    "Profile Photo Persistence", 
+                    False, 
+                    "Profile photo not persistent in final /auth/me check",
+                    {"response": final_me_data}
+                )
+                return False
+            
+            print("   Step 5: Final verification successful")
+            
+            self.log_test(
+                "Profile Photo Persistence", 
+                True, 
+                "Profile photo successfully persisted through all login sessions and API calls"
+            )
+            return True
+            
+        except Exception as e:
+            self.log_test(
+                "Profile Photo Persistence", 
+                False, 
+                f"Exception during profile photo persistence test: {str(e)}"
+            )
+        return False
+    
     def run_all_tests(self):
         """Run all backend API tests"""
         print(f"🚀 Starting FocusProApp Backend API Tests")
