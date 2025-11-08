@@ -180,6 +180,18 @@ backend:
       - working: true
         agent: "testing"
         comment: "Password change endpoint tested successfully. POST /api/auth/change-password accepts current_password and new_password, validates current password, updates to new password, and allows login with new credentials. Password change functionality is fully working."
+  
+  - task: "Profil fotoğrafı kalıcılığı"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Profile photo persistence tested successfully. Test scenario completed: 1) Login with admin@focuspro.com/admin123 ✅ 2) Added profile photo using base64 test data ✅ 3) Called PUT /api/auth/profile with profile_photo field ✅ 4) Verified photo saved via GET /api/auth/me ✅ 5) Re-login and confirmed photo persistence ✅. Profile photo is properly stored in database and persists across login sessions."
 
 frontend:
   - task: "react-big-calendar kütüphanesi entegrasyonu"
