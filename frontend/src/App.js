@@ -687,13 +687,10 @@ const FocusProApp = () => {
 
   // Load profile when currentUser changes
   useEffect(() => {
-    loadProfile();
-  }, [currentUser]);
-      setShowProspectModal(false);
-    } catch (error) {
-      alert('İşlem başarısız!');
+    if (currentUser) {
+      loadProfile();
     }
-  };
+  }, [currentUser]);
 
   const deleteProspect = async (id) => {
     try {
