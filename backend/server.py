@@ -949,6 +949,52 @@ async def search(q: str, current_user: dict = Depends(get_current_user)):
     
     # Search recommendations
     recommendations = await db.recommendations.find(
+# Profile Update Endpoints
+@api_router.put("/auth/profile", response_model=UserResponse)
+async def update_profile(profile_data: UserUpdate, current_user: dict = Depends(get_current_user)):
+    update_data = {}
+    
+    # Only update fields that are provided
+    for field, value in profile_data.model_dump().items():
+        if value is not None:
+            update_data[field] = value
+    
+    if update_data:
+        await db.users.update_one(
+            {"id": current_user['id']},
+            {"$set": update_data}
+        )
+    
+    # Get updated user
+    updated_user = await db.users.find_one({"id": current_user['id']}, {"_id": 0, "password": 0})
+    if 'user_number' not in updated_user:
+        updated_user['user_number'] = 0
+    
+    # Fill missing fields with defaults
+    for field in ['profile_photo', 'career_title', 'phone', 'city', 'country', 'language', 'linkedin_url', 'twitter_url', 'instagram_url', 'facebook_url']:
+        if field not in updated_user:
+            updated_user[field] = ""
+    
+    if 'language' not in updated_user:
+        updated_user['language'] = "tr"
+    
+    return UserResponse(**updated_user)
+
+@api_router.post("/auth/change-password")
+async def change_password(password_data: ChangePassword, current_user: dict = Depends(get_current_user)):
+    # Verify current password
+    user = await db.users.find_one({"id": current_user['id']}, {"_id": 0})
+    if not user or not verify_password(password_data.current_password, user['password']):
+        raise HTTPException(status_code=400, detail="Mevcut şifre yanlış")
+    
+    # Update password
+    new_password_hash = hash_password(password_data.new_password)
+    await db.users.update_one(
+        {"id": current_user['id']},
+        {"$set": {"password": new_password_hash}}
+    )
+    
+    return {"message": "Şifre başarıyla değiştirildi"}
         {"$or": [{"title": search_pattern}, {"description": search_pattern}, {"author": search_pattern}]},
         {"_id": 0}
     ).limit(10).to_list(10)
