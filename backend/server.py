@@ -166,7 +166,19 @@ async def login(credentials: UserLogin):
             "id": user['id'],
             "name": user['name'],
             "email": user['email'],
-            "role": user['role']
+            "role": user['role'],
+            "user_number": user.get('user_number', 0),
+            "created_at": user.get('created_at'),
+            "profile_photo": user.get('profile_photo', ''),
+            "career_title": user.get('career_title', ''),
+            "phone": user.get('phone', ''),
+            "city": user.get('city', ''),
+            "country": user.get('country', ''),
+            "language": user.get('language', 'tr'),
+            "linkedin_url": user.get('linkedin_url', ''),
+            "twitter_url": user.get('twitter_url', ''),
+            "instagram_url": user.get('instagram_url', ''),
+            "facebook_url": user.get('facebook_url', '')
         }
     }
 
