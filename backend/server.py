@@ -159,27 +159,37 @@ async def login(credentials: UserLogin):
     
     access_token = create_access_token(data={"sub": user['id'], "role": user['role']})
     
+    # Prepare user data
+    user_data = {
+        "id": user['id'],
+        "name": user['name'],
+        "email": user['email'],
+        "role": user['role'],
+        "user_number": user.get('user_number', 0),
+        "profile_photo": user.get('profile_photo', ''),
+        "career_title": user.get('career_title', ''),
+        "phone": user.get('phone', ''),
+        "city": user.get('city', ''),
+        "country": user.get('country', ''),
+        "language": user.get('language', 'tr'),
+        "linkedin_url": user.get('linkedin_url', ''),
+        "twitter_url": user.get('twitter_url', ''),
+        "instagram_url": user.get('instagram_url', ''),
+        "facebook_url": user.get('facebook_url', '')
+    }
+    
+    # Handle created_at datetime serialization
+    if 'created_at' in user:
+        created_at = user['created_at']
+        if hasattr(created_at, 'isoformat'):
+            user_data['created_at'] = created_at.isoformat()
+        else:
+            user_data['created_at'] = created_at
+    
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user": {
-            "id": user['id'],
-            "name": user['name'],
-            "email": user['email'],
-            "role": user['role'],
-            "user_number": user.get('user_number', 0),
-            "created_at": user.get('created_at'),
-            "profile_photo": user.get('profile_photo', ''),
-            "career_title": user.get('career_title', ''),
-            "phone": user.get('phone', ''),
-            "city": user.get('city', ''),
-            "country": user.get('country', ''),
-            "language": user.get('language', 'tr'),
-            "linkedin_url": user.get('linkedin_url', ''),
-            "twitter_url": user.get('twitter_url', ''),
-            "instagram_url": user.get('instagram_url', ''),
-            "facebook_url": user.get('facebook_url', '')
-        }
+        "user": user_data
     }
 
 @api_router.get("/auth/me", response_model=UserResponse)
