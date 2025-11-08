@@ -541,6 +541,9 @@ class FocusProAPITester:
         profile_success = self.test_profile_update()
         password_success = self.test_password_change()
         
+        # Test profile photo persistence (specific test requested)
+        photo_persistence_success = self.test_profile_photo_persistence()
+        
         # Test search functionality
         search_success = self.test_search_functionality()
         
@@ -563,6 +566,8 @@ class FocusProAPITester:
             critical_failures.append("ID number login not working")
         if not auth_me_success:
             critical_failures.append("Authentication token validation failing")
+        if not photo_persistence_success:
+            critical_failures.append("Profile photo persistence not working")
         
         if critical_failures:
             print("\n🚨 CRITICAL ISSUES:")
