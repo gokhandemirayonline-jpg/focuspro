@@ -168,6 +168,18 @@ backend:
       - working: true
         agent: "testing"
         comment: "Search endpoint tested successfully. GET /api/search accepts query parameter 'q' and returns structured results. Tested with multiple search terms (admin, user, video, test, focus) - all queries execute without errors and return appropriate results in the expected format."
+  
+  - task: "Şifre değiştirme endpoint'i"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Password change endpoint tested successfully. POST /api/auth/change-password accepts current_password and new_password, validates current password, updates to new password, and allows login with new credentials. Password change functionality is fully working."
 
 frontend:
   - task: "react-big-calendar kütüphanesi entegrasyonu"
