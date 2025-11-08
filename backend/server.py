@@ -949,6 +949,23 @@ async def search(q: str, current_user: dict = Depends(get_current_user)):
     
     # Search recommendations
     recommendations = await db.recommendations.find(
+        {"$or": [{"title": search_pattern}, {"description": search_pattern}]},
+        {"_id": 0}
+    ).limit(10).to_list(10)
+    recommendations_results = [{"type": "recommendation", "data": rec} for rec in recommendations]
+    
+    # Search blogs
+    blogs = await db.blogs.find(
+        {"$or": [{"title": search_pattern}, {"content": search_pattern}]},
+        {"_id": 0}
+    ).limit(10).to_list(10)
+    blogs_results = [{"type": "blog", "data": blog} for blog in blogs]
+    
+    # Combine all results
+    all_results = videos_results + meetings_results + tasks_results + goals_results + reasons_results + prospects_results + partners_results + recommendations_results + blogs_results
+    
+    return {"results": all_results[:20]}  # Limit to 20 results
+
 # Profile Update Endpoints
 @api_router.put("/auth/profile", response_model=UserResponse)
 async def update_profile(profile_data: UserUpdate, current_user: dict = Depends(get_current_user)):
