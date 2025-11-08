@@ -100,6 +100,27 @@ const FocusProApp = () => {
   const [showPartnerDetailModal, setShowPartnerDetailModal] = useState(false);
   const [partnerDetails, setPartnerDetails] = useState({ goals: [], reasons: [], meetings: [] });
   const [uploadingImage, setUploadingImage] = useState(false);
+  
+  // Profile states
+  const [profileData, setProfileData] = useState({
+    name: '',
+    career_title: '',
+    phone: '',
+    city: '',
+    country: '',
+    language: 'tr',
+    linkedin_url: '',
+    twitter_url: '',
+    instagram_url: '',
+    facebook_url: '',
+    profile_photo: ''
+  });
+  const [activeProfileTab, setActiveProfileTab] = useState('personal');
+  const [passwordData, setPasswordData] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_password: ''
+  });
 
   const [newMeeting, setNewMeeting] = useState({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled', category: 'work', color: '#3b82f6', all_day: false });
   const [newTask, setNewTask] = useState({ title: '', date: '', priority: 'medium', status: 'todo', description: '', assignee: '' });
