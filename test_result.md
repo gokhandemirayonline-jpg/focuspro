@@ -192,6 +192,18 @@ backend:
       - working: true
         agent: "testing"
         comment: "Profile photo persistence tested successfully. Test scenario completed: 1) Login with admin@focuspro.com/admin123 ✅ 2) Added profile photo using base64 test data ✅ 3) Called PUT /api/auth/profile with profile_photo field ✅ 4) Verified photo saved via GET /api/auth/me ✅ 5) Re-login and confirmed photo persistence ✅. Profile photo is properly stored in database and persists across login sessions."
+  
+  - task: "Admin kullanıcı güncelleme özellikleri"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Admin user update functionality tested comprehensively with 3 scenarios: 1) Name-only update (PUT /api/users/{user_id}) - verified only name changed, email/role preserved ✅ 2) Password update - changed password, verified login with new credentials, restored original ✅ 3) Role update - changed user role from 'user' to 'admin', verified change, restored original ✅. All admin user management operations working correctly. Password hashing, field preservation, and selective updates all functioning as expected."
 
 frontend:
   - task: "react-big-calendar kütüphanesi entegrasyonu"
