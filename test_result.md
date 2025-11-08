@@ -203,3 +203,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Google Calendar benzeri takvim arayüzü başarıyla implement edildi. Tüm görünüm seçenekleri (Gün, Hafta, 4 Gün, Ay, Planlama) çalışıyor. Filtreler ve kategori sistemi aktif. Sürükle-bırak özelliği kod olarak eklendi, manuel test edilmeli."
+  - agent: "main"
+    message: "Profil sayfası implementasyonunda oluşan backend hatalar düzeltildi. IndentationError ve gereksiz kod bloğu kaldırıldı. UserUpdate ve ChangePassword modelleri import edildi. Backend başarıyla başlatıldı. Login sayfası görsel olarak doğrulandı. Şimdi backend testine başlanacak."
