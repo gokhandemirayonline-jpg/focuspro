@@ -141,15 +141,18 @@ backend:
   
   - task: "Login ile email veya ID desteği"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Login endpoint'i güncellendi, artık email veya user_number ile giriş yapılabiliyor."
+      - working: true
+        agent: "testing"
+        comment: "Login endpoint tested successfully with both methods. Email login (admin@focuspro.com/admin123) and ID number login (0/admin123) both work correctly. Both return valid JWT tokens and user information. Authentication system is fully functional."
   
   - task: "Search endpoint düzeltmeleri"
     implemented: true
