@@ -229,12 +229,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Sürükle-bırak özelliğinin manuel testi"
-    - "Farklı kategorilerde toplantı ekleme ve görüntüleme"
-    - "Renk seçiminin toplantı görünümüne yansıması"
+    - "Login ile email veya ID desteği"
+    - "Profil güncelleme endpoint'i"
+    - "Şifre değiştirme endpoint'i"
+    - "Search endpoint düzeltmeleri"
   stuck_tasks: []
   test_all: false
-  test_priority: "sequential"
+  test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
