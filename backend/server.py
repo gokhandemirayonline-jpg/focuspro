@@ -233,7 +233,7 @@ async def create_user(user_data: UserCreate, current_user: dict = Depends(get_cu
     return UserResponse(**doc)
 
 @api_router.put("/users/{user_id}", response_model=UserResponse)
-async def update_user(user_id: str, user_data: UserCreate, current_user: dict = Depends(get_current_user)):
+async def update_user(user_id: str, user_data: UserAdminUpdate, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin access required")
     
@@ -241,15 +241,30 @@ async def update_user(user_id: str, user_data: UserCreate, current_user: dict = 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    update_data = user_data.model_dump()
-    if update_data['password']:
-        update_data['password'] = hash_password(update_data['password'])
-    else:
-        update_data['password'] = user['password']
+    # Only update fields that are provided (not None)
+    update_data = {}
+    for field, value in user_data.model_dump().items():
+        if value is not None:
+            if field == 'password' and value:  # Only hash if password is provided and not empty
+                update_data[field] = hash_password(value)
+            else:
+                update_data[field] = value
+    
+    # If no data to update, return current user
+    if not update_data:
+        return UserResponse(**user)
     
     await db.users.update_one({"id": user_id}, {"$set": update_data})
     
     updated_user = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0})
+    
+    # Fill missing fields with defaults for UserResponse
+    if 'user_number' not in updated_user:
+        updated_user['user_number'] = 0
+    for field in ['profile_photo', 'career_title', 'phone', 'city', 'country', 'language', 'linkedin_url', 'twitter_url', 'instagram_url', 'facebook_url']:
+        if field not in updated_user:
+            updated_user[field] = '' if field != 'language' else 'tr'
+    
     return UserResponse(**updated_user)
 
 @api_router.delete("/users/{user_id}")
