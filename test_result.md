@@ -126,15 +126,18 @@ backend:
   
   - task: "Profil güncelleme endpoint'i"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "UserUpdate ve ChangePassword modelleri eklendi. /auth/profile ve /auth/change-password endpoint'leri implement edildi. Backend syntax hataları düzeltildi."
+      - working: true
+        agent: "testing"
+        comment: "Profile update endpoint tested successfully. PUT /api/auth/profile accepts profile data (name, career_title, phone, city, country, language, social media links) and returns updated user information. All fields are properly updated and returned in response."
   
   - task: "Login ile email veya ID desteği"
     implemented: true
