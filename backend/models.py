@@ -44,6 +44,22 @@ class UserUpdate(BaseModel):
     facebook_url: str = None
     profile_photo: str = None
 
+class UserAdminUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
+    role: Optional[str] = None
+    career_title: Optional[str] = None
+    phone: Optional[str] = None
+    city: Optional[str] = None
+    country: Optional[str] = None
+    language: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    twitter_url: Optional[str] = None
+    instagram_url: Optional[str] = None
+    facebook_url: Optional[str] = None
+    profile_photo: Optional[str] = None
+
 class ChangePassword(BaseModel):
     current_password: str
     new_password: str
