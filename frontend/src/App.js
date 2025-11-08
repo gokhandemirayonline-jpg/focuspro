@@ -1158,6 +1158,16 @@ const FocusProApp = () => {
             {sidebarOpen && <span>Blog</span>}
           </button>
 
+          <button
+            onClick={() => setCurrentPage('profile')}
+            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
+              currentPage === 'profile' ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <User size={20} />
+            {sidebarOpen && <span>Profilim</span>}
+          </button>
+
           {currentUser?.role === 'admin' && (
             <button
               onClick={() => setCurrentPage('admin')}
