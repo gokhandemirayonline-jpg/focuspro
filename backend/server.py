@@ -1012,12 +1012,6 @@ async def change_password(password_data: ChangePassword, current_user: dict = De
     )
     
     return {"message": "Şifre başarıyla değiştirildi"}
-        {"$or": [{"title": search_pattern}, {"description": search_pattern}, {"author": search_pattern}]},
-        {"_id": 0}
-    ).limit(10).to_list(10)
-    recommendations_results = [{"type": "recommendation", "data": rec} for rec in recommendations]
-    
-    # Search blogs
     blogs = await db.blogs.find(
         {"$or": [{"title": search_pattern}, {"content": search_pattern}, {"category": search_pattern}], "published": True},
         {"_id": 0}
