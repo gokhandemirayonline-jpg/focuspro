@@ -675,9 +675,18 @@ const FocusProApp = () => {
     
     setUploadingImage(true);
     try {
+      // Upload image first
       const response = await fileAPI.uploadImage(file);
-      setProfileData(prev => ({ ...prev, profile_photo: response.data.data }));
-      alert('Profil fotoğrafı yüklendi!');
+      const imageUrl = response.data.data;
+      
+      // Update profile with new photo
+      await authAPI.updateProfile({ profile_photo: imageUrl });
+      
+      // Update local state
+      setProfileData(prev => ({ ...prev, profile_photo: imageUrl }));
+      setCurrentUser(prev => ({ ...prev, profile_photo: imageUrl }));
+      
+      alert('Profil fotoğrafı başarıyla kaydedildi!');
     } catch (error) {
       alert(error.response?.data?.detail || 'Profil fotoğrafı yüklenirken hata oluştu');
     } finally {
