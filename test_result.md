@@ -165,6 +165,12 @@ backend:
       - working: true
         agent: "main"
         comment: "KAPSAMLI TEST TAMAMLANDI - Hem backend hem frontend %100 çalışıyor! Backend API testi: 18 senaryo başarılı. Frontend testi: Email girişi (admin@focuspro.com/admin123) ✅, ID girişi (0/admin123) ✅. Token localStorage'a kaydediliyor ✅. Dashboard yükleniyor ✅. GİRİŞ SORUNU YOK - Sistem tam çalışıyor!"
+      - working: false
+        agent: "user"
+        comment: "YENİ KULLANICI KAYIT VE GİRİŞ SORUNU: Kullanıcı bildiriyor 'oluşan kullanıcılar giriş yapamıyor hala'. Yeni kullanıcı kaydı çalışıyor ama giriş yapamıyorlar."
+      - working: true
+        agent: "testing"
+        comment: "🔧 KRİTİK BUG BULUNDU VE DÜZELTİLDİ! Root cause: User model'inde password field eksikti, bu yüzden kayıt sırasında şifre veritabanına kaydedilmiyordu. Fix: models.py'da User class'ına password field eklendi. Test sonuçları: ✅ Yeni kullanıcı kaydı (testuser@example.com/test123) ✅ Email ile giriş ✅ ID ile giriş ✅ Şifre hashleme/doğrulama ✅ Admin hesabı çalışıyor. Tüm testler %100 başarılı. YENİ KULLANICILAR ARTIK GİRİŞ YAPABİLİYOR!"
   
   - task: "Search endpoint düzeltmeleri"
     implemented: true
