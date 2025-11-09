@@ -14,7 +14,7 @@ import sys
 from typing import Dict, Any
 
 # Backend URL from environment
-BACKEND_URL = "https://netmarkapp.preview.emergentagent.com"
+BACKEND_URL = "https://netmarket-manager.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class FocusProAPITester:

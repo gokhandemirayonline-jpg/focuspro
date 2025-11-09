@@ -6,7 +6,7 @@ Detailed Backend API Test for specific endpoints mentioned in review request
 import requests
 import json
 
-BACKEND_URL = "https://netmarkapp.preview.emergentagent.com"
+BACKEND_URL = "https://netmarket-manager.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_specific_endpoints():
