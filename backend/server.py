@@ -109,6 +109,28 @@ async def init_default_admin():
         )
 
 
+# Helper function to send notification to admin
+async def notify_admin(title: str, message: str, notification_type: str = "info"):
+    """Send notification to admin user"""
+    try:
+        # Find admin user
+        admin = await db.users.find_one({"role": "admin"}, {"_id": 0})
+        if admin:
+            notification_data = {
+                "id": str(uuid.uuid4()),
+                "user_id": admin['id'],
+                "title": title,
+                "message": message,
+                "type": notification_type,
+                "read": False,
+                "created_at": datetime.utcnow().isoformat()
+            }
+            await db.notifications.insert_one(notification_data)
+            logger.info(f"Admin notification sent: {title}")
+    except Exception as e:
+        logger.error(f"Failed to send admin notification: {str(e)}")
+
+
 # Root endpoint
 @api_router.get("/")
 async def root():
