@@ -171,6 +171,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "🔧 KRİTİK BUG BULUNDU VE DÜZELTİLDİ! Root cause: User model'inde password field eksikti, bu yüzden kayıt sırasında şifre veritabanına kaydedilmiyordu. Fix: models.py'da User class'ına password field eklendi. Test sonuçları: ✅ Yeni kullanıcı kaydı (testuser@example.com/test123) ✅ Email ile giriş ✅ ID ile giriş ✅ Şifre hashleme/doğrulama ✅ Admin hesabı çalışıyor. Tüm testler %100 başarılı. YENİ KULLANICILAR ARTIK GİRİŞ YAPABİLİYOR!"
+      - working: true
+        agent: "testing"
+        comment: "✅ DETAYLI KAYIT VE GİRİŞ TESTİ TAMAMLANDI - KULLANICI RAPORU DOĞRULANAMADI! Kapsamlı test sonuçları: 1) Yeni kullanıcı kaydı (mehmet.ozkan@example.com/securepass123) ✅ 2) Kayıt sonrası hemen email ile giriş ✅ 3) Kayıt sonrası hemen ID ile giriş ✅ 4) Token doğrulama (/auth/me) ✅ 5) Profil güncelleme ✅ 6) Yanlış şifre reddi ✅ 7) Çoklu kullanıcı kaydı (3 farklı kullanıcı) ✅ 8) Tüm backend API'ları (10/10 test) ✅. SONUÇ: Yeni kullanıcılar sorunsuz kayıt olup giriş yapabiliyor. Kullanıcının bildirdiği 'kayıt oluşturan kullanıcı giriş yapamıyor' sorunu mevcut değil - sistem %100 çalışıyor!"
   
   - task: "Search endpoint düzeltmeleri"
     implemented: true
