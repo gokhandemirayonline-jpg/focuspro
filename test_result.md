@@ -225,6 +225,18 @@ backend:
       - working: true
         agent: "testing"
         comment: "Admin user update functionality tested comprehensively with 3 scenarios: 1) Name-only update (PUT /api/users/{user_id}) - verified only name changed, email/role preserved ✅ 2) Password update - changed password, verified login with new credentials, restored original ✅ 3) Role update - changed user role from 'user' to 'admin', verified change, restored original ✅. All admin user management operations working correctly. Password hashing, field preservation, and selective updates all functioning as expected."
+  
+  - task: "Otomatik bildirim sistemi"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🔔 BİLDİRİM SİSTEMİ KAPSAMLI TEST TAMAMLANDI ✅ Tüm bildirim sistemi özellikleri %100 çalışıyor! Test senaryoları: 1) Yeni kullanıcı kaydı bildirimi (Test Notification User / testnotif1762730038@test.com) ✅ 2) Admin'e otomatik bildirim gönderimi ✅ 3) Bildirim içeriği doğrulama: Başlık='Yeni Kullanıcı Kaydı', Mesaj=kullanıcı adı ve email içeriyor, Tip='user' ✅ 4) Okunmamış bildirim sayısı (GET /api/notifications/unread-count) ✅ 5) Bildirim okuma (PATCH /api/notifications/{id}/read) ✅ 6) Okunmamış sayı güncelleme ✅. UUID import hatası düzeltildi. Bildirim sistemi tam operasyonel!"
 
 frontend:
   - task: "react-big-calendar kütüphanesi entegrasyonu"
