@@ -767,13 +767,37 @@ const FocusProApp = () => {
   };
 
   const addOrUpdateUser = async () => {
-    if (!newUser.name || !newUser.email) return;
+    if (!newUser.name || !newUser.email) {
+      alert('İsim ve email alanları zorunludur!');
+      return;
+    }
+    
+    // Yeni kullanıcı oluştururken şifre zorunlu
+    if (!editingUser && !newUser.password) {
+      alert('Yeni kullanıcı için şifre zorunludur!');
+      return;
+    }
     
     try {
       if (editingUser) {
-        await userAPI.update(editingUser.id, newUser);
+        // Düzenleme: sadece dolu alanları gönder
+        const updateData = {
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role
+        };
+        
+        // Şifre doldurulduysa ekle
+        if (newUser.password && newUser.password.trim() !== '') {
+          updateData.password = newUser.password;
+        }
+        
+        await userAPI.update(editingUser.id, updateData);
+        alert('Kullanıcı başarıyla güncellendi!');
       } else {
+        // Yeni kullanıcı: tüm bilgileri gönder
         await userAPI.create(newUser);
+        alert('Kullanıcı başarıyla oluşturuldu!');
       }
       
       await loadUsers();
@@ -781,7 +805,9 @@ const FocusProApp = () => {
       setEditingUser(null);
       setShowUserModal(false);
     } catch (error) {
-      alert(error.response?.data?.detail || 'İşlem başarısız!');
+      console.error('Kullanıcı işlemi hatası:', error);
+      const errorMessage = error.response?.data?.detail || 'İşlem başarısız!';
+      alert(`Hata: ${errorMessage}`);
     }
   };
 
