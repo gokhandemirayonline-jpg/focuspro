@@ -622,6 +622,15 @@ async def create_prospect(prospect_data: ProspectCreate, current_user: dict = De
     doc['added_date'] = doc['added_date'].isoformat()
     
     await db.prospects.insert_one(doc)
+    
+    # Notify admin if user is not admin
+    if current_user.get('role') != 'admin':
+        await notify_admin(
+            title="Yeni İsim Eklendi",
+            message=f"{current_user.get('name')} isim listesine yeni kişi ekledi: {prospect_data.name}",
+            notification_type="prospect"
+        )
+    
     return prospect_obj
 
 @api_router.put("/prospects/{prospect_id}", response_model=Prospect)
