@@ -141,11 +141,11 @@ backend:
   
   - task: "Login ile email veya ID desteği"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -159,6 +159,9 @@ backend:
       - working: "NA"
         agent: "main"
         comment: "JWT exception handling düzeltildi. Backend curl testi başarılı ancak frontend'te sorun olabilir. Detaylı backend ve frontend testi yapılacak."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE LOGIN TESTING COMPLETED ✅ Backend login functionality is 100% working. Tested scenarios: 1) Email login (admin@focuspro.com/admin123) ✅ 2) ID login (0/admin123) ✅ 3) JWT token validation via /api/auth/me ✅ 4) Error scenarios: wrong password, non-existent users, empty credentials, malformed JWT tokens - all properly handled ✅ 5) JWT exception handling (jwt.exceptions.JWTError fix) working correctly ✅. Backend URL https://netmarket-manager.preview.emergentagent.com is fully functional. If user still can't login, the issue is likely in frontend implementation, not backend."
   
   - task: "Search endpoint düzeltmeleri"
     implemented: true
