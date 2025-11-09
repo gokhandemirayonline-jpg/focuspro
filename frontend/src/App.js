@@ -1079,7 +1079,7 @@ const FocusProApp = () => {
               </button>
               <div className="text-center text-sm text-gray-500 mt-4">
                 <p>Test Hesabı:</p>
-                <p>Email: admin@focuspro.com veya ID: 0</p>
+                <p>Email: admin@focuspro.com veya ID: 00</p>
                 <p>Şifre: admin123</p>
               </div>
             </div>
