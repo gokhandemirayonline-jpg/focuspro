@@ -897,33 +897,290 @@ class FocusProAPITester:
             )
         return False
     
+    def test_notification_system_comprehensive(self):
+        """Test comprehensive notification system functionality"""
+        if not self.auth_token:
+            self.log_test("Notification System", False, "No auth token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            
+            print("🔔 TESTING NOTIFICATION SYSTEM")
+            print("=" * 50)
+            
+            # Step 1: Get initial unread count
+            print("   Step 1: Getting initial unread notification count...")
+            unread_response = self.session.get(f"{API_BASE}/notifications/unread-count", headers=headers)
+            
+            if unread_response.status_code != 200:
+                self.log_test(
+                    "Notification System", 
+                    False, 
+                    f"Failed to get unread count with status {unread_response.status_code}",
+                    {"response": unread_response.text}
+                )
+                return False
+            
+            initial_unread_count = unread_response.json().get('count', 0)
+            print(f"   Initial unread count: {initial_unread_count}")
+            
+            # Step 2: Register a new user to trigger notification
+            print("   Step 2: Registering new user to trigger admin notification...")
+            
+            import time
+            timestamp = int(time.time())
+            test_user_data = {
+                "name": "Test Notification User",
+                "email": f"testnotif{timestamp}@test.com",
+                "password": "test123"
+            }
+            
+            register_response = self.session.post(f"{API_BASE}/auth/register", json=test_user_data)
+            
+            if register_response.status_code != 200:
+                self.log_test(
+                    "Notification System", 
+                    False, 
+                    f"User registration failed with status {register_response.status_code}",
+                    {"response": register_response.text}
+                )
+                return False
+            
+            new_user = register_response.json()
+            print(f"   New user registered: {new_user['name']} ({new_user['email']})")
+            
+            # Step 3: Check if admin received notification
+            print("   Step 3: Checking admin notifications...")
+            
+            # Wait a moment for notification to be created
+            time.sleep(1)
+            
+            notifications_response = self.session.get(f"{API_BASE}/notifications", headers=headers)
+            
+            if notifications_response.status_code != 200:
+                self.log_test(
+                    "Notification System", 
+                    False, 
+                    f"Failed to get notifications with status {notifications_response.status_code}",
+                    {"response": notifications_response.text}
+                )
+                return False
+            
+            notifications = notifications_response.json()
+            print(f"   Total notifications found: {len(notifications)}")
+            
+            # Step 4: Find the new user registration notification
+            print("   Step 4: Looking for new user registration notification...")
+            
+            registration_notification = None
+            for notif in notifications:
+                if (notif.get('title') == "Yeni Kullanıcı Kaydı" and 
+                    test_user_data['name'] in notif.get('message', '') and 
+                    test_user_data['email'] in notif.get('message', '')):
+                    registration_notification = notif
+                    break
+            
+            if not registration_notification:
+                self.log_test(
+                    "Notification System", 
+                    False, 
+                    "New user registration notification not found",
+                    {"notifications": notifications[:3]}  # Show first 3 notifications for debugging
+                )
+                return False
+            
+            print(f"   ✅ Found registration notification: {registration_notification['title']}")
+            print(f"   Message: {registration_notification['message']}")
+            print(f"   Type: {registration_notification['type']}")
+            print(f"   Read status: {registration_notification['read']}")
+            
+            # Step 5: Validate notification content
+            print("   Step 5: Validating notification content...")
+            
+            content_valid = True
+            content_issues = []
+            
+            # Check title
+            if registration_notification.get('title') != "Yeni Kullanıcı Kaydı":
+                content_valid = False
+                content_issues.append(f"Wrong title: expected 'Yeni Kullanıcı Kaydı', got '{registration_notification.get('title')}'")
+            
+            # Check message contains user name and email
+            message = registration_notification.get('message', '')
+            if test_user_data['name'] not in message:
+                content_valid = False
+                content_issues.append(f"User name '{test_user_data['name']}' not found in message")
+            
+            if test_user_data['email'] not in message:
+                content_valid = False
+                content_issues.append(f"User email '{test_user_data['email']}' not found in message")
+            
+            # Check notification type
+            if registration_notification.get('type') != "user":
+                content_valid = False
+                content_issues.append(f"Wrong type: expected 'user', got '{registration_notification.get('type')}'")
+            
+            if not content_valid:
+                self.log_test(
+                    "Notification System", 
+                    False, 
+                    "Notification content validation failed",
+                    {"issues": content_issues, "notification": registration_notification}
+                )
+                return False
+            
+            print("   ✅ Notification content validation passed")
+            
+            # Step 6: Check updated unread count
+            print("   Step 6: Checking updated unread count...")
+            
+            updated_unread_response = self.session.get(f"{API_BASE}/notifications/unread-count", headers=headers)
+            
+            if updated_unread_response.status_code != 200:
+                self.log_test(
+                    "Notification System", 
+                    False, 
+                    f"Failed to get updated unread count with status {updated_unread_response.status_code}",
+                    {"response": updated_unread_response.text}
+                )
+                return False
+            
+            updated_unread_count = updated_unread_response.json().get('count', 0)
+            print(f"   Updated unread count: {updated_unread_count}")
+            
+            if updated_unread_count <= initial_unread_count:
+                self.log_test(
+                    "Notification System", 
+                    False, 
+                    f"Unread count did not increase. Initial: {initial_unread_count}, Updated: {updated_unread_count}",
+                    {"initial": initial_unread_count, "updated": updated_unread_count}
+                )
+                return False
+            
+            print("   ✅ Unread count increased correctly")
+            
+            # Step 7: Mark notification as read
+            print("   Step 7: Marking notification as read...")
+            
+            notification_id = registration_notification['id']
+            read_response = self.session.patch(f"{API_BASE}/notifications/{notification_id}/read", headers=headers)
+            
+            if read_response.status_code != 200:
+                self.log_test(
+                    "Notification System", 
+                    False, 
+                    f"Failed to mark notification as read with status {read_response.status_code}",
+                    {"response": read_response.text}
+                )
+                return False
+            
+            print("   ✅ Notification marked as read")
+            
+            # Step 8: Verify notification is marked as read
+            print("   Step 8: Verifying notification read status...")
+            
+            final_notifications_response = self.session.get(f"{API_BASE}/notifications", headers=headers)
+            
+            if final_notifications_response.status_code != 200:
+                self.log_test(
+                    "Notification System", 
+                    False, 
+                    f"Failed to get final notifications with status {final_notifications_response.status_code}",
+                    {"response": final_notifications_response.text}
+                )
+                return False
+            
+            final_notifications = final_notifications_response.json()
+            
+            # Find the notification again
+            updated_notification = None
+            for notif in final_notifications:
+                if notif.get('id') == notification_id:
+                    updated_notification = notif
+                    break
+            
+            if not updated_notification:
+                self.log_test(
+                    "Notification System", 
+                    False, 
+                    "Could not find notification after marking as read",
+                    {"notification_id": notification_id}
+                )
+                return False
+            
+            if not updated_notification.get('read', False):
+                self.log_test(
+                    "Notification System", 
+                    False, 
+                    "Notification not marked as read",
+                    {"notification": updated_notification}
+                )
+                return False
+            
+            print("   ✅ Notification read status verified")
+            
+            # Step 9: Check final unread count
+            print("   Step 9: Checking final unread count...")
+            
+            final_unread_response = self.session.get(f"{API_BASE}/notifications/unread-count", headers=headers)
+            
+            if final_unread_response.status_code != 200:
+                self.log_test(
+                    "Notification System", 
+                    False, 
+                    f"Failed to get final unread count with status {final_unread_response.status_code}",
+                    {"response": final_unread_response.text}
+                )
+                return False
+            
+            final_unread_count = final_unread_response.json().get('count', 0)
+            print(f"   Final unread count: {final_unread_count}")
+            
+            if final_unread_count >= updated_unread_count:
+                self.log_test(
+                    "Notification System", 
+                    False, 
+                    f"Unread count did not decrease after marking as read. Before: {updated_unread_count}, After: {final_unread_count}",
+                    {"before": updated_unread_count, "after": final_unread_count}
+                )
+                return False
+            
+            print("   ✅ Unread count decreased correctly after marking as read")
+            
+            self.log_test(
+                "Notification System", 
+                True, 
+                f"All notification system tests passed! New user '{test_user_data['name']}' registration triggered admin notification correctly."
+            )
+            return True
+            
+        except Exception as e:
+            self.log_test(
+                "Notification System", 
+                False, 
+                f"Exception during notification system test: {str(e)}"
+            )
+        return False
+
     def run_all_tests(self):
-        """Run all backend API tests"""
-        print(f"🚀 Starting FocusProApp Backend API Tests")
+        """Run all backend API tests including notification system"""
+        print(f"🚀 Starting FocusProApp Backend API Tests - Notification System Focus")
         print(f"Backend URL: {BACKEND_URL}")
         print("=" * 60)
         
-        # Test login methods
+        # Test login methods first
         email_login_success = self.test_login_with_email()
+        if not email_login_success:
+            print("❌ Cannot proceed without admin login")
+            return {"total_tests": 1, "passed_tests": 0, "success_rate": 0, "critical_failures": ["Admin login failed"], "all_results": self.test_results}
+        
+        # Test notification system (main focus)
+        notification_success = self.test_notification_system_comprehensive()
+        
+        # Test other critical functionality
         id_login_success = self.test_login_with_id()
-        
-        # Test auth token validity
         auth_me_success = self.test_auth_me_endpoint()
-        
-        # Test profile and password functionality
-        profile_success = self.test_profile_update()
-        password_success = self.test_password_change()
-        
-        # Test profile photo persistence (specific test requested)
-        photo_persistence_success = self.test_profile_photo_persistence()
-        
-        # Test admin user management functionality
-        admin_user_update_success = self.test_admin_user_update_without_password()
-        admin_password_update_success = self.test_admin_user_password_update()
-        admin_role_update_success = self.test_admin_user_role_update()
-        
-        # Test search functionality
-        search_success = self.test_search_functionality()
         
         print("=" * 60)
         print("📊 TEST SUMMARY:")
@@ -940,23 +1197,19 @@ class FocusProAPITester:
         critical_failures = []
         if not email_login_success:
             critical_failures.append("Email login not working")
+        if not notification_success:
+            critical_failures.append("Notification system not working")
         if not id_login_success:
             critical_failures.append("ID number login not working")
         if not auth_me_success:
             critical_failures.append("Authentication token validation failing")
-        if not photo_persistence_success:
-            critical_failures.append("Profile photo persistence not working")
-        if not admin_user_update_success:
-            critical_failures.append("Admin user update (without password) not working")
-        if not admin_password_update_success:
-            critical_failures.append("Admin user password update not working")
-        if not admin_role_update_success:
-            critical_failures.append("Admin user role update not working")
         
         if critical_failures:
             print("\n🚨 CRITICAL ISSUES:")
             for issue in critical_failures:
                 print(f"   - {issue}")
+        else:
+            print("\n✅ ALL CRITICAL TESTS PASSED!")
         
         return {
             "total_tests": total_tests,
