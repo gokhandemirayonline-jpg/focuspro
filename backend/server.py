@@ -652,6 +652,15 @@ async def create_partner(partner_data: PartnerCreate, current_user: dict = Depen
     doc['created_at'] = doc['created_at'].isoformat()
     
     await db.partners.insert_one(doc)
+    
+    # Notify admin if user is not admin
+    if current_user.get('role') != 'admin':
+        await notify_admin(
+            title="Yeni Partner Eklendi",
+            message=f"{current_user.get('name')} yeni bir partner ekledi: {partner_data.name}",
+            notification_type="partner"
+        )
+    
     return partner_obj
 
 @api_router.put("/partners/{partner_id}", response_model=Partner)
