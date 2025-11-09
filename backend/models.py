@@ -67,6 +67,7 @@ class ChangePassword(BaseModel):
 class User(UserBase):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    password: str  # Password field for database storage
     user_number: int = Field(default=0)  # ID numarası
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
