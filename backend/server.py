@@ -550,6 +550,15 @@ async def create_goal(goal_data: GoalCreate, current_user: dict = Depends(get_cu
     doc['created_at'] = doc['created_at'].isoformat()
     
     await db.goals.insert_one(doc)
+    
+    # Notify admin if user is not admin
+    if current_user.get('role') != 'admin':
+        await notify_admin(
+            title="Yeni Hedef Eklendi",
+            message=f"{current_user.get('name')} yeni bir hedef ekledi: {goal_data.description[:50]}{'...' if len(goal_data.description) > 50 else ''}",
+            notification_type="goal"
+        )
+    
     return goal_obj
 
 @api_router.delete("/goals/{goal_id}")
