@@ -1042,7 +1042,7 @@ const FocusProApp = () => {
                   onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
                   onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="email@example.com veya ID numarası (örn: 0)"
+                  placeholder="email@example.com veya ID numarası (örn: 01)"
                 />
               </div>
               <div>
