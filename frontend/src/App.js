@@ -2915,7 +2915,7 @@ const FocusProApp = () => {
                   {/* Basic Info */}
                   <div className="flex-1">
                     <h3 className="text-2xl font-bold text-gray-800">{currentUser?.name}</h3>
-                    <p className="text-purple-600 font-medium">ID: {currentUser?.user_number !== undefined ? currentUser.user_number : 'N/A'}</p>
+                    <p className="text-purple-600 font-medium">ID: {formatUserNumber(currentUser?.user_number)}</p>
                     {profileData.career_title && (
                       <p className="text-gray-600 mt-1">{profileData.career_title}</p>
                     )}
