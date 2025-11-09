@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-FocusProApp Backend API Test Suite
-Tests the following endpoints:
-1. Login with email and ID number
-2. Profile update
-3. Password change
-4. Search functionality
+FocusProApp Backend API Test Suite - Notification System Testing
+Tests the following notification system features:
+1. New user registration notification to admin
+2. Notification content validation (title, message, type)
+3. Unread notification count
+4. Mark notification as read functionality
+5. General backend API functionality
 """
 
 import requests
