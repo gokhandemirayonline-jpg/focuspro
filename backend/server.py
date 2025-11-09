@@ -12,6 +12,7 @@ import jwt
 from datetime import datetime, timedelta
 import bcrypt
 import base64
+import uuid
 
 from models import (
     UserCreate, UserLogin, User, UserResponse, UserUpdate, UserAdminUpdate, ChangePassword,
