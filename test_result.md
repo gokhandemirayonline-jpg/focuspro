@@ -298,9 +298,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Login ile email veya ID desteği"
-  stuck_tasks:
-    - "Login ile email veya ID desteği"
+    - "Sürükle-bırak özelliği"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
