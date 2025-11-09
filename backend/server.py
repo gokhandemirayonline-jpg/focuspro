@@ -161,6 +161,14 @@ async def register(user_data: UserCreate):
     doc['created_at'] = doc['created_at'].isoformat()
     
     await db.users.insert_one(doc)
+    
+    # Send notification to admin about new user registration
+    await notify_admin(
+        title="Yeni Kullanıcı Kaydı",
+        message=f"{user_data.name} ({user_data.email}) sisteme kayıt oldu. ID: {next_user_number:02d}",
+        notification_type="user"
+    )
+    
     return UserResponse(**doc)
 
 @api_router.post("/auth/login")
