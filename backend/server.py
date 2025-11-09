@@ -586,6 +586,15 @@ async def create_reason(reason_data: ReasonCreate, current_user: dict = Depends(
     doc['created_at'] = doc['created_at'].isoformat()
     
     await db.reasons.insert_one(doc)
+    
+    # Notify admin if user is not admin
+    if current_user.get('role') != 'admin':
+        await notify_admin(
+            title="Yeni Neden Eklendi",
+            message=f"{current_user.get('name')} yeni bir neden ekledi: {reason_data.description[:50]}{'...' if len(reason_data.description) > 50 else ''}",
+            notification_type="reason"
+        )
+    
     return reason_obj
 
 @api_router.delete("/reasons/{reason_id}")
