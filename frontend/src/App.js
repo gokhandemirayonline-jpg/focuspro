@@ -14,6 +14,12 @@ const localizer = momentLocalizer(moment);
 const DnDCalendar = withDragAndDrop(BigCalendar);
 
 const FocusProApp = () => {
+  // Helper function to format user number to 2 digits (01, 02, 03...)
+  const formatUserNumber = (num) => {
+    if (num === undefined || num === null) return 'N/A';
+    return num.toString().padStart(2, '0');
+  };
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
