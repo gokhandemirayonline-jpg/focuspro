@@ -3196,7 +3196,7 @@ const FocusProApp = () => {
                       {users.map(user => (
                         <tr key={user.id}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-purple-600">
-                            #{user.user_number || 'N/A'}
+                            #{formatUserNumber(user.user_number)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
