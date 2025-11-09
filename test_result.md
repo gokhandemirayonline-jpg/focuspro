@@ -141,11 +141,11 @@ backend:
   
   - task: "Login ile email veya ID desteği"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
@@ -153,6 +153,12 @@ backend:
       - working: true
         agent: "testing"
         comment: "Login endpoint tested successfully with both methods. Email login (admin@focuspro.com/admin123) and ID number login (0/admin123) both work correctly. Both return valid JWT tokens and user information. Authentication system is fully functional."
+      - working: false
+        agent: "user"
+        comment: "Kullanıcı giriş yapamıyor. JWT exception handling düzeltildi (jwt.JWTError → jwt.exceptions.JWTError) ancak sorun devam ediyor."
+      - working: "NA"
+        agent: "main"
+        comment: "JWT exception handling düzeltildi. Backend curl testi başarılı ancak frontend'te sorun olabilir. Detaylı backend ve frontend testi yapılacak."
   
   - task: "Search endpoint düzeltmeleri"
     implemented: true
