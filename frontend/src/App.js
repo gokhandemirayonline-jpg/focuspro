@@ -1622,15 +1622,26 @@ const FocusProApp = () => {
           </button>
 
           {currentUser?.role === 'admin' && (
-            <button
-              onClick={() => setCurrentPage('admin')}
-              className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
-                currentPage === 'admin' ? 'bg-white/20' : 'hover:bg-white/10'
-              }`}
-            >
-              <Shield size={20} />
-              {sidebarOpen && <span>Admin Panel</span>}
-            </button>
+            <>
+              <button
+                onClick={() => setCurrentPage('statistics')}
+                className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
+                  currentPage === 'statistics' ? 'bg-white/20' : 'hover:bg-white/10'
+                }`}
+              >
+                <BarChart3 size={20} />
+                {sidebarOpen && <span>İstatistikler</span>}
+              </button>
+              <button
+                onClick={() => setCurrentPage('admin')}
+                className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
+                  currentPage === 'admin' ? 'bg-white/20' : 'hover:bg-white/10'
+                }`}
+              >
+                <Shield size={20} />
+                {sidebarOpen && <span>Admin Panel</span>}
+              </button>
+            </>
           )}
         </nav>
 
