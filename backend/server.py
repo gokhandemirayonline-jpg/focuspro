@@ -1071,6 +1071,106 @@ async def search(q: str, current_user: dict = Depends(get_current_user)):
     
     return {"results": all_results[:20]}  # Limit to 20 results
 
+
+# ============= MESSAGE/INBOX ENDPOINTS =============
+@api_router.post("/messages", response_model=List[Message])
+async def send_message(message_data: MessageCreate, current_user: dict = Depends(get_current_user)):
+    """Send message to one or multiple users (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    created_messages = []
+    
+    for recipient_id in message_data.recipient_ids:
+        # Check if recipient exists
+        recipient = await db.users.find_one({"id": recipient_id}, {"_id": 0})
+        if not recipient:
+            continue
+        
+        # Create message for each recipient
+        message_dict = {
+            "id": str(uuid.uuid4()),
+            "sender_id": current_user['id'],
+            "sender_name": current_user['name'],
+            "recipient_id": recipient_id,
+            "subject": message_data.subject,
+            "content": message_data.content,
+            "type": message_data.type,
+            "read": False,
+            "created_at": datetime.utcnow().isoformat()
+        }
+        
+        await db.messages.insert_one(message_dict)
+        created_messages.append(Message(**message_dict))
+        
+        # Also create a notification for the user
+        notification_data = {
+            "id": str(uuid.uuid4()),
+            "user_id": recipient_id,
+            "title": f"Yeni Mesaj: {message_data.subject}",
+            "message": f"{current_user['name']} size bir mesaj gönderdi",
+            "type": "message",
+            "read": False,
+            "created_at": datetime.utcnow().isoformat()
+        }
+        await db.notifications.insert_one(notification_data)
+    
+    return created_messages
+
+@api_router.get("/messages", response_model=List[Message])
+async def get_user_messages(current_user: dict = Depends(get_current_user)):
+    """Get all messages for current user"""
+    messages = await db.messages.find(
+        {"recipient_id": current_user['id']},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    return [Message(**msg) for msg in messages]
+
+@api_router.get("/messages/unread-count")
+async def get_unread_message_count(current_user: dict = Depends(get_current_user)):
+    """Get count of unread messages"""
+    count = await db.messages.count_documents({
+        "recipient_id": current_user['id'],
+        "read": False
+    })
+    return {"count": count}
+
+@api_router.patch("/messages/{message_id}/read")
+async def mark_message_read(message_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark message as read"""
+    result = await db.messages.update_one(
+        {"id": message_id, "recipient_id": current_user['id']},
+        {"$set": {"read": True}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    return {"success": True}
+
+@api_router.patch("/messages/read-all")
+async def mark_all_messages_read(current_user: dict = Depends(get_current_user)):
+    """Mark all messages as read for current user"""
+    await db.messages.update_many(
+        {"recipient_id": current_user['id'], "read": False},
+        {"$set": {"read": True}}
+    )
+    return {"success": True}
+
+@api_router.delete("/messages/{message_id}")
+async def delete_message(message_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a message"""
+    result = await db.messages.delete_one({
+        "id": message_id,
+        "recipient_id": current_user['id']
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    return {"success": True}
+
+
 # Profile Update Endpoints
 @api_router.put("/auth/profile", response_model=UserResponse)
 async def update_profile(profile_data: UserUpdate, current_user: dict = Depends(get_current_user)):
