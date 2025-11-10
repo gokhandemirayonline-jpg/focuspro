@@ -37,12 +37,22 @@ export const userAPI = {
   delete: (userId) => api.delete(`/users/${userId}`),
 };
 
+// Video Category API
+export const videoCategoryAPI = {
+  getAll: () => api.get('/video-categories'),
+  create: (categoryData) => api.post('/video-categories', categoryData),
+  update: (categoryId, categoryData) => api.put(`/video-categories/${categoryId}`, categoryData),
+  delete: (categoryId) => api.delete(`/video-categories/${categoryId}`),
+};
+
 // Video API
 export const videoAPI = {
   getAll: () => api.get('/videos'),
   create: (videoData) => api.post('/videos', videoData),
   update: (videoId, videoData) => api.put(`/videos/${videoId}`, videoData),
   delete: (videoId) => api.delete(`/videos/${videoId}`),
+  trackView: (videoId) => api.post(`/videos/${videoId}/view`),
+  getStatistics: () => api.get('/videos/statistics/views'),
 };
 
 // Video Progress API
