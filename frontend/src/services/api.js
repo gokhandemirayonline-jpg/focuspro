@@ -165,4 +165,14 @@ export const fileAPI = {
   }
 };
 
+// Message/Inbox API
+export const messageAPI = {
+  getAll: () => api.get('/messages'),
+  send: (messageData) => api.post('/messages', messageData),
+  getUnreadCount: () => api.get('/messages/unread-count'),
+  markRead: (messageId) => api.patch(`/messages/${messageId}/read`),
+  markAllRead: () => api.patch('/messages/read-all'),
+  delete: (messageId) => api.delete(`/messages/${messageId}`),
+};
+
 export default api;
