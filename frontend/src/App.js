@@ -2567,6 +2567,89 @@ const FocusProApp = () => {
             </div>
           )}
 
+          {/* INBOX PAGE */}
+          {currentPage === 'inbox' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-3xl font-bold text-gray-800">Gelen Kutusu</h2>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => messageAPI.markAllRead().then(() => loadMessages())}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    Tümünü Okundu İşaretle
+                  </button>
+                  {currentUser?.role === 'admin' && (
+                    <button
+                      onClick={() => setShowSendMessageModal(true)}
+                      className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                    >
+                      <Send size={20} />
+                      Mesaj Gönder
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Messages List */}
+              <div className="space-y-3">
+                {messages.length === 0 ? (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+                    <Mail size={48} className="mx-auto text-gray-400 mb-4" />
+                    <p className="text-gray-600">Henüz mesajınız yok</p>
+                  </div>
+                ) : (
+                  messages.map(message => (
+                    <div
+                      key={message.id}
+                      onClick={() => {
+                        setSelectedMessage(message);
+                        setShowMessageDetailModal(true);
+                        if (!message.read) {
+                          markMessageAsRead(message.id);
+                        }
+                      }}
+                      className={`bg-white rounded-xl shadow-sm border p-4 cursor-pointer transition-all hover:shadow-md ${
+                        message.read ? 'border-gray-100' : 'border-purple-200 bg-purple-50'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                              {message.sender_name.charAt(0)}
+                            </div>
+                            <div>
+                              <h3 className={`font-semibold ${message.read ? 'text-gray-800' : 'text-purple-900'}`}>
+                                {message.subject}
+                              </h3>
+                              <p className="text-sm text-gray-600">
+                                Gönderen: {message.sender_name}
+                              </p>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-700 line-clamp-2 ml-13">
+                            {message.content}
+                          </p>
+                        </div>
+                        <div className="text-right ml-4">
+                          <p className="text-xs text-gray-500 mb-2">
+                            {new Date(message.created_at).toLocaleDateString('tr-TR')}
+                          </p>
+                          {!message.read && (
+                            <span className="inline-block px-2 py-1 bg-purple-600 text-white text-xs rounded-full">
+                              Yeni
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
           {/* BLOGS PAGE */}
           {currentPage === 'blogs' && !selectedBlog && (
             <div>
