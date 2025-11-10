@@ -4522,6 +4522,121 @@ const FocusProApp = () => {
         </div>
       )}
 
+      {/* Send Message Modal (Admin) */}
+      {showSendMessageModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Mesaj Gönder</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Alıcılar</label>
+                <div className="max-h-40 overflow-y-auto border rounded-lg p-3 space-y-2">
+                  {users.filter(u => u.role !== 'admin').map(user => (
+                    <label key={user.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                      <input
+                        type="checkbox"
+                        checked={newMessage.recipient_ids.includes(user.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setNewMessage({...newMessage, recipient_ids: [...newMessage.recipient_ids, user.id]});
+                          } else {
+                            setNewMessage({...newMessage, recipient_ids: newMessage.recipient_ids.filter(id => id !== user.id)});
+                          }
+                        }}
+                        className="w-4 h-4 text-purple-600 rounded"
+                      />
+                      <span className="text-sm">{user.name} ({user.email})</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">{newMessage.recipient_ids.length} kullanıcı seçildi</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Konu</label>
+                <input
+                  type="text"
+                  value={newMessage.subject}
+                  onChange={(e) => setNewMessage({...newMessage, subject: e.target.value})}
+                  placeholder="Mesaj konusu"
+                  className="w-full px-4 py-2 border rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Mesaj</label>
+                <textarea
+                  value={newMessage.content}
+                  onChange={(e) => setNewMessage({...newMessage, content: e.target.value})}
+                  placeholder="Mesaj içeriği"
+                  rows={6}
+                  className="w-full px-4 py-2 border rounded-lg"
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={sendMessage}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                >
+                  Gönder
+                </button>
+                <button
+                  onClick={() => {
+                    setShowSendMessageModal(false);
+                    setNewMessage({ subject: '', content: '', recipient_ids: [] });
+                  }}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Message Detail Modal */}
+      {showMessageDetailModal && selectedMessage && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-800">{selectedMessage.subject}</h3>
+              <button
+                onClick={() => {
+                  setShowMessageDetailModal(false);
+                  setSelectedMessage(null);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="border-b pb-4 mb-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  {selectedMessage.sender_name.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-800">{selectedMessage.sender_name}</p>
+                  <p className="text-sm text-gray-600">
+                    {new Date(selectedMessage.created_at).toLocaleString('tr-TR')}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="prose max-w-none mb-6">
+              <p className="text-gray-700 whitespace-pre-wrap">{selectedMessage.content}</p>
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={() => deleteMessage(selectedMessage.id)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Mesajı Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Event Modal (Admin) */}
       {showEventModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
