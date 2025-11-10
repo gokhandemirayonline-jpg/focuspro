@@ -400,6 +400,33 @@ async def delete_video(video_id: str, current_user: dict = Depends(get_current_u
     
     return {"message": "Video deleted successfully"}
 
+@api_router.post("/videos/{video_id}/view")
+async def track_video_view(video_id: str, current_user: dict = Depends(get_current_user)):
+    """Track video view/watch"""
+    result = await db.videos.update_one(
+        {"id": video_id},
+        {"$inc": {"view_count": 1}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Video not found")
+    
+    return {"success": True}
+
+@api_router.get("/videos/statistics/views")
+async def get_video_statistics(current_user: dict = Depends(get_current_user)):
+    """Get video view statistics (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    videos = await db.videos.find({}, {"_id": 0}).sort("view_count", -1).to_list(1000)
+    
+    return {
+        "total_videos": len(videos),
+        "total_views": sum(v.get('view_count', 0) for v in videos),
+        "most_watched": videos[:10] if videos else []
+    }
+
 
 # ============= VIDEO PROGRESS ENDPOINTS =============
 @api_router.get("/progress", response_model=List[VideoProgress])
