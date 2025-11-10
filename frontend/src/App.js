@@ -65,6 +65,12 @@ const FocusProApp = () => {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [comment, setComment] = useState('');
   const [videoWatched, setVideoWatched] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [newCategory, setNewCategory] = useState({ name: '', description: '', order: 0 });
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [editingVideo, setEditingVideo] = useState(null);
+  const [newVideo, setNewVideo] = useState({ title: '', youtube_id: '', description: '', duration: '', category: '', category_id: '' });
   
   // New features states
   const [notifications, setNotifications] = useState([]);
