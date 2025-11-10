@@ -48,7 +48,9 @@ const FocusProApp = () => {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showMobileCalendar, setShowMobileCalendar] = useState(false);
 
+  const [videoCategories, setVideoCategories] = useState([]);
   const [videos, setVideos] = useState([]);
+  const [videoStatistics, setVideoStatistics] = useState(null);
   const [users, setUsers] = useState([]);
   const [userProgress, setUserProgress] = useState([]);
   const [meetings, setMeetings] = useState([]);
