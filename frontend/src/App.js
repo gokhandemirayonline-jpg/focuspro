@@ -465,6 +465,99 @@ const FocusProApp = () => {
     }
   };
 
+  // Statistics functions
+  const loadStatistics = async () => {
+    if (currentUser?.role !== 'admin') return;
+    
+    try {
+      const [dashboardRes, registrationsRes, activeUsersRes, eventsRes] = await Promise.all([
+        statisticsAPI.getDashboard(),
+        statisticsAPI.getUserRegistrations(),
+        statisticsAPI.getActiveUsers(),
+        statisticsAPI.getEventParticipation()
+      ]);
+      
+      setDashboardStats(dashboardRes.data);
+      setUserRegistrationData(registrationsRes.data.data);
+      setActiveUsersData(activeUsersRes.data.data);
+      setEventParticipationData(eventsRes.data.data);
+    } catch (error) {
+      console.error('İstatistikler yüklenemedi:', error);
+    }
+  };
+
+  const exportToExcel = async () => {
+    try {
+      const response = await statisticsAPI.exportUsers();
+      const users = response.data.data;
+      
+      // Prepare data for Excel
+      const excelData = users.map(user => ({
+        'ID': formatUserNumber(user.user_number),
+        'İsim': user.name,
+        'Email': user.email,
+        'Rol': user.role === 'admin' ? 'Admin' : 'Kullanıcı',
+        'Kayıt Tarihi': new Date(user.created_at).toLocaleDateString('tr-TR'),
+        'Hedef Sayısı': user.goals_count || 0,
+        'Partner Sayısı': user.partners_count || 0,
+        'Prospect Sayısı': user.prospects_count || 0,
+        'Toplam Aktivite': user.total_activity || 0
+      }));
+      
+      // Create worksheet
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Kullanıcılar');
+      
+      // Download
+      XLSX.writeFile(wb, `FocusPro_Kullanicilar_${new Date().toLocaleDateString('tr-TR')}.xlsx`);
+      
+      alert('Excel dosyası indirildi!');
+    } catch (error) {
+      alert('Excel dosyası oluşturulamadı!');
+    }
+  };
+
+  const exportToPDF = async () => {
+    try {
+      const response = await statisticsAPI.exportUsers();
+      const users = response.data.data;
+      
+      const doc = new jsPDF();
+      
+      // Title
+      doc.setFontSize(18);
+      doc.text('FocusPro Kullanıcı Raporu', 14, 20);
+      
+      doc.setFontSize(11);
+      doc.text(`Tarih: ${new Date().toLocaleDateString('tr-TR')}`, 14, 30);
+      
+      // Table
+      const tableData = users.map(user => [
+        formatUserNumber(user.user_number),
+        user.name,
+        user.email,
+        user.role === 'admin' ? 'Admin' : 'Kullanıcı',
+        new Date(user.created_at).toLocaleDateString('tr-TR'),
+        user.total_activity || 0
+      ]);
+      
+      doc.autoTable({
+        startY: 35,
+        head: [['ID', 'İsim', 'Email', 'Rol', 'Kayıt Tarihi', 'Aktivite']],
+        body: tableData,
+        styles: { font: 'helvetica', fontSize: 8 },
+        headStyles: { fillColor: [139, 92, 246] }
+      });
+      
+      doc.save(`FocusPro_Rapor_${new Date().toLocaleDateString('tr-TR')}.pdf`);
+      
+      alert('PDF dosyası indirildi!');
+    } catch (error) {
+      alert('PDF dosyası oluşturulamadı!');
+    }
+  };
+
   const loadRecommendations = async () => {
     try {
       const response = await recommendationAPI.getAll();
