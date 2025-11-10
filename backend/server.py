@@ -1171,6 +1171,152 @@ async def delete_message(message_id: str, current_user: dict = Depends(get_curre
     return {"success": True}
 
 
+# ============= STATISTICS & ANALYTICS ENDPOINTS =============
+@api_router.get("/statistics/dashboard")
+async def get_dashboard_statistics(current_user: dict = Depends(get_current_user)):
+    """Get dashboard statistics (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Total users
+    total_users = await db.users.count_documents({})
+    
+    # Users registered today
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    users_today = await db.users.count_documents({
+        "created_at": {"$gte": today_start.isoformat()}
+    })
+    
+    # Active users (registered in last 7 days)
+    seven_days_ago = datetime.utcnow() - timedelta(days=7)
+    active_users = await db.users.count_documents({
+        "created_at": {"$gte": seven_days_ago.isoformat()}
+    })
+    
+    # Total counts
+    total_goals = await db.goals.count_documents({})
+    total_partners = await db.partners.count_documents({})
+    total_events = await db.events.count_documents({})
+    total_prospects = await db.prospects.count_documents({})
+    total_videos = await db.videos.count_documents({})
+    total_messages = await db.messages.count_documents({})
+    
+    return {
+        "total_users": total_users,
+        "users_today": users_today,
+        "active_users": active_users,
+        "total_goals": total_goals,
+        "total_partners": total_partners,
+        "total_events": total_events,
+        "total_prospects": total_prospects,
+        "total_videos": total_videos,
+        "total_messages": total_messages
+    }
+
+@api_router.get("/statistics/user-registrations")
+async def get_user_registration_trend(current_user: dict = Depends(get_current_user)):
+    """Get user registration trend for last 30 days (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Get all users
+    users = await db.users.find({}, {"_id": 0, "created_at": 1}).to_list(None)
+    
+    # Group by date
+    registrations_by_date = {}
+    for i in range(30):
+        date = (datetime.utcnow() - timedelta(days=i)).strftime('%Y-%m-%d')
+        registrations_by_date[date] = 0
+    
+    for user in users:
+        try:
+            user_date = datetime.fromisoformat(user['created_at']).strftime('%Y-%m-%d')
+            if user_date in registrations_by_date:
+                registrations_by_date[user_date] += 1
+        except:
+            continue
+    
+    # Convert to list format
+    data = [{"date": date, "count": count} for date, count in sorted(registrations_by_date.items())]
+    
+    return {"data": data}
+
+@api_router.get("/statistics/active-users")
+async def get_most_active_users(current_user: dict = Depends(get_current_user)):
+    """Get most active users by their activity counts (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    users = await db.users.find({}, {"_id": 0}).to_list(None)
+    
+    user_activities = []
+    for user in users:
+        if user.get('role') == 'admin':
+            continue
+            
+        goals_count = await db.goals.count_documents({"user_id": user['id']})
+        partners_count = await db.partners.count_documents({"user_id": user['id']})
+        prospects_count = await db.prospects.count_documents({"user_id": user['id']})
+        reasons_count = await db.reasons.count_documents({"user_id": user['id']})
+        
+        total_activity = goals_count + partners_count + prospects_count + reasons_count
+        
+        user_activities.append({
+            "name": user.get('name', 'Unknown'),
+            "email": user.get('email', ''),
+            "goals": goals_count,
+            "partners": partners_count,
+            "prospects": prospects_count,
+            "reasons": reasons_count,
+            "total": total_activity
+        })
+    
+    # Sort by total activity
+    user_activities.sort(key=lambda x: x['total'], reverse=True)
+    
+    return {"data": user_activities[:10]}  # Top 10 users
+
+@api_router.get("/statistics/event-participation")
+async def get_event_participation_stats(current_user: dict = Depends(get_current_user)):
+    """Get event participation statistics (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    events = await db.events.find({}, {"_id": 0}).to_list(None)
+    
+    event_stats = []
+    for event in events:
+        registrations_count = await db.event_registrations.count_documents({"event_id": event['id']})
+        
+        event_stats.append({
+            "event_name": event['title'],
+            "date": event['date'],
+            "participants": registrations_count
+        })
+    
+    # Sort by participants
+    event_stats.sort(key=lambda x: x['participants'], reverse=True)
+    
+    return {"data": event_stats}
+
+@api_router.get("/statistics/export-users")
+async def export_users_data(current_user: dict = Depends(get_current_user)):
+    """Export all users data for Excel/PDF (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    users = await db.users.find({}, {"_id": 0, "password": 0}).to_list(None)
+    
+    # Add activity counts for each user
+    for user in users:
+        user['goals_count'] = await db.goals.count_documents({"user_id": user['id']})
+        user['partners_count'] = await db.partners.count_documents({"user_id": user['id']})
+        user['prospects_count'] = await db.prospects.count_documents({"user_id": user['id']})
+        user['total_activity'] = user['goals_count'] + user['partners_count'] + user['prospects_count']
+    
+    return {"data": users}
+
+
 # Profile Update Endpoints
 @api_router.put("/auth/profile", response_model=UserResponse)
 async def update_profile(profile_data: UserUpdate, current_user: dict = Depends(get_current_user)):
