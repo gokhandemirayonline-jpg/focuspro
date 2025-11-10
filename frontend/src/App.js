@@ -97,6 +97,12 @@ const FocusProApp = () => {
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [showMessageDetailModal, setShowMessageDetailModal] = useState(false);
   
+  // Statistics states
+  const [dashboardStats, setDashboardStats] = useState(null);
+  const [userRegistrationData, setUserRegistrationData] = useState([]);
+  const [activeUsersData, setActiveUsersData] = useState([]);
+  const [eventParticipationData, setEventParticipationData] = useState([]);
+  
   const [showMeetingModal, setShowMeetingModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
