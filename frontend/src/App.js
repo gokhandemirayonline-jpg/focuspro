@@ -312,12 +312,110 @@ const FocusProApp = () => {
     }
   };
 
+  const loadVideoCategories = async () => {
+    try {
+      const response = await videoCategoryAPI.getAll();
+      setVideoCategories(response.data);
+    } catch (error) {
+      console.error('Video kategorileri yüklenemedi:', error);
+    }
+  };
+
   const loadVideos = async () => {
     try {
       const response = await videoAPI.getAll();
       setVideos(response.data);
     } catch (error) {
       console.error('Videolar yüklenemedi:', error);
+    }
+  };
+
+  const loadVideoStatistics = async () => {
+    if (currentUser?.role !== 'admin') return;
+    
+    try {
+      const response = await videoAPI.getStatistics();
+      setVideoStatistics(response.data);
+    } catch (error) {
+      console.error('Video istatistikleri yüklenemedi:', error);
+    }
+  };
+
+  const addOrUpdateCategory = async () => {
+    if (!newCategory.name) {
+      alert('Kategori adı gerekli!');
+      return;
+    }
+    
+    try {
+      if (editingCategory) {
+        await videoCategoryAPI.update(editingCategory.id, newCategory);
+      } else {
+        await videoCategoryAPI.create(newCategory);
+      }
+      await loadVideoCategories();
+      setShowCategoryModal(false);
+      setEditingCategory(null);
+      setNewCategory({ name: '', description: '', order: 0 });
+    } catch (error) {
+      alert('İşlem başarısız!');
+    }
+  };
+
+  const deleteCategory = async (categoryId) => {
+    if (!window.confirm('Bu kategoriyi silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+    
+    try {
+      await videoCategoryAPI.delete(categoryId);
+      await loadVideoCategories();
+    } catch (error) {
+      alert('Kategori silinemedi!');
+    }
+  };
+
+  const addOrUpdateVideo = async () => {
+    if (!newVideo.title || !newVideo.youtube_id) {
+      alert('Video başlığı ve YouTube ID gerekli!');
+      return;
+    }
+    
+    try {
+      if (editingVideo) {
+        await videoAPI.update(editingVideo.id, newVideo);
+      } else {
+        await videoAPI.create(newVideo);
+      }
+      await loadVideos();
+      await loadVideoStatistics();
+      setShowVideoModal(false);
+      setEditingVideo(null);
+      setNewVideo({ title: '', youtube_id: '', description: '', duration: '', category: '', category_id: '' });
+    } catch (error) {
+      alert('İşlem başarısız!');
+    }
+  };
+
+  const deleteVideo = async (videoId) => {
+    if (!window.confirm('Bu videoyu silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+    
+    try {
+      await videoAPI.delete(videoId);
+      await loadVideos();
+      await loadVideoStatistics();
+    } catch (error) {
+      alert('Video silinemedi!');
+    }
+  };
+
+  const trackVideoView = async (videoId) => {
+    try {
+      await videoAPI.trackView(videoId);
+    } catch (error) {
+      console.error('Video izlenme kaydedilemedi:', error);
     }
   };
 
