@@ -3873,7 +3873,34 @@ const FocusProApp = () => {
             <div>
               <h2 className="text-3xl font-bold text-gray-800 mb-6">Admin Panel</h2>
 
-              {/* Users Management */}
+              {/* Tabs */}
+              <div className="mb-6 border-b border-gray-200">
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setAdminTab('users')}
+                    className={`px-4 py-2 font-medium transition-all ${
+                      adminTab === 'users'
+                        ? 'text-purple-600 border-b-2 border-purple-600'
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    Kullanıcı Yönetimi
+                  </button>
+                  <button
+                    onClick={() => setAdminTab('trainings')}
+                    className={`px-4 py-2 font-medium transition-all ${
+                      adminTab === 'trainings'
+                        ? 'text-purple-600 border-b-2 border-purple-600'
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    Eğitim Yönetimi
+                  </button>
+                </div>
+              </div>
+
+              {/* Users Management Tab */}
+              {adminTab === 'users' && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold text-gray-800">Kullanıcı Yönetimi ({getFilteredUsers().length})</h3>
