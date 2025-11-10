@@ -845,6 +845,137 @@ const FocusProApp = () => {
     }
   };
 
+  // Admin Panel - Advanced User Management Functions
+  const toggleUserSelection = (userId) => {
+    setSelectedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedUsers.length === getFilteredUsers().length) {
+      setSelectedUsers([]);
+    } else {
+      setSelectedUsers(getFilteredUsers().map(u => u.id));
+    }
+  };
+
+  const bulkDeleteUsers = async () => {
+    if (selectedUsers.includes(currentUser.id)) {
+      alert('Kendi hesabınızı toplu silme işlemine dahil edemezsiniz!');
+      return;
+    }
+    
+    if (!window.confirm(`${selectedUsers.length} kullanıcıyı silmek istediğinizden emin misiniz?`)) {
+      return;
+    }
+    
+    try {
+      await Promise.all(selectedUsers.map(id => userAPI.delete(id)));
+      await loadUsers();
+      setSelectedUsers([]);
+      alert('Kullanıcılar başarıyla silindi!');
+    } catch (error) {
+      alert('Toplu silme işlemi başarısız!');
+    }
+  };
+
+  const bulkChangeRole = async (newRole) => {
+    if (selectedUsers.includes(currentUser.id)) {
+      alert('Kendi rolünüzü değiştiremezsiniz!');
+      return;
+    }
+    
+    if (!window.confirm(`${selectedUsers.length} kullanıcının rolünü ${newRole} olarak değiştirmek istediğinizden emin misiniz?`)) {
+      return;
+    }
+    
+    try {
+      await Promise.all(
+        selectedUsers.map(userId => {
+          const user = users.find(u => u.id === userId);
+          return userAPI.update(userId, { ...user, role: newRole });
+        })
+      );
+      await loadUsers();
+      setSelectedUsers([]);
+      alert('Roller başarıyla güncellendi!');
+    } catch (error) {
+      alert('Toplu rol değiştirme başarısız!');
+    }
+  };
+
+  const sendBulkEmail = async () => {
+    if (!bulkEmailData.subject || !bulkEmailData.message) {
+      alert('Konu ve mesaj alanlarını doldurun!');
+      return;
+    }
+    
+    // Mock email sending - in real app, call email API
+    alert(`${selectedUsers.length} kullanıcıya email gönderildi!`);
+    setShowBulkEmailModal(false);
+    setBulkEmailData({ subject: '', message: '' });
+    setSelectedUsers([]);
+  };
+
+  const getFilteredUsers = () => {
+    return users.filter(user => {
+      // Role filter
+      if (userFilters.role !== 'all' && user.role !== userFilters.role) {
+        return false;
+      }
+      
+      // Date filter
+      if (userFilters.dateFrom) {
+        const userDate = new Date(user.created_at);
+        const fromDate = new Date(userFilters.dateFrom);
+        if (userDate < fromDate) return false;
+      }
+      
+      if (userFilters.dateTo) {
+        const userDate = new Date(user.created_at);
+        const toDate = new Date(userFilters.dateTo);
+        if (userDate > toDate) return false;
+      }
+      
+      // Activity filter (mock - in real app, check last login)
+      // For now, we'll consider users active if created in last 30 days
+      if (userFilters.activityStatus !== 'all') {
+        const daysSinceCreation = (Date.now() - new Date(user.created_at)) / (1000 * 60 * 60 * 24);
+        if (userFilters.activityStatus === 'active' && daysSinceCreation > 30) return false;
+        if (userFilters.activityStatus === 'inactive' && daysSinceCreation <= 30) return false;
+      }
+      
+      return true;
+    });
+  };
+
+  const viewUserDetails = async (user) => {
+    setSelectedUserDetail(user);
+    setShowUserDetailModal(true);
+    
+    // Load user activities
+    try {
+      const [goalsRes, partnersRes, prospectsRes, reasonsRes] = await Promise.all([
+        goalAPI.getAll(),
+        partnerAPI.getAll(),
+        prospectAPI.getAll(),
+        reasonAPI.getAll()
+      ]);
+      
+      setUserActivities({
+        goals: goalsRes.data.filter(g => g.user_id === user.id),
+        partners: partnersRes.data.filter(p => p.user_id === user.id),
+        prospects: prospectsRes.data.filter(p => p.user_id === user.id),
+        reasons: reasonsRes.data.filter(r => r.user_id === user.id)
+      });
+    } catch (error) {
+      console.error('Kullanıcı aktiviteleri yüklenemedi:', error);
+    }
+  };
+
   const addOrUpdateEvent = async () => {
     if (!newEvent.title || !newEvent.date) return;
     
