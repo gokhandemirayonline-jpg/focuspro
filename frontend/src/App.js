@@ -2765,6 +2765,186 @@ const FocusProApp = () => {
             </div>
           )}
 
+          {/* STATISTICS PAGE */}
+          {currentPage === 'statistics' && currentUser?.role === 'admin' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-3xl font-bold text-gray-800">İstatistikler & Analitik</h2>
+                <div className="flex gap-3">
+                  <button
+                    onClick={exportToExcel}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700"
+                  >
+                    <Download size={20} />
+                    Excel İndir
+                  </button>
+                  <button
+                    onClick={exportToPDF}
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-700"
+                  >
+                    <Download size={20} />
+                    PDF İndir
+                  </button>
+                </div>
+              </div>
+
+              {/* Dashboard Cards */}
+              {dashboardStats && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                  <div className="bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl p-6 text-white shadow-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <Users size={32} className="opacity-80" />
+                      <span className="text-3xl font-bold">{dashboardStats.total_users}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold">Toplam Kullanıcı</h3>
+                    <p className="text-sm opacity-80">Sistemdeki tüm kullanıcılar</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-6 text-white shadow-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <UserPlus size={32} className="opacity-80" />
+                      <span className="text-3xl font-bold">{dashboardStats.users_today}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold">Bugün Kayıt</h3>
+                    <p className="text-sm opacity-80">Bugün kayıt olan kullanıcılar</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-xl p-6 text-white shadow-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <Activity size={32} className="opacity-80" />
+                      <span className="text-3xl font-bold">{dashboardStats.active_users}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold">Aktif Kullanıcı</h3>
+                    <p className="text-sm opacity-80">Son 7 gün içinde</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-orange-500 to-orange-700 rounded-xl p-6 text-white shadow-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <Target size={32} className="opacity-80" />
+                      <span className="text-3xl font-bold">{dashboardStats.total_goals}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold">Toplam Hedef</h3>
+                    <p className="text-sm opacity-80">Oluşturulan hedefler</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-pink-500 to-pink-700 rounded-xl p-6 text-white shadow-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <Users size={32} className="opacity-80" />
+                      <span className="text-3xl font-bold">{dashboardStats.total_partners}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold">Toplam Partner</h3>
+                    <p className="text-sm opacity-80">Eklenen partnerler</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl p-6 text-white shadow-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <CalendarDays size={32} className="opacity-80" />
+                      <span className="text-3xl font-bold">{dashboardStats.total_events}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold">Toplam Etkinlik</h3>
+                    <p className="text-sm opacity-80">Oluşturulan etkinlikler</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-teal-500 to-teal-700 rounded-xl p-6 text-white shadow-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <ListChecks size={32} className="opacity-80" />
+                      <span className="text-3xl font-bold">{dashboardStats.total_prospects}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold">İsim Listesi</h3>
+                    <p className="text-sm opacity-80">Toplam kayıtlar</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-xl p-6 text-white shadow-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <Mail size={32} className="opacity-80" />
+                      <span className="text-3xl font-bold">{dashboardStats.total_messages}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold">Toplam Mesaj</h3>
+                    <p className="text-sm opacity-80">Gönderilen mesajlar</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                {/* User Registration Trend */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-4">Kullanıcı Kayıt Trendi (30 Gün)</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={userRegistrationData.slice(-30)}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" tick={{fontSize: 10}} />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="count" stroke="#8B5CF6" strokeWidth={2} name="Kayıt Sayısı" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Event Participation */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-4">Etkinlik Katılımları</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={eventParticipationData.slice(0, 8)}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="event_name" tick={{fontSize: 10}} />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="participants" fill="#3B82F6" name="Katılımcı" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Active Users Table */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">En Aktif Kullanıcılar</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sıra</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İsim</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hedefler</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Partnerler</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prospects</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nedenler</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Toplam</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {activeUsersData.map((user, index) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-white font-bold ${
+                              index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-600' : 'bg-gray-300'
+                            }`}>
+                              {index + 1}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-900">{user.goals}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-900">{user.partners}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-900">{user.prospects}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-900">{user.reasons}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-bold">
+                              {user.total}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* BLOGS PAGE */}
           {currentPage === 'blogs' && !selectedBlog && (
             <div>
