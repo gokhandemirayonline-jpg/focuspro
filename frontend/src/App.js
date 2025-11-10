@@ -71,6 +71,20 @@ const FocusProApp = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   
+  // Admin panel advanced features
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [userFilters, setUserFilters] = useState({
+    role: 'all', // all, admin, user
+    dateFrom: '',
+    dateTo: '',
+    activityStatus: 'all' // all, active, inactive
+  });
+  const [showUserDetailModal, setShowUserDetailModal] = useState(false);
+  const [selectedUserDetail, setSelectedUserDetail] = useState(null);
+  const [userActivities, setUserActivities] = useState(null);
+  const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
+  const [bulkEmailData, setBulkEmailData] = useState({ subject: '', message: '' });
+  
   const [showMeetingModal, setShowMeetingModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
