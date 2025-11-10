@@ -403,6 +403,57 @@ const FocusProApp = () => {
     }
   };
 
+  const loadMessages = async () => {
+    try {
+      const response = await messageAPI.getAll();
+      setMessages(response.data);
+      const countResponse = await messageAPI.getUnreadCount();
+      setUnreadMessageCount(countResponse.data.count);
+    } catch (error) {
+      console.error('Messages yüklenemedi:', error);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.subject || !newMessage.content || newMessage.recipient_ids.length === 0) {
+      alert('Tüm alanları doldurun ve en az bir alıcı seçin!');
+      return;
+    }
+    
+    try {
+      await messageAPI.send(newMessage);
+      setShowSendMessageModal(false);
+      setNewMessage({ subject: '', content: '', recipient_ids: [] });
+      alert('Mesaj başarıyla gönderildi!');
+    } catch (error) {
+      alert('Mesaj gönderilemedi!');
+    }
+  };
+
+  const markMessageAsRead = async (messageId) => {
+    try {
+      await messageAPI.markRead(messageId);
+      await loadMessages();
+    } catch (error) {
+      console.error('Mesaj işaretlenemedi:', error);
+    }
+  };
+
+  const deleteMessage = async (messageId) => {
+    if (!window.confirm('Bu mesajı silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+    
+    try {
+      await messageAPI.delete(messageId);
+      await loadMessages();
+      setShowMessageDetailModal(false);
+      setSelectedMessage(null);
+    } catch (error) {
+      alert('Mesaj silinemedi!');
+    }
+  };
+
   const loadRecommendations = async () => {
     try {
       const response = await recommendationAPI.getAll();
