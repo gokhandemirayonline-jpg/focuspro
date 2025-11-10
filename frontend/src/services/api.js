@@ -175,4 +175,13 @@ export const messageAPI = {
   delete: (messageId) => api.delete(`/messages/${messageId}`),
 };
 
+// Statistics & Analytics API
+export const statisticsAPI = {
+  getDashboard: () => api.get('/statistics/dashboard'),
+  getUserRegistrations: () => api.get('/statistics/user-registrations'),
+  getActiveUsers: () => api.get('/statistics/active-users'),
+  getEventParticipation: () => api.get('/statistics/event-participation'),
+  exportUsers: () => api.get('/statistics/export-users'),
+};
+
 export default api;
