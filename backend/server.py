@@ -16,6 +16,7 @@ import uuid
 
 from models import (
     UserCreate, UserLogin, User, UserResponse, UserUpdate, UserAdminUpdate, ChangePassword,
+    VideoCategoryCreate, VideoCategory,
     VideoCreate, Video,
     VideoProgress, VideoProgressBase,
     MeetingCreate, Meeting,
