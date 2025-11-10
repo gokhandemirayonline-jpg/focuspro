@@ -3312,7 +3312,7 @@ const FocusProApp = () => {
               {/* Users Management */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-gray-800">Kullanıcı Yönetimi</h3>
+                  <h3 className="text-xl font-bold text-gray-800">Kullanıcı Yönetimi ({getFilteredUsers().length})</h3>
                   <button
                     onClick={() => {
                       setShowUserModal(true);
@@ -3325,10 +3325,100 @@ const FocusProApp = () => {
                     Yeni Kullanıcı
                   </button>
                 </div>
+
+                {/* Filters */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Rol</label>
+                    <select
+                      value={userFilters.role}
+                      onChange={(e) => setUserFilters({...userFilters, role: e.target.value})}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="all">Tümü</option>
+                      <option value="admin">Admin</option>
+                      <option value="user">Kullanıcı</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Başlangıç Tarihi</label>
+                    <input
+                      type="date"
+                      value={userFilters.dateFrom}
+                      onChange={(e) => setUserFilters({...userFilters, dateFrom: e.target.value})}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Bitiş Tarihi</label>
+                    <input
+                      type="date"
+                      value={userFilters.dateTo}
+                      onChange={(e) => setUserFilters({...userFilters, dateTo: e.target.value})}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Aktivite</label>
+                    <select
+                      value={userFilters.activityStatus}
+                      onChange={(e) => setUserFilters({...userFilters, activityStatus: e.target.value})}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="all">Tümü</option>
+                      <option value="active">Aktif (30 gün)</option>
+                      <option value="inactive">Pasif</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Bulk Actions */}
+                {selectedUsers.length > 0 && (
+                  <div className="mb-4 p-3 bg-purple-50 rounded-lg flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700">
+                      {selectedUsers.length} kullanıcı seçildi
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setShowBulkEmailModal(true)}
+                        className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
+                      >
+                        Email Gönder
+                      </button>
+                      <button
+                        onClick={() => bulkChangeRole('admin')}
+                        className="px-3 py-1.5 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700"
+                      >
+                        Admin Yap
+                      </button>
+                      <button
+                        onClick={() => bulkChangeRole('user')}
+                        className="px-3 py-1.5 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700"
+                      >
+                        Kullanıcı Yap
+                      </button>
+                      <button
+                        onClick={bulkDeleteUsers}
+                        className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700"
+                      >
+                        Toplu Sil
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
+                        <th className="px-4 py-3 text-left">
+                          <input
+                            type="checkbox"
+                            checked={selectedUsers.length === getFilteredUsers().length && getFilteredUsers().length > 0}
+                            onChange={toggleSelectAll}
+                            className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                          />
+                        </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID No</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İsim</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
@@ -3338,8 +3428,16 @@ const FocusProApp = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {users.map(user => (
-                        <tr key={user.id}>
+                      {getFilteredUsers().map(user => (
+                        <tr key={user.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-4">
+                            <input
+                              type="checkbox"
+                              checked={selectedUsers.includes(user.id)}
+                              onChange={() => toggleUserSelection(user.id)}
+                              className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                            />
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-purple-600">
                             #{formatUserNumber(user.user_number)}
                           </td>
@@ -3355,20 +3453,29 @@ const FocusProApp = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             {new Date(user.created_at).toLocaleDateString('tr-TR')}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm flex gap-2">
+                            <button
+                              onClick={() => viewUserDetails(user)}
+                              className="text-green-600 hover:text-green-700"
+                              title="Detayları Gör"
+                            >
+                              <Eye size={16} />
+                            </button>
                             <button
                               onClick={() => {
                                 setEditingUser(user);
                                 setNewUser({ ...user, password: '' });
                                 setShowUserModal(true);
                               }}
-                              className="text-blue-600 hover:text-blue-700 mr-3"
+                              className="text-blue-600 hover:text-blue-700"
+                              title="Düzenle"
                             >
                               <Edit size={16} />
                             </button>
                             <button
                               onClick={() => deleteUser(user.id)}
                               className="text-red-600 hover:text-red-700"
+                              title="Sil"
                             >
                               <Trash2 size={16} />
                             </button>
