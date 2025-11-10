@@ -280,6 +280,7 @@ const FocusProApp = () => {
   const loadAllData = async () => {
     try {
       await Promise.all([
+        loadVideoCategories(),
         loadVideos(),
         loadUserProgress(),
         loadMeetings(),
@@ -296,7 +297,8 @@ const FocusProApp = () => {
         loadBlogs(),
         loadMessages(),
         currentUser?.role === 'admin' ? loadUsers() : Promise.resolve(),
-        currentUser?.role === 'admin' ? loadStatistics() : Promise.resolve()
+        currentUser?.role === 'admin' ? loadStatistics() : Promise.resolve(),
+        currentUser?.role === 'admin' ? loadVideoStatistics() : Promise.resolve()
       ]);
     } catch (error) {
       console.error('Veri yükleme hatası:', error);
