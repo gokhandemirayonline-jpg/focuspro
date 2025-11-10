@@ -85,6 +85,14 @@ const FocusProApp = () => {
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
   const [bulkEmailData, setBulkEmailData] = useState({ subject: '', message: '' });
   
+  // Message/Inbox states
+  const [messages, setMessages] = useState([]);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [showSendMessageModal, setShowSendMessageModal] = useState(false);
+  const [newMessage, setNewMessage] = useState({ subject: '', content: '', recipient_ids: [] });
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [showMessageDetailModal, setShowMessageDetailModal] = useState(false);
+  
   const [showMeetingModal, setShowMeetingModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
