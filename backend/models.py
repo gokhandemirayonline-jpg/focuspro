@@ -90,6 +90,21 @@ class UserResponse(BaseModel):
     facebook_url: str = ""
 
 
+# Video Category Models
+class VideoCategoryBase(BaseModel):
+    name: str
+    description: str = ""
+    order: int = 0
+
+class VideoCategoryCreate(VideoCategoryBase):
+    pass
+
+class VideoCategory(VideoCategoryBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 # Video Models
 class VideoBase(BaseModel):
     title: str
@@ -97,6 +112,7 @@ class VideoBase(BaseModel):
     description: str
     duration: str
     category: str
+    category_id: Optional[str] = None
 
 class VideoCreate(VideoBase):
     pass
@@ -104,6 +120,8 @@ class VideoCreate(VideoBase):
 class Video(VideoBase):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    view_count: int = 0
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 # Video Progress Models
