@@ -4169,6 +4169,201 @@ const FocusProApp = () => {
         </div>
       )}
 
+      {/* User Detail Modal */}
+      {showUserDetailModal && selectedUserDetail && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl p-6 my-8">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-800">Kullanıcı Detayları</h3>
+              <button
+                onClick={() => {
+                  setShowUserDetailModal(false);
+                  setSelectedUserDetail(null);
+                  setUserActivities(null);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* User Info */}
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 mb-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                  {selectedUserDetail.name.charAt(0)}
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-gray-800">{selectedUserDetail.name}</h4>
+                  <p className="text-gray-600">{selectedUserDetail.email}</p>
+                  <p className="text-sm text-purple-600 font-medium">ID: {formatUserNumber(selectedUserDetail.user_number)}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-sm text-gray-600">Rol:</span>
+                  <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+                    selectedUserDetail.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'
+                  }`}>
+                    {selectedUserDetail.role === 'admin' ? 'Admin' : 'Kullanıcı'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-sm text-gray-600">Kayıt Tarihi:</span>
+                  <span className="ml-2 text-sm font-medium text-gray-800">
+                    {new Date(selectedUserDetail.created_at).toLocaleDateString('tr-TR')}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Activities */}
+            {userActivities ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Goals */}
+                <div className="bg-white rounded-lg border border-gray-200 p-4">
+                  <h5 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                    <Target size={20} className="text-purple-600" />
+                    Hedefler ({userActivities.goals.length})
+                  </h5>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {userActivities.goals.length > 0 ? (
+                      userActivities.goals.map(goal => (
+                        <div key={goal.id} className="p-3 bg-gray-50 rounded-lg">
+                          <p className="text-sm text-gray-700">{goal.description}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {new Date(goal.created_at).toLocaleDateString('tr-TR')}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">Henüz hedef eklenmemiş</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Partners */}
+                <div className="bg-white rounded-lg border border-gray-200 p-4">
+                  <h5 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                    <Users size={20} className="text-blue-600" />
+                    Partnerler ({userActivities.partners.length})
+                  </h5>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {userActivities.partners.length > 0 ? (
+                      userActivities.partners.map(partner => (
+                        <div key={partner.id} className="p-3 bg-gray-50 rounded-lg">
+                          <p className="text-sm font-medium text-gray-800">{partner.name}</p>
+                          <p className="text-xs text-gray-500">{partner.phone}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">Henüz partner eklenmemiş</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Prospects */}
+                <div className="bg-white rounded-lg border border-gray-200 p-4">
+                  <h5 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                    <UserPlus size={20} className="text-green-600" />
+                    İsim Listesi ({userActivities.prospects.length})
+                  </h5>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {userActivities.prospects.length > 0 ? (
+                      userActivities.prospects.map(prospect => (
+                        <div key={prospect.id} className="p-3 bg-gray-50 rounded-lg">
+                          <p className="text-sm font-medium text-gray-800">{prospect.name}</p>
+                          <p className="text-xs text-gray-500">{prospect.phone}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">Henüz isim eklenmemiş</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Reasons */}
+                <div className="bg-white rounded-lg border border-gray-200 p-4">
+                  <h5 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                    <MessageSquare size={20} className="text-orange-600" />
+                    Nedenler ({userActivities.reasons.length})
+                  </h5>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {userActivities.reasons.length > 0 ? (
+                      userActivities.reasons.map(reason => (
+                        <div key={reason.id} className="p-3 bg-gray-50 rounded-lg">
+                          <p className="text-sm text-gray-700">{reason.description}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {new Date(reason.created_at).toLocaleDateString('tr-TR')}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">Henüz neden eklenmemiş</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+                <p className="text-gray-600 mt-4">Aktiviteler yükleniyor...</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Email Modal */}
+      {showBulkEmailModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              Toplu Email Gönder ({selectedUsers.length} kullanıcı)
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Konu</label>
+                <input
+                  type="text"
+                  value={bulkEmailData.subject}
+                  onChange={(e) => setBulkEmailData({...bulkEmailData, subject: e.target.value})}
+                  placeholder="Email konusu"
+                  className="w-full px-4 py-2 border rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Mesaj</label>
+                <textarea
+                  value={bulkEmailData.message}
+                  onChange={(e) => setBulkEmailData({...bulkEmailData, message: e.target.value})}
+                  placeholder="Email mesajı"
+                  rows={6}
+                  className="w-full px-4 py-2 border rounded-lg"
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={sendBulkEmail}
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                >
+                  Gönder
+                </button>
+                <button
+                  onClick={() => {
+                    setShowBulkEmailModal(false);
+                    setBulkEmailData({ subject: '', message: '' });
+                  }}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Event Modal (Admin) */}
       {showEventModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
