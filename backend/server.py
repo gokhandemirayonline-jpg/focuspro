@@ -315,6 +315,51 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
     return {"message": "User deleted successfully"}
 
 
+# ============= VIDEO CATEGORY ENDPOINTS =============
+@api_router.get("/video-categories", response_model=List[VideoCategory])
+async def get_video_categories(current_user: dict = Depends(get_current_user)):
+    categories = await db.video_categories.find({}, {"_id": 0}).sort("order", 1).to_list(1000)
+    return categories
+
+@api_router.post("/video-categories", response_model=VideoCategory)
+async def create_video_category(category_data: VideoCategoryCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    category_obj = VideoCategory(**category_data.model_dump())
+    doc = category_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.video_categories.insert_one(doc)
+    return category_obj
+
+@api_router.put("/video-categories/{category_id}", response_model=VideoCategory)
+async def update_video_category(category_id: str, category_data: VideoCategoryCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.video_categories.update_one(
+        {"id": category_id}, 
+        {"$set": category_data.model_dump()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    updated_category = await db.video_categories.find_one({"id": category_id}, {"_id": 0})
+    return VideoCategory(**updated_category)
+
+@api_router.delete("/video-categories/{category_id}")
+async def delete_video_category(category_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.video_categories.delete_one({"id": category_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    return {"message": "Category deleted successfully"}
+
+
 # ============= VIDEO ENDPOINTS =============
 @api_router.get("/videos", response_model=List[Video])
 async def get_videos(current_user: dict = Depends(get_current_user)):
