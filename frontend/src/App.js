@@ -1494,6 +1494,21 @@ const FocusProApp = () => {
           </button>
 
           <button
+            onClick={() => setCurrentPage('inbox')}
+            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all relative ${
+              currentPage === 'inbox' ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <Mail size={20} />
+            {sidebarOpen && <span>Gelen Kutusu</span>}
+            {unreadMessageCount > 0 && (
+              <span className="absolute top-2 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {unreadMessageCount}
+              </span>
+            )}
+          </button>
+
+          <button
             onClick={() => setCurrentPage('profile')}
             className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
               currentPage === 'profile' ? 'bg-white/20' : 'hover:bg-white/10'
