@@ -349,3 +349,22 @@ class EventRegistration(EventRegistrationBase):
     user_name: str
     user_email: str
     registered_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# Message/Inbox Models
+class MessageBase(BaseModel):
+    subject: str
+    content: str
+    type: str = "inbox"  # inbox, notification
+
+class MessageCreate(MessageBase):
+    recipient_ids: List[str]  # List of user IDs to send message to
+
+class Message(MessageBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    sender_id: str
+    sender_name: str
+    recipient_id: str
+    read: bool = False
+    created_at: datetime = Field(default_factory=datetime.utcnow)
