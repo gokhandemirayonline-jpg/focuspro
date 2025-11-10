@@ -287,7 +287,8 @@ const FocusProApp = () => {
         loadRecommendations(),
         loadBlogs(),
         loadMessages(),
-        currentUser?.role === 'admin' ? loadUsers() : Promise.resolve()
+        currentUser?.role === 'admin' ? loadUsers() : Promise.resolve(),
+        currentUser?.role === 'admin' ? loadStatistics() : Promise.resolve()
       ]);
     } catch (error) {
       console.error('Veri yükleme hatası:', error);
