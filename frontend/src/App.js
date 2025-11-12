@@ -4271,9 +4271,22 @@ const FocusProApp = () => {
                   </table>
                 </div>
               </div>
+              )}
 
-              {/* Videos Management */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              {/* Trainings Tab - Coming Soon */}
+              {adminTab === 'trainings' && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+                  <GraduationCap size={64} className="mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">Eğitim Yönetimi</h3>
+                  <p className="text-gray-600">Video kategorileri ve eğitim yönetimi yakında eklenecek...</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* PROFILE PAGE */}
+          {currentPage === 'profile' && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold text-gray-800">Video Yönetimi</h3>
                   <button
