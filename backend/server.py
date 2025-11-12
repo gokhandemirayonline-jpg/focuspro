@@ -29,6 +29,7 @@ from models import (
     EventCreate, Event,
     EventRegistrationCreate, EventRegistration,
     NotificationCreate, Notification,
+    ActivityLogCreate, ActivityLog,
     RecommendationCreate, Recommendation,
     BlogCreate, Blog,
     MessageCreate, Message
