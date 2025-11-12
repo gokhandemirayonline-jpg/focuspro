@@ -138,7 +138,6 @@ const FocusProApp = () => {
   const [showBlogModal, setShowBlogModal] = useState(false);
   
   const [editingUser, setEditingUser] = useState(null);
-  const [editingVideo, setEditingVideo] = useState(null);
   const [editingMeeting, setEditingMeeting] = useState(null);
   const [editingTask, setEditingTask] = useState(null);
   const [editingGoal, setEditingGoal] = useState(null);
