@@ -350,6 +350,9 @@ async def login(credentials: UserLogin):
         details="Successful login"
     )
     
+    # Check for 1 month membership badge
+    await check_membership_badge(user['id'], user.get('created_at'))
+    
     return {
         "access_token": access_token,
         "token_type": "bearer",
