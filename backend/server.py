@@ -1774,6 +1774,8 @@ async def upload_image(
 @app.on_event("startup")
 async def startup_event():
     await init_default_admin()
+    await init_default_categories()
+    await init_default_badges()
     logger.info("Focus Pro API started successfully")
 
 @app.on_event("shutdown")
