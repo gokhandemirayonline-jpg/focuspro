@@ -226,6 +226,9 @@ export const learningPathAPI = {
 // Badge API
 export const badgeAPI = {
   getAll: () => api.get('/badges'),
+  create: (badgeData) => api.post('/badges', badgeData),
+  update: (badgeId, badgeData) => api.put(`/badges/${badgeId}`, badgeData),
+  delete: (badgeId) => api.delete(`/badges/${badgeId}`),
   awardBadge: (userId, badgeData) => api.post('/admin/badges/award', badgeData, { params: { user_id: userId } }),
 };
 
