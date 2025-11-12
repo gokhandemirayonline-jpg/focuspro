@@ -313,7 +313,8 @@ const FocusProApp = () => {
         loadMessages(),
         currentUser?.role === 'admin' ? loadUsers() : Promise.resolve(),
         currentUser?.role === 'admin' ? loadStatistics() : Promise.resolve(),
-        currentUser?.role === 'admin' ? loadVideoStatistics() : Promise.resolve()
+        currentUser?.role === 'admin' ? loadVideoStatistics() : Promise.resolve(),
+        currentUser?.role === 'admin' ? loadActivityLogs() : Promise.resolve()
       ]);
     } catch (error) {
       console.error('Veri yükleme hatası:', error);
