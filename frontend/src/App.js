@@ -2113,15 +2113,76 @@ const FocusProApp = () => {
                   <div className="aspect-video bg-black rounded-lg mb-6">
                     <iframe
                       className="w-full h-full rounded-lg"
-                      src={`https://www.youtube.com/embed/${selectedVideo.youtube_id}`}
+                      src={`https://www.youtube.com/embed/${selectedVideo.youtube_id}?enablejsapi=1`}
                       title={selectedVideo.title}
                       allowFullScreen
-                      onLoad={() => setVideoWatched(true)}
+                      onLoad={() => {
+                        setVideoWatched(true);
+                        // Simulated progress tracking (in real app, use YouTube API)
+                        const interval = setInterval(async () => {
+                          const currentProgress = getVideoProgress(selectedVideo.id);
+                          const newPercentage = Math.min((currentProgress?.watch_percentage || 0) + 10, 100);
+                          if (newPercentage <= 100) {
+                            try {
+                              await progressAPI.updateProgress(selectedVideo.id, { watch_percentage: newPercentage });
+                              await loadUserProgress();
+                            } catch (error) {
+                              console.error('Progress update failed:', error);
+                            }
+                          }
+                          if (newPercentage >= 100) {
+                            clearInterval(interval);
+                          }
+                        }, 10000); // Update every 10 seconds (simulated)
+                        
+                        return () => clearInterval(interval);
+                      }}
                     />
                   </div>
 
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{selectedVideo.title}</h3>
-                  <p className="text-gray-600 mb-6">{selectedVideo.description}</p>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {selectedVideo.title}
+                    {selectedVideo.level && (
+                      <span className={`ml-3 px-3 py-1 rounded-full text-sm font-semibold ${
+                        selectedVideo.level === 'Başlangıç' ? 'bg-green-100 text-green-700' :
+                        selectedVideo.level === 'Orta' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {selectedVideo.level}
+                      </span>
+                    )}
+                  </h3>
+                  <p className="text-gray-600 mb-4">{selectedVideo.description}</p>
+                  
+                  {/* Progress Indicator */}
+                  {(() => {
+                    const currentProgress = getVideoProgress(selectedVideo.id);
+                    return currentProgress && currentProgress.watch_percentage > 0 ? (
+                      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-blue-800">
+                            İzleme İlerlemeniz
+                          </span>
+                          <span className="text-sm font-bold text-blue-900">
+                            {currentProgress.watch_percentage}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-blue-200 rounded-full h-3 overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-500 ${
+                              currentProgress.watch_percentage >= 80 ? 'bg-green-500' : 'bg-blue-600'
+                            }`}
+                            style={{ width: `${currentProgress.watch_percentage}%` }}
+                          ></div>
+                        </div>
+                        {currentProgress.watch_percentage >= 80 && (
+                          <p className="text-sm text-green-700 mt-2 font-medium">
+                            ✓ Tebrikler! Videoyu %80 tamamladınız ve rozet kazandınız!
+                          </p>
+                        )}
+                      </div>
+                    ) : null;
+                  })()}
 
                   <div className="space-y-4">
                     <div>
