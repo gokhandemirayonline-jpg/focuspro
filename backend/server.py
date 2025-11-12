@@ -1476,7 +1476,7 @@ async def get_user_registration_trend(current_user: dict = Depends(get_current_u
             user_date = datetime.fromisoformat(user['created_at']).strftime('%Y-%m-%d')
             if user_date in registrations_by_date:
                 registrations_by_date[user_date] += 1
-        except:
+        except (ValueError, KeyError, TypeError):
             continue
     
     # Convert to list format
