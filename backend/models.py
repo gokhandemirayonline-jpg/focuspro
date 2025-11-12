@@ -113,6 +113,8 @@ class VideoBase(BaseModel):
     duration: str
     category: str
     category_id: Optional[str] = None
+    level: str = "Başlangıç"  # Başlangıç, Orta, İleri
+    order: int = 0  # Sıralama için
 
 class VideoCreate(VideoBase):
     pass
