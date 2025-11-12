@@ -800,7 +800,7 @@ async def update_goal(goal_id: str, goal_update: GoalUpdate, current_user: dict 
         raise HTTPException(status_code=404, detail="Goal not found")
     
     # Check if goal was just completed
-    if goal_update.done == True:
+    if goal_update.done:
         await check_and_award_badges(current_user['id'], "goal_complete", goal_id)
     
     updated_goal = await db.goals.find_one({"id": goal_id}, {"_id": 0})
