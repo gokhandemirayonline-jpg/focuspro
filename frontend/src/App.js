@@ -2834,6 +2834,177 @@ const FocusProApp = () => {
                   </div>
                 )}
               </div>
+              )}
+
+              {/* Activity Logs Tab */}
+              {adminTab === 'logs' && (
+                <div>
+                  {/* Statistics Cards */}
+                  {logStatistics && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+                      <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                        <div className="text-2xl font-bold text-blue-700">{logStatistics.total_logs}</div>
+                        <div className="text-sm text-blue-600">Toplam Log</div>
+                      </div>
+                      <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                        <div className="text-2xl font-bold text-green-700">{logStatistics.login_count}</div>
+                        <div className="text-sm text-green-600">Giriş</div>
+                      </div>
+                      <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                        <div className="text-2xl font-bold text-purple-700">{logStatistics.create_count}</div>
+                        <div className="text-sm text-purple-600">Oluşturma</div>
+                      </div>
+                      <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                        <div className="text-2xl font-bold text-yellow-700">{logStatistics.update_count}</div>
+                        <div className="text-sm text-yellow-600">Güncelleme</div>
+                      </div>
+                      <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+                        <div className="text-2xl font-bold text-red-700">{logStatistics.delete_count}</div>
+                        <div className="text-sm text-red-600">Silme</div>
+                      </div>
+                      <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                        <div className="text-2xl font-bold text-orange-700">{logStatistics.failed_count}</div>
+                        <div className="text-sm text-orange-600">Başarısız</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Filters */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Aksiyon</label>
+                        <select
+                          value={logFilters.action}
+                          onChange={(e) => {
+                            setLogFilters({...logFilters, action: e.target.value});
+                            setTimeout(() => loadActivityLogs(), 100);
+                          }}
+                          className="w-full px-3 py-2 border rounded-lg"
+                        >
+                          <option value="">Tümü</option>
+                          <option value="login">Giriş</option>
+                          <option value="register">Kayıt</option>
+                          <option value="create">Oluşturma</option>
+                          <option value="update">Güncelleme</option>
+                          <option value="delete">Silme</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Kaynak Tipi</label>
+                        <select
+                          value={logFilters.resource_type}
+                          onChange={(e) => {
+                            setLogFilters({...logFilters, resource_type: e.target.value});
+                            setTimeout(() => loadActivityLogs(), 100);
+                          }}
+                          className="w-full px-3 py-2 border rounded-lg"
+                        >
+                          <option value="">Tümü</option>
+                          <option value="auth">Auth</option>
+                          <option value="user">Kullanıcı</option>
+                          <option value="video">Video</option>
+                          <option value="goal">Hedef</option>
+                          <option value="partner">Partner</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Başlangıç</label>
+                        <input
+                          type="date"
+                          value={logFilters.date_from}
+                          onChange={(e) => {
+                            setLogFilters({...logFilters, date_from: e.target.value});
+                            setTimeout(() => loadActivityLogs(), 100);
+                          }}
+                          className="w-full px-3 py-2 border rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Bitiş</label>
+                        <input
+                          type="date"
+                          value={logFilters.date_to}
+                          onChange={(e) => {
+                            setLogFilters({...logFilters, date_to: e.target.value});
+                            setTimeout(() => loadActivityLogs(), 100);
+                          }}
+                          className="w-full px-3 py-2 border rounded-lg"
+                        />
+                      </div>
+                      <div className="flex items-end">
+                        <button
+                          onClick={clearOldLogs}
+                          className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                        >
+                          Eski Logları Temizle
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Logs Table */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 className="text-lg font-bold text-gray-800 mb-4">
+                      Aktivite Logları ({activityLogs.length})
+                    </h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarih/Saat</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kullanıcı</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksiyon</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kaynak</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Detay</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {activityLogs.map(log => (
+                            <tr key={log.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                                {new Date(log.created_at).toLocaleString('tr-TR')}
+                              </td>
+                              <td className="px-4 py-3 text-sm">
+                                <div className="font-medium text-gray-900">{log.user_name}</div>
+                                <div className="text-gray-500">{log.user_email}</div>
+                              </td>
+                              <td className="px-4 py-3 text-sm">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  log.action === 'login' ? 'bg-green-100 text-green-700' :
+                                  log.action === 'create' ? 'bg-blue-100 text-blue-700' :
+                                  log.action === 'update' ? 'bg-yellow-100 text-yellow-700' :
+                                  log.action === 'delete' ? 'bg-red-100 text-red-700' :
+                                  'bg-gray-100 text-gray-700'
+                                }`}>
+                                  {log.action}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-900">
+                                {log.resource_type}
+                                {log.resource_name && (
+                                  <div className="text-gray-500 text-xs">{log.resource_name}</div>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-600">
+                                {log.details || '-'}
+                              </td>
+                              <td className="px-4 py-3 text-sm">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  log.status === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                }`}>
+                                  {log.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
