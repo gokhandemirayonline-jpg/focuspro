@@ -220,6 +220,16 @@ async def login(credentials: UserLogin):
         else:
             user_data['created_at'] = created_at
     
+    # Log successful login
+    await create_activity_log(
+        user_id=user['id'],
+        user_name=user['name'],
+        user_email=user['email'],
+        action="login",
+        resource_type="auth",
+        details=f"Successful login"
+    )
+    
     return {
         "access_token": access_token,
         "token_type": "bearer",
