@@ -89,7 +89,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         return user
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=401, detail="Could not validate credentials")
 
 
@@ -290,7 +290,7 @@ async def register(user_data: UserCreate):
         resource_type="user",
         resource_id=doc['id'],
         resource_name=user_data.name,
-        details=f"New user registered"
+        details="New user registered"
     )
     
     return UserResponse(**doc)
@@ -347,7 +347,7 @@ async def login(credentials: UserLogin):
         user_email=user['email'],
         action="login",
         resource_type="auth",
-        details=f"Successful login"
+        details="Successful login"
     )
     
     return {
@@ -642,7 +642,7 @@ async def complete_video(video_id: str, comment: str, current_user: dict = Depen
             title="Yeni Video Açıldı! 🔓",
             message=f"'{next_video['title']}' videosu izlemeye hazır!",
             type="info",
-            link=f"/videos"
+            link="/videos"
         )
         unlock_doc = unlock_notification.model_dump()
         unlock_doc['created_at'] = unlock_doc['created_at'].isoformat()
@@ -677,7 +677,7 @@ async def create_meeting(meeting_data: MeetingCreate, current_user: dict = Depen
                 title="Yeni Görüşme Planlandı",
                 message=f"{current_user['name']} yeni bir görüşme planladı: '{meeting_data.title}'",
                 type="meeting_created",
-                link=f"/calendar"
+                link="/calendar"
             )
             notif_doc = notification.model_dump()
             notif_doc['created_at'] = notif_doc['created_at'].isoformat()
@@ -1052,7 +1052,7 @@ async def register_for_event(event_id: str, current_user: dict = Depends(get_cur
             title="Yeni Etkinlik Kaydı",
             message=f"{current_user['name']} '{event['title']}' etkinliğine katılmak istiyor.",
             type="event_registration",
-            link=f"/events"
+            link="/events"
         )
         notif_doc = notification.model_dump()
         notif_doc['created_at'] = notif_doc['created_at'].isoformat()
