@@ -35,6 +35,8 @@ export const userAPI = {
   create: (userData) => api.post('/users', userData),
   update: (userId, userData) => api.put(`/users/${userId}`, userData),
   delete: (userId) => api.delete(`/users/${userId}`),
+  getBadgeCollection: () => api.get('/badges/my-collection'),
+  getBadges: (userId) => api.get(`/users/${userId}/badges`),
 };
 
 // Video Category API
