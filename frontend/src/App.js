@@ -1746,6 +1746,16 @@ const FocusProApp = () => {
             {sidebarOpen && <span>Profilim</span>}
           </button>
 
+          <button
+            onClick={() => setCurrentPage('badges')}
+            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
+              currentPage === 'badges' ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <Award size={20} />
+            {sidebarOpen && <span>🏆 Rozetlerim</span>}
+          </button>
+
           {currentUser?.role === 'admin' && (
             <>
               <button
