@@ -307,6 +307,29 @@ class Notification(NotificationBase):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+# Activity Log Models
+class ActivityLogBase(BaseModel):
+    user_id: str
+    user_name: str
+    user_email: str
+    action: str  # login, logout, create, update, delete
+    resource_type: str  # user, video, goal, partner, etc.
+    resource_id: Optional[str] = None
+    resource_name: Optional[str] = None
+    details: Optional[str] = None
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    status: str = "success"  # success, failed
+
+class ActivityLogCreate(ActivityLogBase):
+    pass
+
+class ActivityLog(ActivityLogBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 # Recommendation Models
 class RecommendationBase(BaseModel):
     title: str
