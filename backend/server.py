@@ -777,11 +777,31 @@ async def create_goal(goal_data: GoalCreate, current_user: dict = Depends(get_cu
     if current_user.get('role') != 'admin':
         await notify_admin(
             title="Yeni Hedef Eklendi",
-            message=f"{current_user.get('name')} yeni bir hedef ekledi: {goal_data.description[:50]}{'...' if len(goal_data.description) > 50 else ''}",
+            message=f"{current_user.get('name')} yeni bir hedef ekledi: {goal_data.title}",
             notification_type="goal"
         )
     
     return goal_obj
+
+@api_router.put("/goals/{goal_id}", response_model=Goal)
+async def update_goal(goal_id: str, goal_update: GoalUpdate, current_user: dict = Depends(get_current_user)):
+    """Update a goal"""
+    update_data = {k: v for k, v in goal_update.model_dump().items() if v is not None}
+    
+    result = await db.goals.update_one(
+        {"id": goal_id, "user_id": current_user['id']},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    
+    # Check if goal was just completed
+    if goal_update.done == True:
+        await check_and_award_badges(current_user['id'], "goal_complete", goal_id)
+    
+    updated_goal = await db.goals.find_one({"id": goal_id}, {"_id": 0})
+    return updated_goal
 
 @api_router.delete("/goals/{goal_id}")
 async def delete_goal(goal_id: str, current_user: dict = Depends(get_current_user)):
