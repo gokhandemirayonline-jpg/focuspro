@@ -146,6 +146,69 @@ class VideoProgress(VideoProgressBase):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+# Learning Path Models
+class LearningPathBase(BaseModel):
+    title: str
+    description: str = ""
+    category_id: str
+    level: str = "Başlangıç"  # Başlangıç, Orta, İleri
+    video_ids: List[str] = []  # Sıralı video ID'leri
+    prerequisites: List[str] = []  # Ön koşul path ID'leri
+    is_active: bool = True
+
+class LearningPathCreate(LearningPathBase):
+    pass
+
+class LearningPathUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    level: Optional[str] = None
+    video_ids: Optional[List[str]] = None
+    prerequisites: Optional[List[str]] = None
+    is_active: Optional[bool] = None
+
+class LearningPath(LearningPathBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# Badge Models
+class BadgeBase(BaseModel):
+    name: str
+    description: str
+    icon: str = "🏆"  # Emoji ikonu
+    type: str = "auto"  # auto (otomatik), manual (admin verir)
+    criteria: str = ""  # Nasıl kazanılır açıklaması
+    reward_type: str  # first_video, 10_goals, 1_month, most_active, all_videos, category_complete, special
+
+class BadgeCreate(BadgeBase):
+    pass
+
+class Badge(BadgeBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# User Badge Models (Kullanıcının kazandığı rozetler)
+class UserBadgeBase(BaseModel):
+    user_id: str
+    badge_id: str
+    awarded_by: Optional[str] = None  # Admin ID (manuel verilmişse)
+    note: Optional[str] = None  # Admin notu
+
+class UserBadgeCreate(BaseModel):
+    badge_id: str
+    note: Optional[str] = None
+
+class UserBadge(UserBadgeBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    earned_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 # Meeting Models
 class MeetingBase(BaseModel):
     title: str
