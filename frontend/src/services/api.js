@@ -212,4 +212,19 @@ export const activityLogAPI = {
   clearOld: (days) => api.delete(`/activity-logs/clear?days=${days}`),
 };
 
+// Learning Path API
+export const learningPathAPI = {
+  getAll: () => api.get('/learning-paths'),
+  create: (pathData) => api.post('/learning-paths', pathData),
+  update: (pathId, pathData) => api.put(`/learning-paths/${pathId}`, pathData),
+  delete: (pathId) => api.delete(`/learning-paths/${pathId}`),
+  getProgress: (pathId) => api.get(`/learning-paths/${pathId}/progress`),
+};
+
+// Badge API
+export const badgeAPI = {
+  getAll: () => api.get('/badges'),
+  awardBadge: (userId, badgeData) => api.post('/admin/badges/award', badgeData, { params: { user_id: userId } }),
+};
+
 export default api;
