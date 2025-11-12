@@ -2317,13 +2317,32 @@ const FocusProApp = () => {
                               <p className="text-sm text-gray-600 line-clamp-2">{progress.comment}</p>
                             </div>
                           )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                
+                                {!unlocked && index > 0 && (
+                                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
+                                    <Lock className="inline-block text-yellow-600 mb-1" size={20} />
+                                    <p className="text-sm text-yellow-800 font-medium">
+                                      Bu videoyu izlemek için önce "{previousVideo?.title}" videosunu tamamlayın
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     );
                   })}
+                  
                   {videos.length === 0 && (
-                    <div className="col-span-3 text-center py-12 text-gray-500">
-                      Henüz video eklenmemiş
+                    <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
+                      <Film size={48} className="mx-auto text-gray-400 mb-3" />
+                      <p className="text-gray-500">Henüz video eklenmemiş</p>
                     </div>
                   )}
                 </div>
