@@ -1839,6 +1839,52 @@ async def get_all_badges():
     return badges
 
 
+@api_router.post("/badges", response_model=Badge)
+async def create_badge(badge: BadgeCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new badge (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    badge_obj = Badge(**badge.model_dump())
+    badge_doc = badge_obj.model_dump()
+    badge_doc['created_at'] = badge_doc['created_at'].isoformat()
+    
+    await db.badges.insert_one(badge_doc)
+    return badge_obj
+
+
+@api_router.put("/badges/{badge_id}", response_model=Badge)
+async def update_badge(badge_id: str, badge_data: BadgeCreate, current_user: dict = Depends(get_current_user)):
+    """Update a badge (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.badges.update_one(
+        {"id": badge_id},
+        {"$set": badge_data.model_dump()}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Badge not found")
+    
+    updated_badge = await db.badges.find_one({"id": badge_id}, {"_id": 0})
+    return updated_badge
+
+
+@api_router.delete("/badges/{badge_id}")
+async def delete_badge(badge_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a badge (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.badges.delete_one({"id": badge_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Badge not found")
+    
+    return {"success": True}
+
+
 @api_router.get("/users/{user_id}/badges")
 async def get_user_badges(user_id: str, current_user: dict = Depends(get_current_user)):
     """Get all badges earned by a user"""
