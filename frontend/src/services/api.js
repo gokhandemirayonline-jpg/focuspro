@@ -194,4 +194,20 @@ export const statisticsAPI = {
   exportUsers: () => api.get('/statistics/export-users'),
 };
 
+// Activity Log API
+export const activityLogAPI = {
+  getAll: (filters) => {
+    const params = new URLSearchParams();
+    if (filters?.action) params.append('action', filters.action);
+    if (filters?.resource_type) params.append('resource_type', filters.resource_type);
+    if (filters?.user_id) params.append('user_id', filters.user_id);
+    if (filters?.date_from) params.append('date_from', filters.date_from);
+    if (filters?.date_to) params.append('date_to', filters.date_to);
+    if (filters?.limit) params.append('limit', filters.limit);
+    return api.get(`/activity-logs?${params.toString()}`);
+  },
+  getStatistics: () => api.get('/activity-logs/statistics'),
+  clearOld: (days) => api.delete(`/activity-logs/clear?days=${days}`),
+};
+
 export default api;
