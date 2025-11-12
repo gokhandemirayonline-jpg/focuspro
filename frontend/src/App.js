@@ -132,7 +132,6 @@ const FocusProApp = () => {
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [showProspectModal, setShowProspectModal] = useState(false);
   const [showPartnerModal, setShowPartnerModal] = useState(false);
-  const [showVideoModal, setShowVideoModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
   const [showRecommendationModal, setShowRecommendationModal] = useState(false);
