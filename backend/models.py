@@ -130,14 +130,20 @@ class Video(VideoBase):
 class VideoProgressBase(BaseModel):
     video_id: str
     watched: bool = False
-    unlocked: bool = False
+    watch_percentage: int = 0  # 0-100 arası izleme yüzdesi
+    unlocked: bool = True  # Varsayılan olarak açık
     comment: Optional[str] = None
     completed_at: Optional[datetime] = None
+
+class VideoProgressUpdate(BaseModel):
+    watch_percentage: int
+    watched: Optional[bool] = None
 
 class VideoProgress(VideoProgressBase):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 # Meeting Models
