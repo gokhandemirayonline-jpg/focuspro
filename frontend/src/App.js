@@ -5135,13 +5135,32 @@ const FocusProApp = () => {
                 placeholder="Süre (ör: 15:30)"
                 className="w-full px-4 py-2 border rounded-lg"
               />
-              <input
-                type="text"
-                value={newVideo.category}
-                onChange={(e) => setNewVideo({...newVideo, category: e.target.value})}
-                placeholder="Kategori"
+              <select
+                value={newVideo.category_id || ''}
+                onChange={(e) => {
+                  const selectedCat = videoCategories.find(c => c.id === e.target.value);
+                  setNewVideo({
+                    ...newVideo, 
+                    category_id: e.target.value,
+                    category: selectedCat ? selectedCat.name : ''
+                  });
+                }}
                 className="w-full px-4 py-2 border rounded-lg"
-              />
+              >
+                <option value="">Kategori Seçin</option>
+                {videoCategories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+              <select
+                value={newVideo.level || 'Başlangıç'}
+                onChange={(e) => setNewVideo({...newVideo, level: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg"
+              >
+                <option value="Başlangıç">🟢 Başlangıç</option>
+                <option value="Orta">🟡 Orta</option>
+                <option value="İleri">🔴 İleri</option>
+              </select>
               <div className="flex gap-3">
                 <button
                   onClick={addOrUpdateVideo}
