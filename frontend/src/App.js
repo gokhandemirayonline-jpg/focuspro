@@ -5110,6 +5110,57 @@ const FocusProApp = () => {
         </div>
       )}
 
+      {/* Category Modal (Admin) */}
+      {showCategoryModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              {editingCategory ? 'Kategori Düzenle' : 'Yeni Kategori'}
+            </h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={newCategory.name}
+                onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
+                placeholder="Kategori Adı"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <textarea
+                value={newCategory.description}
+                onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
+                placeholder="Açıklama"
+                rows={3}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="number"
+                value={newCategory.order}
+                onChange={(e) => setNewCategory({...newCategory, order: parseInt(e.target.value) || 0})}
+                placeholder="Sıra"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={addOrUpdateCategory}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                >
+                  {editingCategory ? 'Güncelle' : 'Kaydet'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowCategoryModal(false);
+                    setEditingCategory(null);
+                  }}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Video Modal (Admin) */}
       {showVideoModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
