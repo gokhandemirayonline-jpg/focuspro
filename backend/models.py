@@ -258,9 +258,17 @@ class GoalBase(BaseModel):
     target: str
     deadline: str = ""
     current: int = 0
+    done: bool = False
 
 class GoalCreate(GoalBase):
     pass
+
+class GoalUpdate(BaseModel):
+    title: Optional[str] = None
+    target: Optional[str] = None
+    deadline: Optional[str] = None
+    current: Optional[int] = None
+    done: Optional[bool] = None
 
 class Goal(GoalBase):
     model_config = ConfigDict(extra="ignore")
