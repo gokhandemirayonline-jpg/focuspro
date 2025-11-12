@@ -171,12 +171,12 @@ async def init_default_badges():
             "reward_type": "1_month"
         },
         {
-            "name": "Haftanın Yıldızı",
-            "description": "Bu hafta en aktif kullanıcısınız!",
+            "name": "Görüşme Uzmanı",
+            "description": "Bu hafta en çok görüşme yaptınız!",
             "icon": "⭐",
             "type": "auto",
-            "criteria": "Haftalık en çok aktivite yapan kullanıcı",
-            "reward_type": "most_active"
+            "criteria": "Haftalık en çok görüşme yapan kullanıcı",
+            "reward_type": "most_meetings"
         },
         {
             "name": "Bilgi Ustası",
