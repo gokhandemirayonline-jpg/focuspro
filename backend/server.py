@@ -1391,6 +1391,137 @@ async def export_users_data(current_user: dict = Depends(get_current_user)):
     return {"data": users}
 
 
+# ============= ACTIVITY LOG ENDPOINTS =============
+async def create_activity_log(
+    user_id: str,
+    user_name: str,
+    user_email: str,
+    action: str,
+    resource_type: str,
+    resource_id: str = None,
+    resource_name: str = None,
+    details: str = None,
+    ip_address: str = None,
+    status: str = "success"
+):
+    """Helper function to create activity logs"""
+    try:
+        log_data = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "user_name": user_name,
+            "user_email": user_email,
+            "action": action,
+            "resource_type": resource_type,
+            "resource_id": resource_id,
+            "resource_name": resource_name,
+            "details": details,
+            "ip_address": ip_address,
+            "user_agent": None,
+            "status": status,
+            "created_at": datetime.utcnow().isoformat()
+        }
+        await db.activity_logs.insert_one(log_data)
+        logger.info(f"Activity log created: {action} on {resource_type} by {user_name}")
+    except Exception as e:
+        logger.error(f"Failed to create activity log: {str(e)}")
+
+@api_router.get("/activity-logs")
+async def get_activity_logs(
+    current_user: dict = Depends(get_current_user),
+    action: str = None,
+    resource_type: str = None,
+    user_id: str = None,
+    date_from: str = None,
+    date_to: str = None,
+    limit: int = 100
+):
+    """Get activity logs with filters (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Build query
+    query = {}
+    
+    if action:
+        query['action'] = action
+    
+    if resource_type:
+        query['resource_type'] = resource_type
+    
+    if user_id:
+        query['user_id'] = user_id
+    
+    if date_from:
+        query['created_at'] = {"$gte": date_from}
+    
+    if date_to:
+        if 'created_at' in query:
+            query['created_at']['$lte'] = date_to
+        else:
+            query['created_at'] = {"$lte": date_to}
+    
+    # Get logs
+    logs = await db.activity_logs.find(query, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    return {"logs": logs, "total": len(logs)}
+
+@api_router.get("/activity-logs/statistics")
+async def get_activity_log_statistics(current_user: dict = Depends(get_current_user)):
+    """Get activity log statistics (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Total logs
+    total_logs = await db.activity_logs.count_documents({})
+    
+    # Logs by action
+    login_logs = await db.activity_logs.count_documents({"action": "login"})
+    create_logs = await db.activity_logs.count_documents({"action": "create"})
+    update_logs = await db.activity_logs.count_documents({"action": "update"})
+    delete_logs = await db.activity_logs.count_documents({"action": "delete"})
+    
+    # Recent failed attempts
+    failed_logs = await db.activity_logs.count_documents({"status": "failed"})
+    
+    # Most active users (top 10)
+    pipeline = [
+        {"$group": {"_id": "$user_id", "count": {"$sum": 1}, "user_name": {"$first": "$user_name"}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ]
+    most_active = await db.activity_logs.aggregate(pipeline).to_list(10)
+    
+    return {
+        "total_logs": total_logs,
+        "login_count": login_logs,
+        "create_count": create_logs,
+        "update_count": update_logs,
+        "delete_count": delete_logs,
+        "failed_count": failed_logs,
+        "most_active_users": most_active
+    }
+
+@api_router.delete("/activity-logs/clear")
+async def clear_old_activity_logs(
+    current_user: dict = Depends(get_current_user),
+    days: int = 90
+):
+    """Clear activity logs older than specified days (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    cutoff_date = (datetime.utcnow() - timedelta(days=days)).isoformat()
+    
+    result = await db.activity_logs.delete_many({"created_at": {"$lt": cutoff_date}})
+    
+    return {
+        "success": True,
+        "deleted_count": result.deleted_count,
+        "message": f"Deleted logs older than {days} days"
+    }
+
+
 # Profile Update Endpoints
 @api_router.put("/auth/profile", response_model=UserResponse)
 async def update_profile(profile_data: UserUpdate, current_user: dict = Depends(get_current_user)):
