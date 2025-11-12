@@ -1818,7 +1818,7 @@ async def update_video_progress(
         update_data['completed_at'] = datetime.utcnow().isoformat()
     
     # Update or create progress
-    result = await db.video_progress.update_one(
+    await db.video_progress.update_one(
         {"user_id": current_user['id'], "video_id": video_id},
         {"$set": update_data},
         upsert=True
