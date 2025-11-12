@@ -4283,58 +4283,6 @@ const FocusProApp = () => {
               )}
             </div>
           )}
-
-          {/* PROFILE PAGE */}
-          {currentPage === 'profile' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-gray-800">Video Yönetimi</h3>
-                  <button
-                    onClick={() => {
-                      setShowVideoModal(true);
-                      setEditingVideo(null);
-                      setNewVideo({ title: '', youtube_id: '', description: '', duration: '', category: '' });
-                    }}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
-                  >
-                    <Plus size={20} />
-                    Yeni Video
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  {videos.map((video, index) => (
-                    <div key={video.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <span className="text-2xl font-bold text-gray-400">#{index + 1}</span>
-                        <div>
-                          <h4 className="font-semibold text-gray-800">{video.title}</h4>
-                          <p className="text-sm text-gray-600">{video.category} • {video.duration}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => {
-                            setEditingVideo(video);
-                            setNewVideo(video);
-                            setShowVideoModal(true);
-                          }}
-                          className="text-blue-600 hover:text-blue-700"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => deleteVideo(video.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
