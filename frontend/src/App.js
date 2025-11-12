@@ -2212,19 +2212,48 @@ const FocusProApp = () => {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {videos.map(video => {
-                    const progress = getVideoProgress(video.id);
-                    const unlocked = isVideoUnlocked(video.id);
-
+                <div className="space-y-8">
+                  {/* Category-based Video Playlists */}
+                  {videoCategories.map(category => {
+                    const categoryVideos = videos
+                      .filter(v => v.category_id === category.id)
+                      .sort((a, b) => (a.order || 0) - (b.order || 0));
+                    
+                    if (categoryVideos.length === 0) return null;
+                    
                     return (
-                      <div
-                        key={video.id}
-                        className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden ${
-                          unlocked ? 'cursor-pointer hover:shadow-lg' : 'opacity-50'
-                        } transition-all`}
-                        onClick={() => unlocked && openVideo(video)}
-                      >
+                      <div key={category.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <div className="mb-6">
+                          <h3 className="text-2xl font-bold text-gray-800 mb-2">{category.name}</h3>
+                          <p className="text-gray-600">{category.description}</p>
+                          <div className="mt-3 flex items-center gap-4 text-sm text-gray-500">
+                            <span>{categoryVideos.length} video</span>
+                            <span>•</span>
+                            <span>
+                              {categoryVideos.filter(v => {
+                                const progress = getVideoProgress(v.id);
+                                return progress?.watched;
+                              }).length} tamamlandı
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {categoryVideos.map((video, index) => {
+                            const progress = getVideoProgress(video.id);
+                            // Video unlock logic: First video is always unlocked, others require previous video to be watched
+                            const previousVideo = index > 0 ? categoryVideos[index - 1] : null;
+                            const previousProgress = previousVideo ? getVideoProgress(previousVideo.id) : null;
+                            const unlocked = index === 0 || (previousProgress && previousProgress.watched);
+
+                            return (
+                              <div
+                                key={video.id}
+                                className={`bg-gray-50 rounded-lg border border-gray-200 overflow-hidden ${
+                                  unlocked ? 'cursor-pointer hover:shadow-md hover:border-purple-300' : 'opacity-60'
+                                } transition-all`}
+                                onClick={() => unlocked && openVideo(video)}
+                              >
                         <div className="relative aspect-video bg-gray-200">
                           <img
                             src={`https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg`}
