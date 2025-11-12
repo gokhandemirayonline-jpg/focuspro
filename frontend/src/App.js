@@ -4540,7 +4540,18 @@ const FocusProApp = () => {
                             <div className="flex items-center gap-4 flex-1">
                               <span className="text-2xl font-bold text-gray-400">#{index + 1}</span>
                               <div className="flex-1">
-                                <h4 className="font-semibold text-gray-800">{video.title}</h4>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-semibold text-gray-800">{video.title}</h4>
+                                  {video.level && (
+                                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                      video.level === 'Başlangıç' ? 'bg-green-100 text-green-700' :
+                                      video.level === 'Orta' ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-red-100 text-red-700'
+                                    }`}>
+                                      {video.level}
+                                    </span>
+                                  )}
+                                </div>
                                 <div className="flex items-center gap-4 mt-1">
                                   <span className="text-sm text-gray-600">{video.category}</span>
                                   <span className="text-sm text-gray-500">•</span>
