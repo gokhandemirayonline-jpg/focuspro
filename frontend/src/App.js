@@ -4273,12 +4273,213 @@ const FocusProApp = () => {
               </div>
               )}
 
-              {/* Trainings Tab - Coming Soon */}
+              {/* Trainings Tab */}
               {adminTab === 'trainings' && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-                  <GraduationCap size={64} className="mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">Eğitim Yönetimi</h3>
-                  <p className="text-gray-600">Video kategorileri ve eğitim yönetimi yakında eklenecek...</p>
+                <div className="space-y-6">
+                  {/* Video Statistics Cards */}
+                  {videoStatistics && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-6 text-white shadow-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <Film size={32} className="opacity-80" />
+                          <span className="text-3xl font-bold">{videoStatistics.total_videos}</span>
+                        </div>
+                        <h3 className="text-lg font-semibold">Toplam Video</h3>
+                        <p className="text-sm opacity-80">Sistemdeki tüm videolar</p>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-xl p-6 text-white shadow-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <Eye size={32} className="opacity-80" />
+                          <span className="text-3xl font-bold">{videoStatistics.total_views}</span>
+                        </div>
+                        <h3 className="text-lg font-semibold">Toplam İzlenme</h3>
+                        <p className="text-sm opacity-80">Tüm videoların izlenme sayısı</p>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl p-6 text-white shadow-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <Award size={32} className="opacity-80" />
+                          <span className="text-3xl font-bold">{videoCategories.length}</span>
+                        </div>
+                        <h3 className="text-lg font-semibold">Kategoriler</h3>
+                        <p className="text-sm opacity-80">Video kategorisi</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Most Watched Videos */}
+                  {videoStatistics && videoStatistics.most_watched && videoStatistics.most_watched.length > 0 && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                      <h3 className="text-xl font-bold text-gray-800 mb-4">En Çok İzlenen Videolar (Top 10)</h3>
+                      <div className="space-y-3">
+                        {videoStatistics.most_watched.map((video, index) => (
+                          <div key={video.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100">
+                            <div className="flex items-center gap-4">
+                              <span className={`flex items-center justify-center w-8 h-8 rounded-full text-white font-bold text-sm ${
+                                index === 0 ? 'bg-yellow-500' : 
+                                index === 1 ? 'bg-gray-400' : 
+                                index === 2 ? 'bg-orange-600' : 'bg-gray-300'
+                              }`}>
+                                {index + 1}
+                              </span>
+                              <div>
+                                <h4 className="font-semibold text-gray-800">{video.title}</h4>
+                                <p className="text-sm text-gray-600">{video.category}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="flex items-center gap-2 text-gray-700">
+                                <Eye size={16} />
+                                <span className="font-bold">{video.view_count || 0}</span>
+                                <span className="text-sm text-gray-500">izlenme</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Video Categories Management */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-gray-800">Video Kategorileri</h3>
+                      <button
+                        onClick={() => {
+                          setShowCategoryModal(true);
+                          setEditingCategory(null);
+                          setNewCategory({ name: '', description: '', order: videoCategories.length });
+                        }}
+                        className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                      >
+                        <Plus size={20} />
+                        Yeni Kategori
+                      </button>
+                    </div>
+
+                    {videoCategories.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <Bookmark size={48} className="mx-auto mb-3 text-gray-400" />
+                        <p>Henüz kategori eklenmemiş</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {videoCategories.map((category) => (
+                          <div key={category.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-gray-800">{category.name}</h4>
+                                <p className="text-sm text-gray-600 mt-1">{category.description || 'Açıklama yok'}</p>
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => {
+                                    setEditingCategory(category);
+                                    setNewCategory(category);
+                                    setShowCategoryModal(true);
+                                  }}
+                                  className="text-blue-600 hover:text-blue-700"
+                                  title="Düzenle"
+                                >
+                                  <Edit size={16} />
+                                </button>
+                                <button
+                                  onClick={() => deleteCategory(category.id)}
+                                  className="text-red-600 hover:text-red-700"
+                                  title="Sil"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </div>
+                            <div className="mt-3 pt-3 border-t border-gray-200">
+                              <span className="text-xs text-gray-500">
+                                {videos.filter(v => v.category_id === category.id).length} video
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Videos Management */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-gray-800">Video Yönetimi</h3>
+                      <button
+                        onClick={() => {
+                          setShowVideoModal(true);
+                          setEditingVideo(null);
+                          setNewVideo({ title: '', youtube_id: '', description: '', duration: '', category: '', category_id: '' });
+                        }}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+                      >
+                        <Plus size={20} />
+                        Yeni Video
+                      </button>
+                    </div>
+
+                    {videos.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <Film size={48} className="mx-auto mb-3 text-gray-400" />
+                        <p>Henüz video eklenmemiş</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {videos.map((video, index) => (
+                          <div key={video.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100">
+                            <div className="flex items-center gap-4 flex-1">
+                              <span className="text-2xl font-bold text-gray-400">#{index + 1}</span>
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-gray-800">{video.title}</h4>
+                                <div className="flex items-center gap-4 mt-1">
+                                  <span className="text-sm text-gray-600">{video.category}</span>
+                                  <span className="text-sm text-gray-500">•</span>
+                                  <span className="text-sm text-gray-600">{video.duration}</span>
+                                  <span className="text-sm text-gray-500">•</span>
+                                  <span className="text-sm text-gray-600 flex items-center gap-1">
+                                    <Eye size={14} />
+                                    {video.view_count || 0} izlenme
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <a
+                                href={`https://www.youtube.com/watch?v=${video.youtube_id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-gray-600 hover:text-gray-700"
+                                title="YouTube'da Aç"
+                              >
+                                <Play size={16} />
+                              </a>
+                              <button
+                                onClick={() => {
+                                  setEditingVideo(video);
+                                  setNewVideo(video);
+                                  setShowVideoModal(true);
+                                }}
+                                className="text-blue-600 hover:text-blue-700"
+                                title="Düzenle"
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button
+                                onClick={() => deleteVideo(video.id)}
+                                className="text-red-600 hover:text-red-700"
+                                title="Sil"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
