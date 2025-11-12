@@ -3071,6 +3071,11 @@ const FocusProApp = () => {
             </div>
           )}
 
+          {/* BADGES PAGE */}
+          {currentPage === 'badges' && (
+            <BadgeCollection currentUser={currentUser} />
+          )}
+
           {/* STATISTICS PAGE */}
           {currentPage === 'statistics' && currentUser?.role === 'admin' && (
             <div>
