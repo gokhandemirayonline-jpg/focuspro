@@ -1074,25 +1074,6 @@ const FocusProApp = () => {
     }
   };
 
-  const addOrUpdateVideo = async () => {
-    if (!newVideo.title || !newVideo.youtube_id) return;
-    
-    try {
-      if (editingVideo) {
-        await videoAPI.update(editingVideo.id, newVideo);
-      } else {
-        await videoAPI.create(newVideo);
-      }
-      
-      await loadVideos();
-      setNewVideo({ title: '', youtube_id: '', description: '', duration: '', category: '' });
-      setEditingVideo(null);
-      setShowVideoModal(false);
-    } catch (error) {
-      alert('İşlem başarısız!');
-    }
-  };
-
   const deleteVideo = async (id) => {
     try {
       await videoAPI.delete(id);
