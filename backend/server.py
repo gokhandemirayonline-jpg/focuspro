@@ -2116,6 +2116,55 @@ async def check_and_award_badges(user_id: str, trigger_type: str, context_id: st
                     await db.notifications.insert_one(notification)
 
 
+# Helper function to check 1 month membership badge
+async def check_membership_badge(user_id: str, created_at):
+    """Check if user qualifies for 1 month membership badge"""
+    if not created_at:
+        return
+    
+    # Parse created_at
+    try:
+        if isinstance(created_at, str):
+            created_date = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+        else:
+            created_date = created_at
+        
+        # Check if 30 days have passed
+        days_since_registration = (datetime.utcnow() - created_date).days
+        
+        if days_since_registration >= 30:
+            badge = await db.badges.find_one({"reward_type": "1_month"}, {"_id": 0})
+            if badge:
+                existing = await db.user_badges.find_one(
+                    {"user_id": user_id, "badge_id": badge['id']},
+                    {"_id": 0}
+                )
+                if not existing:
+                    user_badge = {
+                        "id": str(uuid.uuid4()),
+                        "user_id": user_id,
+                        "badge_id": badge['id'],
+                        "awarded_by": None,
+                        "note": "1 aylık üyelik süresini doldurduğunuz için otomatik verildi",
+                        "earned_at": datetime.utcnow().isoformat()
+                    }
+                    await db.user_badges.insert_one(user_badge)
+                    
+                    # Send notification
+                    notification = {
+                        "id": str(uuid.uuid4()),
+                        "user_id": user_id,
+                        "title": f"Sadık Üye Rozetiniz Hazır! {badge['icon']}",
+                        "message": f"'{badge['name']}' rozetini kazandınız! 1 aydır bizimlesiniz!",
+                        "type": "success",
+                        "read": False,
+                        "created_at": datetime.utcnow().isoformat()
+                    }
+                    await db.notifications.insert_one(notification)
+    except Exception as e:
+        logger.error(f"Error checking membership badge: {e}")
+
+
 # Profile Update Endpoints
 @api_router.put("/auth/profile", response_model=UserResponse)
 async def update_profile(profile_data: UserUpdate, current_user: dict = Depends(get_current_user)):
