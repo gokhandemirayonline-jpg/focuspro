@@ -187,7 +187,6 @@ const FocusProApp = () => {
   const [newReason, setNewReason] = useState({ title: '', description: '', image: '' });
   const [newProspect, setNewProspect] = useState({ name: '', phone: '', email: '', status: 'new', notes: '', source: '' });
   const [newPartner, setNewPartner] = useState({ name: '', phone: '', email: '', rank: '', join_date: '', performance: '', status: 'active' });
-  const [newVideo, setNewVideo] = useState({ title: '', youtube_id: '', description: '', duration: '', category: '' });
   const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'user' });
   const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '', location: '', description: '', max_participants: '' });
   const [newRecommendation, setNewRecommendation] = useState({ title: '', type: 'book', description: '', cover_image: '', link: '', author: '', duration: '', category: '' });
