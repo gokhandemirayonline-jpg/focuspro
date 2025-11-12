@@ -61,6 +61,7 @@ export const videoAPI = {
 export const progressAPI = {
   get: () => api.get('/progress'),
   complete: (videoId, comment) => api.post(`/progress/${videoId}`, null, { params: { comment } }),
+  updateProgress: (videoId, progressData) => api.patch(`/videos/${videoId}/progress`, progressData),
 };
 
 // Meeting API
