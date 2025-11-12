@@ -116,6 +116,111 @@ async def init_default_admin():
         )
 
 
+# Initialize default video categories
+async def init_default_categories():
+    """6 varsayılan eğitim kategorisini ekler"""
+    categories = [
+        {"name": "Başlangıç Eğitimleri", "description": "Yeni üyelere özel temel eğitimler", "order": 1},
+        {"name": "Ürün Bilgisi", "description": "Satılan ürünler hakkında detaylı bilgiler", "order": 2},
+        {"name": "Satış Teknikleri", "description": "İkna ve sunum becerileri eğitimleri", "order": 3},
+        {"name": "Takım Yönetimi", "description": "Downline liderlik ve yönetim eğitimleri", "order": 4},
+        {"name": "Motivasyon & Gelişim", "description": "Kişisel gelişim ve motivasyon içerikleri", "order": 5},
+        {"name": "Pazarlama Stratejileri", "description": "Dijital pazarlama ve sosyal medya stratejileri", "order": 6}
+    ]
+    
+    for category in categories:
+        existing = await db.video_categories.find_one({"name": category["name"]}, {"_id": 0})
+        if not existing:
+            category_data = {
+                "id": str(uuid.uuid4()),
+                "name": category["name"],
+                "description": category["description"],
+                "order": category["order"],
+                "created_at": datetime.utcnow().isoformat()
+            }
+            await db.video_categories.insert_one(category_data)
+            logger.info(f"Category created: {category['name']}")
+
+
+# Initialize default badges
+async def init_default_badges():
+    """7 varsayılan rozet tipini ekler"""
+    badges = [
+        {
+            "name": "İlk Adım",
+            "description": "İlk videonuzu izlediniz!",
+            "icon": "🎬",
+            "type": "auto",
+            "criteria": "Herhangi bir videoyu ilk kez izle",
+            "reward_type": "first_video"
+        },
+        {
+            "name": "Hedef Odaklı",
+            "description": "10 hedef tamamladınız!",
+            "icon": "🎯",
+            "type": "auto",
+            "criteria": "Toplam 10 hedef tamamla",
+            "reward_type": "10_goals"
+        },
+        {
+            "name": "Sadık Üye",
+            "description": "1 aydır bizimlesiniz!",
+            "icon": "📅",
+            "type": "auto",
+            "criteria": "Kayıt tarihinden itibaren 30 gün geçmesi",
+            "reward_type": "1_month"
+        },
+        {
+            "name": "Haftanın Yıldızı",
+            "description": "Bu hafta en aktif kullanıcısınız!",
+            "icon": "⭐",
+            "type": "auto",
+            "criteria": "Haftalık en çok aktivite yapan kullanıcı",
+            "reward_type": "most_active"
+        },
+        {
+            "name": "Bilgi Ustası",
+            "description": "Tüm eğitim videolarını izlediniz!",
+            "icon": "🏆",
+            "type": "auto",
+            "criteria": "Sistemdeki tüm videoları izle",
+            "reward_type": "all_videos"
+        },
+        {
+            "name": "Kategori Şampiyonu",
+            "description": "Bir kategorideki tüm videoları tamamladınız!",
+            "icon": "📚",
+            "type": "auto",
+            "criteria": "Herhangi bir kategorideki tüm videoları izle",
+            "reward_type": "category_complete"
+        },
+        {
+            "name": "Özel Ödül",
+            "description": "Yönetici tarafından özel olarak verildi!",
+            "icon": "🌟",
+            "type": "manual",
+            "criteria": "Admin tarafından manuel olarak verilir",
+            "reward_type": "special"
+        }
+    ]
+    
+    for badge in badges:
+        existing = await db.badges.find_one({"reward_type": badge["reward_type"]}, {"_id": 0})
+        if not existing:
+            badge_data = {
+                "id": str(uuid.uuid4()),
+                "name": badge["name"],
+                "description": badge["description"],
+                "icon": badge["icon"],
+                "type": badge["type"],
+                "criteria": badge["criteria"],
+                "reward_type": badge["reward_type"],
+                "created_at": datetime.utcnow().isoformat()
+            }
+            await db.badges.insert_one(badge_data)
+            logger.info(f"Badge created: {badge['name']}")
+
+
 # Helper function to send notification to admin
 async def notify_admin(title: str, message: str, notification_type: str = "info"):
     """Send notification to admin user"""
