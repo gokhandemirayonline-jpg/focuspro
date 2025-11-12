@@ -1668,6 +1668,431 @@ async def clear_old_activity_logs(
     }
 
 
+# ============= LEARNING PATH ENDPOINTS =============
+@api_router.get("/learning-paths", response_model=List[LearningPath])
+async def get_learning_paths(current_user: dict = Depends(get_current_user)):
+    """Get all learning paths"""
+    paths = await db.learning_paths.find({"is_active": True}, {"_id": 0}).to_list(1000)
+    return paths
+
+
+@api_router.post("/learning-paths", response_model=LearningPath)
+async def create_learning_path(path: LearningPathCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new learning path (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    path_obj = LearningPath(**path.model_dump())
+    path_doc = path_obj.model_dump()
+    path_doc['created_at'] = path_doc['created_at'].isoformat()
+    path_doc['updated_at'] = path_doc['updated_at'].isoformat()
+    
+    await db.learning_paths.insert_one(path_doc)
+    return path_obj
+
+
+@api_router.put("/learning-paths/{path_id}", response_model=LearningPath)
+async def update_learning_path(
+    path_id: str,
+    path_update: LearningPathUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a learning path (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    update_data = {k: v for k, v in path_update.model_dump().items() if v is not None}
+    update_data['updated_at'] = datetime.utcnow().isoformat()
+    
+    result = await db.learning_paths.update_one(
+        {"id": path_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Learning path not found")
+    
+    updated_path = await db.learning_paths.find_one({"id": path_id}, {"_id": 0})
+    return updated_path
+
+
+@api_router.delete("/learning-paths/{path_id}")
+async def delete_learning_path(path_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a learning path (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.learning_paths.delete_one({"id": path_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Learning path not found")
+    
+    return {"success": True}
+
+
+@api_router.get("/learning-paths/{path_id}/progress")
+async def get_learning_path_progress(path_id: str, current_user: dict = Depends(get_current_user)):
+    """Get user's progress in a specific learning path"""
+    path = await db.learning_paths.find_one({"id": path_id}, {"_id": 0})
+    if not path:
+        raise HTTPException(status_code=404, detail="Learning path not found")
+    
+    # Get user's progress for all videos in the path
+    video_progress = []
+    for video_id in path.get('video_ids', []):
+        progress = await db.video_progress.find_one(
+            {"user_id": current_user['id'], "video_id": video_id},
+            {"_id": 0}
+        )
+        if not progress:
+            # Create initial progress if not exists
+            progress = {
+                "id": str(uuid.uuid4()),
+                "user_id": current_user['id'],
+                "video_id": video_id,
+                "watched": False,
+                "watch_percentage": 0,
+                "unlocked": True,
+                "updated_at": datetime.utcnow().isoformat()
+            }
+            await db.video_progress.insert_one(progress)
+        video_progress.append(progress)
+    
+    # Calculate overall progress
+    total_videos = len(path.get('video_ids', []))
+    completed_videos = sum(1 for p in video_progress if p.get('watched', False))
+    progress_percentage = (completed_videos / total_videos * 100) if total_videos > 0 else 0
+    
+    return {
+        "path": path,
+        "total_videos": total_videos,
+        "completed_videos": completed_videos,
+        "progress_percentage": round(progress_percentage, 2),
+        "video_progress": video_progress
+    }
+
+
+# ============= VIDEO PROGRESS ENDPOINTS (Enhanced) =============
+@api_router.patch("/videos/{video_id}/progress")
+async def update_video_progress(
+    video_id: str,
+    progress_update: VideoProgressUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update video watch progress (percentage)"""
+    watch_percentage = progress_update.watch_percentage
+    
+    # Check if %80 completed
+    is_watched = watch_percentage >= 80
+    
+    update_data = {
+        "watch_percentage": watch_percentage,
+        "watched": is_watched,
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    
+    if is_watched and progress_update.watched is None:
+        update_data['completed_at'] = datetime.utcnow().isoformat()
+    
+    # Update or create progress
+    result = await db.video_progress.update_one(
+        {"user_id": current_user['id'], "video_id": video_id},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    # If video just completed (%80 reached), check for badges
+    if is_watched:
+        await check_and_award_badges(current_user['id'], "video_complete", video_id)
+    
+    return {"success": True, "watched": is_watched, "watch_percentage": watch_percentage}
+
+
+# ============= BADGE ENDPOINTS =============
+@api_router.get("/badges", response_model=List[Badge])
+async def get_all_badges():
+    """Get all available badges"""
+    badges = await db.badges.find({}, {"_id": 0}).to_list(1000)
+    return badges
+
+
+@api_router.get("/users/{user_id}/badges")
+async def get_user_badges(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all badges earned by a user"""
+    # Check permission
+    if current_user['id'] != user_id and current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get user's badges
+    user_badges = await db.user_badges.find({"user_id": user_id}, {"_id": 0}).to_list(1000)
+    
+    # Get badge details
+    badges_with_details = []
+    for ub in user_badges:
+        badge = await db.badges.find_one({"id": ub['badge_id']}, {"_id": 0})
+        if badge:
+            badges_with_details.append({
+                **ub,
+                "badge_details": badge
+            })
+    
+    return badges_with_details
+
+
+@api_router.get("/badges/my-collection")
+async def get_my_badge_collection(current_user: dict = Depends(get_current_user)):
+    """Get current user's badge collection with earned and not earned badges"""
+    # Get all badges
+    all_badges = await db.badges.find({}, {"_id": 0}).to_list(1000)
+    
+    # Get user's earned badges
+    user_badges = await db.user_badges.find({"user_id": current_user['id']}, {"_id": 0}).to_list(1000)
+    earned_badge_ids = [ub['badge_id'] for ub in user_badges]
+    
+    # Separate earned and not earned
+    earned_badges = []
+    not_earned_badges = []
+    
+    for badge in all_badges:
+        if badge['id'] in earned_badge_ids:
+            ub = next((ub for ub in user_badges if ub['badge_id'] == badge['id']), None)
+            earned_badges.append({
+                **badge,
+                "earned_at": ub.get('earned_at') if ub else None,
+                "note": ub.get('note') if ub else None
+            })
+        else:
+            not_earned_badges.append(badge)
+    
+    return {
+        "earned_badges": earned_badges,
+        "not_earned_badges": not_earned_badges,
+        "total_earned": len(earned_badges),
+        "total_badges": len(all_badges)
+    }
+
+
+@api_router.post("/admin/badges/award")
+async def award_badge_to_user(
+    user_id: str,
+    badge_data: UserBadgeCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Award a badge to a user (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Check if user already has this badge
+    existing = await db.user_badges.find_one(
+        {"user_id": user_id, "badge_id": badge_data.badge_id},
+        {"_id": 0}
+    )
+    if existing:
+        raise HTTPException(status_code=400, detail="User already has this badge")
+    
+    # Check if badge exists
+    badge = await db.badges.find_one({"id": badge_data.badge_id}, {"_id": 0})
+    if not badge:
+        raise HTTPException(status_code=404, detail="Badge not found")
+    
+    # Award badge
+    user_badge = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "badge_id": badge_data.badge_id,
+        "awarded_by": current_user['id'],
+        "note": badge_data.note,
+        "earned_at": datetime.utcnow().isoformat()
+    }
+    await db.user_badges.insert_one(user_badge)
+    
+    # Send notification to user
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if user:
+        notification = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "title": f"Yeni Rozet Kazandınız! {badge['icon']}",
+            "message": f"'{badge['name']}' rozetini kazandınız! {badge['description']}",
+            "type": "success",
+            "read": False,
+            "created_at": datetime.utcnow().isoformat()
+        }
+        await db.notifications.insert_one(notification)
+    
+    return {"success": True, "badge": badge}
+
+
+# Helper function to check and award badges automatically
+async def check_and_award_badges(user_id: str, trigger_type: str, context_id: str = None):
+    """Check if user qualifies for any badges and award them"""
+    
+    # Check for "first_video" badge
+    if trigger_type == "video_complete":
+        # Check if this is user's first video
+        video_count = await db.video_progress.count_documents({
+            "user_id": user_id,
+            "watched": True
+        })
+        
+        if video_count == 1:
+            badge = await db.badges.find_one({"reward_type": "first_video"}, {"_id": 0})
+            if badge:
+                existing = await db.user_badges.find_one(
+                    {"user_id": user_id, "badge_id": badge['id']},
+                    {"_id": 0}
+                )
+                if not existing:
+                    user_badge = {
+                        "id": str(uuid.uuid4()),
+                        "user_id": user_id,
+                        "badge_id": badge['id'],
+                        "awarded_by": None,
+                        "note": "İlk videonuzu izlediğiniz için otomatik verildi",
+                        "earned_at": datetime.utcnow().isoformat()
+                    }
+                    await db.user_badges.insert_one(user_badge)
+                    
+                    # Send notification
+                    notification = {
+                        "id": str(uuid.uuid4()),
+                        "user_id": user_id,
+                        "title": f"Yeni Rozet! {badge['icon']}",
+                        "message": f"'{badge['name']}' rozetini kazandınız!",
+                        "type": "success",
+                        "read": False,
+                        "created_at": datetime.utcnow().isoformat()
+                    }
+                    await db.notifications.insert_one(notification)
+        
+        # Check for "all_videos" badge
+        total_videos = await db.videos.count_documents({})
+        watched_videos = await db.video_progress.count_documents({
+            "user_id": user_id,
+            "watched": True
+        })
+        
+        if total_videos > 0 and watched_videos >= total_videos:
+            badge = await db.badges.find_one({"reward_type": "all_videos"}, {"_id": 0})
+            if badge:
+                existing = await db.user_badges.find_one(
+                    {"user_id": user_id, "badge_id": badge['id']},
+                    {"_id": 0}
+                )
+                if not existing:
+                    user_badge = {
+                        "id": str(uuid.uuid4()),
+                        "user_id": user_id,
+                        "badge_id": badge['id'],
+                        "awarded_by": None,
+                        "note": "Tüm videoları izlediğiniz için otomatik verildi",
+                        "earned_at": datetime.utcnow().isoformat()
+                    }
+                    await db.user_badges.insert_one(user_badge)
+                    
+                    # Send notification
+                    notification = {
+                        "id": str(uuid.uuid4()),
+                        "user_id": user_id,
+                        "title": f"Tebrikler! {badge['icon']}",
+                        "message": f"'{badge['name']}' rozetini kazandınız!",
+                        "type": "success",
+                        "read": False,
+                        "created_at": datetime.utcnow().isoformat()
+                    }
+                    await db.notifications.insert_one(notification)
+        
+        # Check for "category_complete" badge
+        if context_id:
+            video = await db.videos.find_one({"id": context_id}, {"_id": 0})
+            if video and video.get('category_id'):
+                # Get all videos in this category
+                category_videos = await db.videos.find(
+                    {"category_id": video['category_id']},
+                    {"_id": 0}
+                ).to_list(1000)
+                category_video_ids = [v['id'] for v in category_videos]
+                
+                # Check if user watched all videos in this category
+                watched_in_category = await db.video_progress.count_documents({
+                    "user_id": user_id,
+                    "video_id": {"$in": category_video_ids},
+                    "watched": True
+                })
+                
+                if len(category_video_ids) > 0 and watched_in_category >= len(category_video_ids):
+                    badge = await db.badges.find_one({"reward_type": "category_complete"}, {"_id": 0})
+                    if badge:
+                        # Check if already awarded for this category
+                        existing = await db.user_badges.find_one(
+                            {
+                                "user_id": user_id,
+                                "badge_id": badge['id'],
+                                "note": {"$regex": video.get('category', '')}
+                            },
+                            {"_id": 0}
+                        )
+                        if not existing:
+                            user_badge = {
+                                "id": str(uuid.uuid4()),
+                                "user_id": user_id,
+                                "badge_id": badge['id'],
+                                "awarded_by": None,
+                                "note": f"{video.get('category', 'Kategori')} kategorisindeki tüm videoları izlediğiniz için verildi",
+                                "earned_at": datetime.utcnow().isoformat()
+                            }
+                            await db.user_badges.insert_one(user_badge)
+                            
+                            # Send notification
+                            notification = {
+                                "id": str(uuid.uuid4()),
+                                "user_id": user_id,
+                                "title": f"Kategori Tamamlandı! {badge['icon']}",
+                                "message": f"'{video.get('category', '')}' kategorisini tamamladınız!",
+                                "type": "success",
+                                "read": False,
+                                "created_at": datetime.utcnow().isoformat()
+                            }
+                            await db.notifications.insert_one(notification)
+    
+    # Check for "10_goals" badge
+    elif trigger_type == "goal_complete":
+        completed_goals = await db.goals.count_documents({
+            "user_id": user_id,
+            "done": True
+        })
+        
+        if completed_goals >= 10:
+            badge = await db.badges.find_one({"reward_type": "10_goals"}, {"_id": 0})
+            if badge:
+                existing = await db.user_badges.find_one(
+                    {"user_id": user_id, "badge_id": badge['id']},
+                    {"_id": 0}
+                )
+                if not existing:
+                    user_badge = {
+                        "id": str(uuid.uuid4()),
+                        "user_id": user_id,
+                        "badge_id": badge['id'],
+                        "awarded_by": None,
+                        "note": "10 hedef tamamladığınız için otomatik verildi",
+                        "earned_at": datetime.utcnow().isoformat()
+                    }
+                    await db.user_badges.insert_one(user_badge)
+                    
+                    # Send notification
+                    notification = {
+                        "id": str(uuid.uuid4()),
+                        "user_id": user_id,
+                        "title": f"Yeni Rozet! {badge['icon']}",
+                        "message": f"'{badge['name']}' rozetini kazandınız!",
+                        "type": "success",
+                        "read": False,
+                        "created_at": datetime.utcnow().isoformat()
+                    }
+                    await db.notifications.insert_one(notification)
+
+
 # Profile Update Endpoints
 @api_router.put("/auth/profile", response_model=UserResponse)
 async def update_profile(profile_data: UserUpdate, current_user: dict = Depends(get_current_user)):
