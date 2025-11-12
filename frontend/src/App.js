@@ -4519,7 +4519,7 @@ const FocusProApp = () => {
                         onClick={() => {
                           setShowVideoModal(true);
                           setEditingVideo(null);
-                          setNewVideo({ title: '', youtube_id: '', description: '', duration: '', category: '', category_id: '' });
+                          setNewVideo({ title: '', youtube_id: '', description: '', duration: '', category: '', category_id: '', level: 'Başlangıç', order: videos.length });
                         }}
                         className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
                       >
