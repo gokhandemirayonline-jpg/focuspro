@@ -173,6 +173,18 @@ async def register(user_data: UserCreate):
         notification_type="user"
     )
     
+    # Log user registration
+    await create_activity_log(
+        user_id=doc['id'],
+        user_name=user_data.name,
+        user_email=user_data.email,
+        action="register",
+        resource_type="user",
+        resource_id=doc['id'],
+        resource_name=user_data.name,
+        details=f"New user registered"
+    )
+    
     return UserResponse(**doc)
 
 @api_router.post("/auth/login")
