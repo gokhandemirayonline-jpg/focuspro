@@ -112,7 +112,19 @@ const FocusProApp = () => {
   const [eventParticipationData, setEventParticipationData] = useState([]);
   
   // Admin Panel tab state
-  const [adminTab, setAdminTab] = useState('users'); // users, trainings
+  const [adminTab, setAdminTab] = useState('users'); // users, trainings, logs
+  
+  // Activity Log states
+  const [activityLogs, setActivityLogs] = useState([]);
+  const [logStatistics, setLogStatistics] = useState(null);
+  const [logFilters, setLogFilters] = useState({
+    action: '',
+    resource_type: '',
+    user_id: '',
+    date_from: '',
+    date_to: '',
+    limit: 100
+  });
   
   const [showMeetingModal, setShowMeetingModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
