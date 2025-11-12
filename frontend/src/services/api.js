@@ -85,6 +85,7 @@ export const taskAPI = {
 export const goalAPI = {
   getAll: () => api.get('/goals'),
   create: (goalData) => api.post('/goals', goalData),
+  update: (goalId, goalData) => api.put(`/goals/${goalId}`, goalData),
   delete: (goalId) => api.delete(`/goals/${goalId}`),
 };
 
