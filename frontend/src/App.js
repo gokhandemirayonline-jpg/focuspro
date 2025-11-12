@@ -1074,15 +1074,6 @@ const FocusProApp = () => {
     }
   };
 
-  const deleteVideo = async (id) => {
-    try {
-      await videoAPI.delete(id);
-      await loadVideos();
-    } catch (error) {
-      alert('Silme işlemi başarısız!');
-    }
-  };
-
   const addOrUpdateUser = async () => {
     if (!newUser.name || !newUser.email) {
       alert('İsim ve email alanları zorunludur!');
