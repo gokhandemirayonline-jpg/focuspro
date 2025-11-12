@@ -24,7 +24,7 @@ from models import (
     UserBadgeCreate, UserBadge,
     MeetingCreate, Meeting,
     TaskCreate, Task,
-    GoalCreate, Goal,
+    GoalCreate, Goal, GoalUpdate,
     ReasonCreate, Reason,
     ProspectCreate, Prospect,
     PartnerCreate, Partner,
