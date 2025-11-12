@@ -9,7 +9,7 @@ import json
 import sys
 
 # Backend URL from environment
-BACKEND_URL = "https://netmarket-manager.preview.emergentagent.com"
+BACKEND_URL = "https://adminpanel-11.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class LoginErrorTester:
