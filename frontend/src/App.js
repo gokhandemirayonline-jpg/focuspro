@@ -682,6 +682,37 @@ const FocusProApp = () => {
     }
   };
 
+  // Activity Log functions
+  const loadActivityLogs = async () => {
+    if (currentUser?.role !== 'admin') return;
+    
+    try {
+      const [logsRes, statsRes] = await Promise.all([
+        activityLogAPI.getAll(logFilters),
+        activityLogAPI.getStatistics()
+      ]);
+      
+      setActivityLogs(logsRes.data.logs);
+      setLogStatistics(statsRes.data);
+    } catch (error) {
+      console.error('Aktivite logları yüklenemedi:', error);
+    }
+  };
+
+  const clearOldLogs = async () => {
+    if (!window.confirm('90 günden eski logları silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+    
+    try {
+      const response = await activityLogAPI.clearOld(90);
+      alert(`${response.data.deleted_count} log silindi!`);
+      await loadActivityLogs();
+    } catch (error) {
+      alert('Log silme başarısız!');
+    }
+  };
+
   const loadRecommendations = async () => {
     try {
       const response = await recommendationAPI.getAll();
