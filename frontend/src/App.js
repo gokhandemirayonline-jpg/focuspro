@@ -2426,9 +2426,9 @@ const FocusProApp = () => {
                     })}
                     
                     {videos.length === 0 && (
-                      <div className="text-center py-20">
-                        <Film size={80} className="mx-auto text-gray-600 mb-6" />
-                        <h3 className="text-2xl font-semibold text-gray-400 mb-2">Henüz video yok</h3>
+                      <div className="text-center py-20 bg-white rounded-2xl shadow-sm">
+                        <Film size={80} className="mx-auto text-gray-300 mb-6" />
+                        <h3 className="text-2xl font-semibold text-gray-700 mb-2">Henüz video yok</h3>
                         <p className="text-gray-500">Eğitim videoları eklendiğinde burada görünecek</p>
                       </div>
                     )}
