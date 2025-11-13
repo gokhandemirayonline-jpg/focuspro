@@ -433,15 +433,15 @@ const FocusProApp = () => {
     
     try {
       if (editingVideo) {
-        await videoAPI.update(editingVideo.id, newVideo);
+        await videoAPI.update(editingVideo.id, videoToSave);
       } else {
-        await videoAPI.create(newVideo);
+        await videoAPI.create(videoToSave);
       }
       await loadVideos();
       await loadVideoStatistics();
       setShowVideoModal(false);
       setEditingVideo(null);
-      setNewVideo({ title: '', youtube_id: '', description: '', duration: '', category: '', category_id: '' });
+      setNewVideo({ title: '', youtube_id: '', description: '', duration: '', category: '', category_id: '', level: 'Başlangıç', order: 0 });
     } catch (error) {
       alert('İşlem başarısız!');
     }
