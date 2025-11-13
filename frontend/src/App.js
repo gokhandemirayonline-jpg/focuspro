@@ -1633,13 +1633,13 @@ const FocusProApp = () => {
           </button>
 
           <button
-            onClick={() => setCurrentPage('tasks')}
+            onClick={() => setCurrentPage('agenda')}
             className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
-              currentPage === 'tasks' ? 'bg-white/20' : 'hover:bg-white/10'
+              currentPage === 'agenda' ? 'bg-white/20' : 'hover:bg-white/10'
             }`}
           >
-            <ListChecks size={20} />
-            {sidebarOpen && <span>Görevler</span>}
+            <Bookmark size={20} />
+            {sidebarOpen && <span>📋 Ajanda</span>}
           </button>
 
           <button
@@ -1650,16 +1650,6 @@ const FocusProApp = () => {
           >
             <GraduationCap size={20} />
             {sidebarOpen && <span>Eğitimler</span>}
-          </button>
-
-          <button
-            onClick={() => setCurrentPage('prospects')}
-            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
-              currentPage === 'prospects' ? 'bg-white/20' : 'hover:bg-white/10'
-            }`}
-          >
-            <UserPlus size={20} />
-            {sidebarOpen && <span>İsim Listesi</span>}
           </button>
 
           <button
@@ -1680,26 +1670,6 @@ const FocusProApp = () => {
           >
             <CalendarDays size={20} />
             {sidebarOpen && <span>Etkinlikler</span>}
-          </button>
-
-          <button
-            onClick={() => setCurrentPage('goals')}
-            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
-              currentPage === 'goals' ? 'bg-white/20' : 'hover:bg-white/10'
-            }`}
-          >
-            <Target size={20} />
-            {sidebarOpen && <span>Hedefler</span>}
-          </button>
-
-          <button
-            onClick={() => setCurrentPage('reasons')}
-            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
-              currentPage === 'reasons' ? 'bg-white/20' : 'hover:bg-white/10'
-            }`}
-          >
-            <MessageSquare size={20} />
-            {sidebarOpen && <span>Nedenlerim</span>}
           </button>
 
           <button
