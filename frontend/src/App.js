@@ -2171,8 +2171,7 @@ const FocusProApp = () => {
               </div>
 
               <div className="max-w-7xl mx-auto px-8 pb-12">
-              
-              {selectedVideo ? (
+                {selectedVideo ? (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                   <button
                     onClick={() => setSelectedVideo(null)}
