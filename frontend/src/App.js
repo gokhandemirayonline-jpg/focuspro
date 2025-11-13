@@ -5684,13 +5684,21 @@ const FocusProApp = () => {
                 rows={3}
                 className="w-full px-4 py-2 border rounded-lg"
               />
-              <input
-                type="text"
-                value={newVideo.duration}
-                onChange={(e) => setNewVideo({...newVideo, duration: e.target.value})}
-                placeholder="Süre (ör: 15:30)"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Video Süresi (dakika:saniye)
+                </label>
+                <input
+                  type="text"
+                  value={newVideo.duration}
+                  onChange={(e) => setNewVideo({...newVideo, duration: e.target.value})}
+                  placeholder="Örnek: 15:30 (15 dakika 30 saniye)"
+                  className="w-full px-4 py-2 border rounded-lg"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  ⏱️ Video süresini dakika:saniye formatında girin (örn: 5:45, 12:30, 1:05:30)
+                </p>
+              </div>
               <select
                 value={newVideo.category_id || ''}
                 onChange={(e) => {
