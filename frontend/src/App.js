@@ -3177,6 +3177,309 @@ const FocusProApp = () => {
             </div>
           )}
 
+          {/* AGENDA PAGE */}
+          {currentPage === 'agenda' && (
+            <div className="p-6">
+              <h1 className="text-3xl font-bold text-gray-800 mb-6">📋 Ajanda</h1>
+              
+              {/* Tabs */}
+              <div className="mb-6 flex gap-2 border-b border-gray-200">
+                <button
+                  onClick={() => setAgendaTab('tasks')}
+                  className={`px-6 py-3 font-semibold transition-all ${
+                    agendaTab === 'tasks' 
+                      ? 'text-purple-600 border-b-2 border-purple-600' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <ListChecks className="inline mr-2" size={20} />
+                  Görevler
+                </button>
+                <button
+                  onClick={() => setAgendaTab('prospects')}
+                  className={`px-6 py-3 font-semibold transition-all ${
+                    agendaTab === 'prospects' 
+                      ? 'text-purple-600 border-b-2 border-purple-600' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <UserPlus className="inline mr-2" size={20} />
+                  İsim Listesi
+                </button>
+                <button
+                  onClick={() => setAgendaTab('goals')}
+                  className={`px-6 py-3 font-semibold transition-all ${
+                    agendaTab === 'goals' 
+                      ? 'text-purple-600 border-b-2 border-purple-600' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <Target className="inline mr-2" size={20} />
+                  Hedefler
+                </button>
+                <button
+                  onClick={() => setAgendaTab('dreams')}
+                  className={`px-6 py-3 font-semibold transition-all ${
+                    agendaTab === 'dreams' 
+                      ? 'text-purple-600 border-b-2 border-purple-600' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <MessageSquare className="inline mr-2" size={20} />
+                  Hayaller
+                </button>
+              </div>
+
+              {/* Tab Content */}
+              <div className="mt-6">
+                {agendaTab === 'tasks' && (
+                  <div>
+                    {/* TASKS CONTENT - Will be moved here */}
+                    <div className="mb-6 flex items-center justify-between">
+                      <h2 className="text-2xl font-bold text-gray-800">Görevler</h2>
+                      <button
+                        onClick={() => {
+                          setShowTaskModal(true);
+                          setEditingTask(null);
+                          setNewTask({ title: '', description: '', date: '', status: 'todo' });
+                        }}
+                        className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                      >
+                        <Plus size={20} />
+                        Yeni Görev
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {['todo', 'doing', 'done'].map(status => (
+                        <div key={status} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                          <h3 className="font-bold text-gray-700 mb-4 text-center">
+                            {status === 'todo' ? '📝 Yapılacak' : status === 'doing' ? '⚡ Devam Eden' : '✅ Tamamlandı'}
+                          </h3>
+                          <div className="space-y-3">
+                            {tasks.filter(t => t.status === status).map(task => (
+                              <div key={task.id} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                <h4 className="font-semibold text-gray-800">{task.title}</h4>
+                                <p className="text-sm text-gray-600 mt-1">{task.description}</p>
+                                {task.date && (
+                                  <p className="text-xs text-gray-500 mt-2">📅 {task.date}</p>
+                                )}
+                                <div className="flex gap-2 mt-3">
+                                  <button
+                                    onClick={() => {
+                                      setEditingTask(task);
+                                      setNewTask(task);
+                                      setShowTaskModal(true);
+                                    }}
+                                    className="text-blue-600 hover:text-blue-800 text-sm"
+                                  >
+                                    <Edit size={16} />
+                                  </button>
+                                  <button
+                                    onClick={() => deleteTask(task.id)}
+                                    className="text-red-600 hover:text-red-800 text-sm"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {agendaTab === 'prospects' && (
+                  <div>
+                    {/* PROSPECTS CONTENT */}
+                    <div className="mb-6 flex items-center justify-between">
+                      <h2 className="text-2xl font-bold text-gray-800">İsim Listesi</h2>
+                      <button
+                        onClick={() => {
+                          setShowProspectModal(true);
+                          setEditingProspect(null);
+                          setNewProspect({ name: '', phone: '', email: '', notes: '', status: 'new' });
+                        }}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+                      >
+                        <Plus size={20} />
+                        Yeni İsim
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {prospects.map(prospect => (
+                        <div key={prospect.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <h3 className="font-bold text-gray-800">{prospect.name}</h3>
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              prospect.status === 'new' ? 'bg-blue-100 text-blue-700' :
+                              prospect.status === 'contacted' ? 'bg-yellow-100 text-yellow-700' :
+                              prospect.status === 'interested' ? 'bg-green-100 text-green-700' :
+                              'bg-red-100 text-red-700'
+                            }`}>
+                              {prospect.status === 'new' ? 'Yeni' :
+                               prospect.status === 'contacted' ? 'İletişimde' :
+                               prospect.status === 'interested' ? 'İlgili' : 'Reddetti'}
+                            </span>
+                          </div>
+                          {prospect.phone && (
+                            <p className="text-sm text-gray-600 mb-1">📞 {prospect.phone}</p>
+                          )}
+                          {prospect.email && (
+                            <p className="text-sm text-gray-600 mb-2">✉️ {prospect.email}</p>
+                          )}
+                          {prospect.notes && (
+                            <p className="text-sm text-gray-500 mt-2 border-t pt-2">{prospect.notes}</p>
+                          )}
+                          <div className="flex gap-2 mt-3 pt-3 border-t">
+                            <button
+                              onClick={() => {
+                                setEditingProspect(prospect);
+                                setNewProspect(prospect);
+                                setShowProspectModal(true);
+                              }}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => deleteProspect(prospect.id)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {agendaTab === 'goals' && (
+                  <div>
+                    {/* GOALS CONTENT */}
+                    <div className="mb-6 flex items-center justify-between">
+                      <h2 className="text-2xl font-bold text-gray-800">Hedeflerim</h2>
+                      <button
+                        onClick={() => {
+                          setShowGoalModal(true);
+                          setEditingGoal(null);
+                          setNewGoal({ title: '', type: 'daily', target: '', deadline: '', current: 0, done: false });
+                        }}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700"
+                      >
+                        <Plus size={20} />
+                        Yeni Hedef
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {goals.map(goal => (
+                        <div key={goal.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <h3 className="font-bold text-gray-800">{goal.title}</h3>
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              goal.type === 'daily' ? 'bg-blue-100 text-blue-700' :
+                              goal.type === 'weekly' ? 'bg-purple-100 text-purple-700' :
+                              'bg-orange-100 text-orange-700'
+                            }`}>
+                              {goal.type === 'daily' ? 'Günlük' : goal.type === 'weekly' ? 'Haftalık' : 'Aylık'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">🎯 {goal.target}</p>
+                          {goal.deadline && (
+                            <p className="text-sm text-gray-500 mb-3">📅 {goal.deadline}</p>
+                          )}
+                          <div className="mb-3">
+                            <div className="flex justify-between text-xs text-gray-600 mb-1">
+                              <span>İlerleme</span>
+                              <span>{goal.current || 0}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-green-500 h-2 rounded-full transition-all"
+                                style={{ width: `${goal.current || 0}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          {goal.done && (
+                            <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded text-center">
+                              <span className="text-sm text-green-700 font-semibold">✅ Tamamlandı!</span>
+                            </div>
+                          )}
+                          <div className="flex gap-2 pt-3 border-t">
+                            <button
+                              onClick={() => {
+                                setEditingGoal(goal);
+                                setNewGoal(goal);
+                                setShowGoalModal(true);
+                              }}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => deleteGoal(goal.id)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {agendaTab === 'dreams' && (
+                  <div>
+                    {/* DREAMS (REASONS) CONTENT */}
+                    <div className="mb-6 flex items-center justify-between">
+                      <h2 className="text-2xl font-bold text-gray-800">💭 Hayallerim</h2>
+                      <button
+                        onClick={() => {
+                          setShowReasonModal(true);
+                          setEditingReason(null);
+                          setNewReason({ title: '', description: '' });
+                        }}
+                        className="bg-pink-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-pink-700"
+                      >
+                        <Plus size={20} />
+                        Yeni Hayal
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {reasons.map(reason => (
+                        <div key={reason.id} className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl shadow-sm border border-pink-200 p-6">
+                          <h3 className="font-bold text-gray-800 text-lg mb-3">{reason.title}</h3>
+                          <p className="text-gray-600">{reason.description}</p>
+                          <div className="flex gap-2 mt-4 pt-4 border-t border-pink-200">
+                            <button
+                              onClick={() => {
+                                setEditingReason(reason);
+                                setNewReason(reason);
+                                setShowReasonModal(true);
+                              }}
+                              className="text-purple-600 hover:text-purple-800"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => deleteReason(reason.id)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* BADGES PAGE */}
           {currentPage === 'badges' && (
             <BadgeCollection currentUser={currentUser} />
