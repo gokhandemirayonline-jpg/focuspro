@@ -243,6 +243,18 @@ backend:
         comment: "🔔 BİLDİRİM SİSTEMİ KAPSAMLI TEST TAMAMLANDI ✅ Tüm bildirim sistemi özellikleri %100 çalışıyor! Test senaryoları: 1) Yeni kullanıcı kaydı bildirimi (Test Notification User / testnotif1762730038@test.com) ✅ 2) Admin'e otomatik bildirim gönderimi ✅ 3) Bildirim içeriği doğrulama: Başlık='Yeni Kullanıcı Kaydı', Mesaj=kullanıcı adı ve email içeriyor, Tip='user' ✅ 4) Okunmamış bildirim sayısı (GET /api/notifications/unread-count) ✅ 5) Bildirim okuma (PATCH /api/notifications/{id}/read) ✅ 6) Okunmamış sayı güncelleme ✅. UUID import hatası düzeltildi. Bildirim sistemi tam operasyonel!"
 
 frontend:
+  - task: "Eğitimler sayfası ve video izleme sistemi"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Kapsamlı eğitim sistemi ve video izleme akışı testi başlatılıyor. Test edilecek: Admin girişi, eğitimler sayfası erişimi, video modal açılması, YouTube iframe, play/pause kontrolleri, progress bar, yorum alanı, modal kapatma."
+
   - task: "react-big-calendar kütüphanesi entegrasyonu"
     implemented: true
     working: true
