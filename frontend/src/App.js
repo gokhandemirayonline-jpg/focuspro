@@ -5176,8 +5176,14 @@ const FocusProApp = () => {
 
       {/* Goal Modal */}
       {showGoalModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          onClick={() => setShowGoalModal(false)}
+        >
+          <div 
+            className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-xl font-bold text-gray-800 mb-4">
               {editingGoal ? 'Hedefi Düzenle' : 'Yeni Hedef'}
             </h3>
