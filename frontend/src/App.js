@@ -2306,22 +2306,47 @@ const FocusProApp = () => {
                     
                     if (categoryVideos.length === 0) return null;
                     
+                    const completedCount = categoryVideos.filter(v => {
+                      const progress = getVideoProgress(v.id);
+                      return progress?.watched;
+                    }).length;
+                    const completionPercentage = (completedCount / categoryVideos.length) * 100;
+                    
                     return (
-                      <div key={category.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                        <div className="mb-6">
-                          <h3 className="text-2xl font-bold text-gray-800 mb-2">{category.name}</h3>
-                          <p className="text-gray-600">{category.description}</p>
-                          <div className="mt-3 flex items-center gap-4 text-sm text-gray-500">
-                            <span>{categoryVideos.length} video</span>
-                            <span>•</span>
-                            <span>
-                              {categoryVideos.filter(v => {
-                                const progress = getVideoProgress(v.id);
-                                return progress?.watched;
-                              }).length} tamamlandı
-                            </span>
+                      <div key={category.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 mb-8">
+                        {/* Category Header */}
+                        <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 text-white">
+                          <h3 className="text-2xl font-bold mb-2">{category.name}</h3>
+                          <p className="text-purple-100 text-sm mb-4">{category.description}</p>
+                          
+                          <div className="flex items-center gap-6 text-sm">
+                            <div className="flex items-center gap-2">
+                              <Film size={16} />
+                              <span>{categoryVideos.length} video</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 size={16} className="text-green-300" />
+                              <span>{completedCount} tamamlandı</span>
+                            </div>
+                          </div>
+                          
+                          {/* Progress Bar */}
+                          <div className="mt-4">
+                            <div className="flex justify-between text-xs mb-1">
+                              <span>İlerleme</span>
+                              <span className="font-semibold">{Math.round(completionPercentage)}%</span>
+                            </div>
+                            <div className="w-full bg-white/20 rounded-full h-2">
+                              <div
+                                className="bg-green-400 h-2 rounded-full transition-all duration-500"
+                                style={{ width: `${completionPercentage}%` }}
+                              ></div>
+                            </div>
                           </div>
                         </div>
+                        
+                        {/* Videos Grid */}
+                        <div className="p-6">
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {categoryVideos.map((video, index) => {
