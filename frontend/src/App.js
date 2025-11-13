@@ -2304,16 +2304,18 @@ const FocusProApp = () => {
                         <div key={category.id} className="group">
                           <div className="flex items-center justify-between mb-4">
                             <div>
-                              <h2 className="text-2xl font-bold text-white group-hover:text-purple-400 transition-colors">
+                              <h2 className="text-2xl font-bold text-gray-800 group-hover:text-purple-600 transition-colors">
                                 {category.name}
                               </h2>
-                              <p className="text-gray-400 text-sm mt-1">
+                              <p className="text-gray-600 text-sm mt-1">
                                 {categoryVideos.length} video · {completedCount} tamamlandı
                               </p>
                             </div>
                             {completedCount > 0 && (
-                              <div className="text-sm text-gray-400">
-                                {Math.round((completedCount / categoryVideos.length) * 100)}% tamamlandı
+                              <div className="flex items-center gap-2 bg-green-50 px-3 py-1 rounded-full">
+                                <div className="text-sm font-semibold text-green-700">
+                                  {Math.round((completedCount / categoryVideos.length) * 100)}% tamamlandı
+                                </div>
                               </div>
                             )}
                           </div>
