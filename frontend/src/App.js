@@ -2135,8 +2135,42 @@ const FocusProApp = () => {
           
           {/* VIDEOS PAGE */}
           {currentPage === 'videos' && (
-            <div>
-              <h2 className="text-3xl font-bold text-gray-800 mb-6">Eğitim Videoları</h2>
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
+              {/* Hero Section */}
+              <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-12 mb-8">
+                <div className="max-w-7xl mx-auto">
+                  <h1 className="text-4xl font-bold mb-3">🎓 Eğitim Platformu</h1>
+                  <p className="text-purple-100 text-lg mb-6">Kendinizi geliştirin, hedeflerinize ulaşın</p>
+                  
+                  {/* Progress Stats */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                      <div className="text-3xl font-bold">{videos.length}</div>
+                      <div className="text-purple-100 text-sm">Toplam Video</div>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                      <div className="text-3xl font-bold text-green-300">
+                        {userProgress.filter(p => p.watched).length}
+                      </div>
+                      <div className="text-purple-100 text-sm">Tamamlandı</div>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                      <div className="text-3xl font-bold text-yellow-300">
+                        {videos.length - userProgress.filter(p => p.watched).length}
+                      </div>
+                      <div className="text-purple-100 text-sm">Devam Eden</div>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                      <div className="text-3xl font-bold text-blue-300">
+                        {videoCategories.length}
+                      </div>
+                      <div className="text-purple-100 text-sm">Kategori</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="max-w-7xl mx-auto px-8 pb-12">
               
               {selectedVideo ? (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
