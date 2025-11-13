@@ -2222,7 +2222,14 @@ const FocusProApp = () => {
                   ) : (
                     videoCategories.map(category => {
                     const categoryVideos = videos
-                      .filter(v => v.category_id === category.id || v.category === category.name)
+                      .filter(v => {
+                        // Match by category_id or category name (exact or partial)
+                        if (v.category_id === category.id) return true;
+                        if (v.category === category.name) return true;
+                        // Partial match for backwards compatibility
+                        if (v.category && category.name.includes(v.category)) return true;
+                        return false;
+                      })
                       .sort((a, b) => (a.order || 0) - (b.order || 0));
                     
                     if (categoryVideos.length === 0) return null;
