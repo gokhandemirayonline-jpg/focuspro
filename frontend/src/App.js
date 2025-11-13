@@ -2212,10 +2212,8 @@ const FocusProApp = () => {
                     
                     <script dangerouslySetInnerHTML={{ __html: `
                       (function() {
-                        let player;
-                        let videoDuration = 0;
-                        let progressInterval;
-                        let lastSavedPercentage = 0;
+                        const videoId = '${selectedVideo.id}';
+                        const durationStr = '${selectedVideo.duration}';
                         
                         // Parse duration string to seconds
                         function parseDuration(durationStr) {
@@ -2225,30 +2223,48 @@ const FocusProApp = () => {
                           return 0;
                         }
                         
-                        videoDuration = parseDuration('${selectedVideo.duration}');
+                        const videoDuration = parseDuration(durationStr);
+                        let player = null;
+                        let progressInterval = null;
+                        let lastSavedPercentage = 0;
                         
-                        // YouTube IFrame API
-                        if (!window.YT) {
-                          const tag = document.createElement('script');
-                          tag.src = 'https://www.youtube.com/iframe_api';
-                          document.head.appendChild(tag);
+                        // Load YouTube IFrame API
+                        function loadYouTubeAPI() {
+                          if (window.YT && window.YT.Player) {
+                            initializePlayer();
+                          } else {
+                            if (!window.onYouTubeIframeAPIReady) {
+                              const tag = document.createElement('script');
+                              tag.src = 'https://www.youtube.com/iframe_api';
+                              const firstScriptTag = document.getElementsByTagName('script')[0];
+                              firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+                              
+                              window.onYouTubeIframeAPIReady = function() {
+                                initializePlayer();
+                              };
+                            } else {
+                              setTimeout(loadYouTubeAPI, 100);
+                            }
+                          }
                         }
                         
-                        window.onYouTubeIframeAPIReady = function() {
-                          player = new YT.Player('youtube-player-${selectedVideo.id}', {
+                        function initializePlayer() {
+                          player = new YT.Player('youtube-player-' + videoId, {
                             events: {
                               'onReady': onPlayerReady,
                               'onStateChange': onPlayerStateChange
                             }
                           });
-                        };
+                        }
                         
                         function onPlayerReady(event) {
-                          // Player is ready
+                          console.log('Player ready');
+                          // Bind button events after player is ready
+                          setupControls();
                         }
                         
                         function onPlayerStateChange(event) {
-                          const btn = document.getElementById('play-pause-btn-${selectedVideo.id}');
+                          const btn = document.getElementById('play-pause-btn-' + videoId);
                           if (event.data === YT.PlayerState.PLAYING) {
                             startProgressTracking();
                             if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
@@ -2257,7 +2273,7 @@ const FocusProApp = () => {
                             if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
                           } else if (event.data === YT.PlayerState.ENDED) {
                             stopProgressTracking();
-                            const percentageDisplay = document.getElementById('video-percentage-${selectedVideo.id}');
+                            const percentageDisplay = document.getElementById('video-percentage-' + videoId);
                             if (percentageDisplay) percentageDisplay.textContent = '%100';
                             updateProgress(100);
                           }
@@ -2273,21 +2289,21 @@ const FocusProApp = () => {
                             const percentage = Math.min((currentTime / videoDuration) * 100, 100);
                             
                             // Update progress bar
-                            const progressBar = document.getElementById('video-progress-bar-${selectedVideo.id}');
+                            const progressBar = document.getElementById('video-progress-bar-' + videoId);
                             if (progressBar) progressBar.style.width = percentage + '%';
                             
                             // Update percentage display
-                            const percentageDisplay = document.getElementById('video-percentage-${selectedVideo.id}');
+                            const percentageDisplay = document.getElementById('video-percentage-' + videoId);
                             if (percentageDisplay) {
                               percentageDisplay.textContent = '%' + Math.floor(percentage);
                             }
                             
                             // Update time display
-                            const timeDisplay = document.getElementById('video-time-${selectedVideo.id}');
+                            const timeDisplay = document.getElementById('video-time-' + videoId);
                             if (timeDisplay) {
                               const mins = Math.floor(currentTime / 60);
                               const secs = Math.floor(currentTime % 60);
-                              timeDisplay.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs + ' / ${selectedVideo.duration}';
+                              timeDisplay.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs + ' / ' + durationStr;
                             }
                             
                             // Send to backend every 5% progress
@@ -2304,7 +2320,7 @@ const FocusProApp = () => {
                         }
                         
                         function updateProgress(percentage) {
-                          fetch('${process.env.REACT_APP_BACKEND_URL}/api/videos/${selectedVideo.id}/progress', {
+                          fetch('${process.env.REACT_APP_BACKEND_URL}/api/videos/' + videoId + '/progress', {
                             method: 'PATCH',
                             headers: {
                               'Content-Type': 'application/json',
@@ -2313,31 +2329,37 @@ const FocusProApp = () => {
                             body: JSON.stringify({ watch_percentage: percentage })
                           }).then(() => {
                             if (percentage >= 100) {
-                              window.location.reload(); // Reload to show comment field
+                              window.location.reload();
                             }
                           });
                         }
                         
-                        // Play/Pause button
-                        document.getElementById('play-pause-btn-${selectedVideo.id}').addEventListener('click', function() {
-                          if (!player) return;
-                          
-                          const state = player.getPlayerState();
-                          if (state === YT.PlayerState.PLAYING) {
-                            player.pauseVideo();
-                          } else {
-                            player.playVideo();
+                        function setupControls() {
+                          // Play/Pause button
+                          const playBtn = document.getElementById('play-pause-btn-' + videoId);
+                          if (playBtn) {
+                            playBtn.addEventListener('click', function() {
+                              if (!player) return;
+                              
+                              const state = player.getPlayerState();
+                              if (state === YT.PlayerState.PLAYING) {
+                                player.pauseVideo();
+                              } else {
+                                player.playVideo();
+                              }
+                            });
                           }
-                        });
-                        
-                        // Seekable progress bar
-                        document.getElementById('progress-container-${selectedVideo.id}').addEventListener('click', function(e) {
-                          if (!player) return;
                           
-                          const rect = this.getBoundingClientRect();
-                          const clickX = e.clientX - rect.left;
-                          const percentage = (clickX / rect.width);
-                          const seekTime = percentage * videoDuration;
+                          // Seekable progress bar
+                          const progressContainer = document.getElementById('progress-container-' + videoId);
+                          if (progressContainer) {
+                            progressContainer.addEventListener('click', function(e) {
+                              if (!player) return;
+                              
+                              const rect = this.getBoundingClientRect();
+                              const clickX = e.clientX - rect.left;
+                              const percentage = (clickX / rect.width);
+                              const seekTime = percentage * videoDuration;
                           
                           player.seekTo(seekTime, true);
                         });
