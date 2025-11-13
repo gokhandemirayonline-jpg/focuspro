@@ -2360,9 +2360,14 @@ const FocusProApp = () => {
                               const clickX = e.clientX - rect.left;
                               const percentage = (clickX / rect.width);
                               const seekTime = percentage * videoDuration;
-                          
-                          player.seekTo(seekTime, true);
-                        });
+                              
+                              player.seekTo(seekTime, true);
+                            });
+                          }
+                        }
+                        
+                        // Start loading YouTube API
+                        loadYouTubeAPI();
                       })();
                     ` }} />
 
