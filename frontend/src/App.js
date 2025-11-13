@@ -2214,7 +2214,13 @@ const FocusProApp = () => {
               ) : (
                 <div className="space-y-8">
                   {/* Category-based Video Playlists */}
-                  {videoCategories.map(category => {
+                  {videoCategories.length === 0 ? (
+                    <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
+                      <Film size={48} className="mx-auto text-gray-400 mb-3" />
+                      <p className="text-gray-500">Henüz kategori yok. Admin panelden kategori ekleyin.</p>
+                    </div>
+                  ) : (
+                    videoCategories.map(category => {
                     const categoryVideos = videos
                       .filter(v => v.category_id === category.id || v.category === category.name)
                       .sort((a, b) => (a.order || 0) - (b.order || 0));
