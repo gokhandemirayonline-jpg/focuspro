@@ -2332,13 +2332,7 @@ const FocusProApp = () => {
                         </div>
                       </div>
                     );
-                  })}
-                  
-                  {videos.length === 0 && (
-                    <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-                      <Film size={48} className="mx-auto text-gray-400 mb-3" />
-                      <p className="text-gray-500">Henüz video eklenmemiş</p>
-                    </div>
+                  })
                   )}
                 </div>
               )}
