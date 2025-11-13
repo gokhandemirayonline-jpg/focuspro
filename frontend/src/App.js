@@ -2306,57 +2306,81 @@ const FocusProApp = () => {
                     <div className="p-6">
                       <p className="text-gray-600 mb-6">{selectedVideo.description}</p>
                       
-                      {/* Progress Section */}
-                      {(() => {
-                        const currentProgress = getVideoProgress(selectedVideo.id);
-                        return currentProgress && currentProgress.watch_percentage > 0 ? (
-                          <div className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="text-lg font-semibold text-gray-800">İzleme İlerlemeniz</span>
-                              <span className="text-2xl font-bold text-purple-600">{currentProgress.watch_percentage}%</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                              <div
-                                className={`h-full transition-all duration-500 ${
-                                  currentProgress.watch_percentage >= 80 ? 'bg-green-500' : 'bg-purple-500'
-                                }`}
-                                style={{ width: `${currentProgress.watch_percentage}%` }}
-                              ></div>
-                            </div>
-                            {currentProgress.watch_percentage >= 80 && (
-                              <p className="text-green-600 mt-3 font-medium flex items-center gap-2">
-                                <CheckCircle2 size={20} />
-                                Tebrikler! Videoyu %80'den fazla izlediniz ve rozet kazandınız!
-                              </p>
-                            )}
-                          </div>
-                        ) : null;
-                      })()}
-
-                      {/* Comment Section */}
-                      {getVideoProgress(selectedVideo.id)?.watched && getVideoProgress(selectedVideo.id)?.comment && (
-                        <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                          <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                            <MessageSquare size={18} />
-                            Notunuz
-                          </h4>
-                          <p className="text-gray-700">{getVideoProgress(selectedVideo.id).comment}</p>
-                        </div>
-                      )}
+                      {/* Comment Section - Always Visible */}
+                      <div className="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-200">
+                        <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                          <MessageSquare size={20} className="text-purple-600" />
+                          Video Hakkında Yorumunuz
+                        </h4>
+                        
+                        {(() => {
+                          const currentProgress = getVideoProgress(selectedVideo.id);
+                          const isCompleted = currentProgress?.watch_percentage >= 100;
+                          
+                          return (
+                            <>
+                              {currentProgress?.comment ? (
+                                <div className="bg-white rounded-lg p-4 mb-4 border border-purple-200">
+                                  <p className="text-gray-700">{currentProgress.comment}</p>
+                                  <p className="text-xs text-gray-500 mt-2">✓ Yorum gönderildi</p>
+                                </div>
+                              ) : (
+                                <div>
+                                  <textarea
+                                    id={`video-comment-${selectedVideo.id}`}
+                                    disabled={!isCompleted}
+                                    placeholder={isCompleted ? "Videoyu tamamladınız! Düşüncelerinizi paylaşın..." : "Videoyu %100 tamamladıktan sonra yorum yazabilirsiniz"}
+                                    rows={4}
+                                    className={`w-full px-4 py-3 border rounded-lg resize-none ${
+                                      isCompleted 
+                                        ? 'border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200' 
+                                        : 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
+                                    }`}
+                                  />
+                                  <button
+                                    disabled={!isCompleted}
+                                    onClick={async () => {
+                                      const comment = document.getElementById(`video-comment-${selectedVideo.id}`).value;
+                                      if (!comment.trim()) {
+                                        alert('Lütfen bir yorum yazın');
+                                        return;
+                                      }
+                                      
+                                      try {
+                                        await progressAPI.complete(selectedVideo.id, comment);
+                                        await loadUserProgress();
+                                        alert('Yorumunuz admininize gönderildi! ✓');
+                                      } catch (error) {
+                                        alert('Yorum gönderilemedi');
+                                      }
+                                    }}
+                                    className={`mt-3 px-6 py-2 rounded-lg font-semibold transition-all ${
+                                      isCompleted
+                                        ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl'
+                                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    }`}
+                                  >
+                                    📤 Adminine Gönder
+                                  </button>
+                                </div>
+                              )}
+                              
+                              {!isCompleted && currentProgress && (
+                                <div className="mt-4 flex items-center gap-2 text-sm text-purple-600">
+                                  <div className="animate-pulse">⏳</div>
+                                  <span>İlerleme: %{currentProgress.watch_percentage} - Videoyu tamamlayın</span>
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
 
                       {/* Action Buttons */}
                       <div className="flex gap-3">
-                        {!getVideoProgress(selectedVideo.id)?.watched && (
-                          <button
-                            onClick={() => handleVideoComplete()}
-                            className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl"
-                          >
-                            ✓ Tamamlandı Olarak İşaretle
-                          </button>
-                        )}
                         <button
                           onClick={() => setSelectedVideo(null)}
-                          className="px-6 py-3 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg font-semibold transition-colors"
+                          className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg font-semibold transition-colors"
                         >
                           Kapat
                         </button>
