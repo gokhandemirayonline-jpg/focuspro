@@ -2350,17 +2350,17 @@ const FocusProApp = () => {
                                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity">
                                         {unlocked ? (
                                           progress?.watched ? (
-                                            <div className="bg-green-500 rounded-full p-4">
+                                            <div className="bg-green-500 rounded-full p-4 shadow-xl">
                                               <Check size={32} className="text-white" />
                                             </div>
                                           ) : (
-                                            <div className="bg-white rounded-full p-5">
-                                              <Play size={40} className="text-gray-900" fill="currentColor" />
+                                            <div className="bg-purple-600 rounded-full p-5 shadow-xl">
+                                              <Play size={40} className="text-white" fill="currentColor" />
                                             </div>
                                           )
                                         ) : (
-                                          <div className="bg-gray-700 rounded-full p-4">
-                                            <Lock size={32} className="text-gray-400" />
+                                          <div className="bg-gray-600 rounded-full p-4 shadow-xl">
+                                            <Lock size={32} className="text-white" />
                                           </div>
                                         )}
                                       </div>
