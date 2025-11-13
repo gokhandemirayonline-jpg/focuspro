@@ -2216,7 +2216,7 @@ const FocusProApp = () => {
                   {/* Category-based Video Playlists */}
                   {videoCategories.map(category => {
                     const categoryVideos = videos
-                      .filter(v => v.category_id === category.id)
+                      .filter(v => v.category_id === category.id || v.category === category.name)
                       .sort((a, b) => (a.order || 0) - (b.order || 0));
                     
                     if (categoryVideos.length === 0) return null;
