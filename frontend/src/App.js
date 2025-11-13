@@ -2358,27 +2358,40 @@ const FocusProApp = () => {
                             return (
                               <div key={video.id}>
                                 <div
-                                  className={`bg-gray-50 rounded-lg border border-gray-200 overflow-hidden ${
-                                    unlocked ? 'cursor-pointer hover:shadow-md hover:border-purple-300' : 'opacity-60'
-                                  } transition-all`}
+                                  className={`group bg-white rounded-xl overflow-hidden shadow-md border border-gray-200 ${
+                                    unlocked ? 'cursor-pointer hover:shadow-2xl hover:scale-[1.02]' : 'opacity-70'
+                                  } transition-all duration-300`}
                                   onClick={() => unlocked && openVideo(video)}
                                 >
-                                  <div className="relative aspect-video bg-gray-200">
+                                  <div className="relative aspect-video bg-gradient-to-br from-gray-200 to-gray-300">
                                     <img
                                       src={`https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg`}
                                       alt={video.title}
                                       className="w-full h-full object-cover"
                                     />
-                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                    <div className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-center justify-center ${
+                                      unlocked ? 'group-hover:bg-black/40' : ''
+                                    } transition-all`}>
                                       {unlocked ? (
                                         progress?.watched ? (
-                                          <Check className="text-green-400" size={48} />
+                                          <div className="bg-green-500 rounded-full p-4">
+                                            <Check className="text-white" size={32} />
+                                          </div>
                                         ) : (
-                                          <Play className="text-white" size={48} />
+                                          <div className="bg-white/90 rounded-full p-4 group-hover:scale-110 transition-transform">
+                                            <Play className="text-purple-600" size={32} />
+                                          </div>
                                         )
                                       ) : (
-                                        <Lock className="text-white" size={48} />
+                                        <div className="bg-gray-800/90 rounded-full p-4">
+                                          <Lock className="text-gray-300" size={32} />
+                                        </div>
                                       )}
+                                    </div>
+                                    
+                                    {/* Video duration badge */}
+                                    <div className="absolute bottom-2 right-2 bg-black/75 text-white text-xs px-2 py-1 rounded">
+                                      {video.duration}
                                     </div>
                                   </div>
 
