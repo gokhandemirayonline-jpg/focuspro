@@ -2136,323 +2136,252 @@ const FocusProApp = () => {
           {/* VIDEOS PAGE */}
           {/* NETFLIX-STYLE TRAINING PAGE */}
           {currentPage === 'videos' && (
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
-              {/* Hero Section */}
-              <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-12 mb-8">
-                <div className="max-w-7xl mx-auto">
-                  <h1 className="text-4xl font-bold mb-3">🎓 Eğitim Platformu</h1>
-                  <p className="text-purple-100 text-lg mb-6">Kendinizi geliştirin, hedeflerinize ulaşın</p>
-                  
-                  {/* Progress Stats */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                      <div className="text-3xl font-bold">{videos.length}</div>
-                      <div className="text-purple-100 text-sm">Toplam Video</div>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                      <div className="text-3xl font-bold text-green-300">
-                        {userProgress.filter(p => p.watched).length}
-                      </div>
-                      <div className="text-purple-100 text-sm">Tamamlandı</div>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                      <div className="text-3xl font-bold text-yellow-300">
-                        {videos.length - userProgress.filter(p => p.watched).length}
-                      </div>
-                      <div className="text-purple-100 text-sm">Devam Eden</div>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                      <div className="text-3xl font-bold text-blue-300">
-                        {videoCategories.length}
-                      </div>
-                      <div className="text-purple-100 text-sm">Kategori</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="max-w-7xl mx-auto px-8 pb-12">
-                {selectedVideo ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="min-h-screen bg-gray-900 text-white">
+              {selectedVideo ? (
+                <div className="bg-gray-900">
                   <button
                     onClick={() => setSelectedVideo(null)}
-                    className="mb-4 flex items-center gap-2 text-purple-600 hover:underline"
+                    className="fixed top-20 left-6 z-50 bg-gray-800/90 backdrop-blur-sm hover:bg-gray-700 px-4 py-2 rounded-full flex items-center gap-2 transition-all"
                   >
                     <ChevronLeft size={20} />
-                    Geri Dön
+                    <span>Geri</span>
                   </button>
 
-                  <div className="aspect-video bg-black rounded-lg mb-6">
+                  <div className="relative h-[70vh] bg-black">
                     <iframe
-                      className="w-full h-full rounded-lg"
-                      src={`https://www.youtube.com/embed/${selectedVideo.youtube_id}?enablejsapi=1`}
+                      className="w-full h-full"
+                      src={`https://www.youtube.com/embed/${selectedVideo.youtube_id}?autoplay=1`}
                       title={selectedVideo.title}
                       allowFullScreen
-                      onLoad={() => {
-                        setVideoWatched(true);
-                        // Simulated progress tracking (in real app, use YouTube API)
-                        const interval = setInterval(async () => {
-                          const currentProgress = getVideoProgress(selectedVideo.id);
-                          const newPercentage = Math.min((currentProgress?.watch_percentage || 0) + 10, 100);
-                          if (newPercentage <= 100) {
-                            try {
-                              await progressAPI.updateProgress(selectedVideo.id, { watch_percentage: newPercentage });
-                              await loadUserProgress();
-                            } catch (error) {
-                              console.error('Progress update failed:', error);
-                            }
-                          }
-                          if (newPercentage >= 100) {
-                            clearInterval(interval);
-                          }
-                        }, 10000); // Update every 10 seconds (simulated)
-                        
-                        return () => clearInterval(interval);
-                      }}
+                      allow="autoplay"
                     />
                   </div>
 
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                    {selectedVideo.title}
-                    {selectedVideo.level && (
-                      <span className={`ml-3 px-3 py-1 rounded-full text-sm font-semibold ${
-                        selectedVideo.level === 'Başlangıç' ? 'bg-green-100 text-green-700' :
-                        selectedVideo.level === 'Orta' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-red-100 text-red-700'
-                      }`}>
-                        {selectedVideo.level}
-                      </span>
-                    )}
-                  </h3>
-                  <p className="text-gray-600 mb-4">{selectedVideo.description}</p>
-                  
-                  {/* Progress Indicator */}
-                  {(() => {
-                    const currentProgress = getVideoProgress(selectedVideo.id);
-                    return currentProgress && currentProgress.watch_percentage > 0 ? (
-                      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-blue-800">
-                            İzleme İlerlemeniz
-                          </span>
-                          <span className="text-sm font-bold text-blue-900">
-                            {currentProgress.watch_percentage}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-blue-200 rounded-full h-3 overflow-hidden">
-                          <div
-                            className={`h-full transition-all duration-500 ${
-                              currentProgress.watch_percentage >= 80 ? 'bg-green-500' : 'bg-blue-600'
-                            }`}
-                            style={{ width: `${currentProgress.watch_percentage}%` }}
-                          ></div>
-                        </div>
-                        {currentProgress.watch_percentage >= 80 && (
-                          <p className="text-sm text-green-700 mt-2 font-medium">
-                            ✓ Tebrikler! Videoyu %80 tamamladınız ve rozet kazandınız!
-                          </p>
-                        )}
-                      </div>
-                    ) : null;
-                  })()}
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Yorumunuz (Video tamamlamak için gerekli)
-                      </label>
-                      <textarea
-                        value={comment}
-                        onChange={(e) => setComment(e.target.value)}
-                        rows={4}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        placeholder="Bu videodan neler öğrendiniz?"
-                      />
+                  <div className="max-w-6xl mx-auto px-8 py-8">
+                    <div className="flex items-start gap-4 mb-6">
+                      {selectedVideo.level && (
+                        <span className={`px-3 py-1 rounded text-sm font-semibold ${
+                          selectedVideo.level === 'Başlangıç' ? 'bg-green-500' :
+                          selectedVideo.level === 'Orta' ? 'bg-yellow-500' :
+                          'bg-red-500'
+                        }`}>
+                          {selectedVideo.level}
+                        </span>
+                      )}
                     </div>
+                    <h1 className="text-4xl font-bold mb-4">{selectedVideo.title}</h1>
+                    <p className="text-gray-300 text-lg mb-6">{selectedVideo.description}</p>
                     
-                    <button
-                      onClick={handleVideoComplete}
-                      disabled={!videoWatched || !comment.trim()}
-                      className={`w-full py-3 rounded-lg font-semibold ${
-                        videoWatched && comment.trim()
-                          ? 'bg-purple-600 text-white hover:bg-purple-700'
-                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      }`}
-                    >
-                      Videoyu Tamamla
-                    </button>
+                    {(() => {
+                      const currentProgress = getVideoProgress(selectedVideo.id);
+                      return currentProgress && currentProgress.watch_percentage > 0 ? (
+                        <div className="mb-6 bg-gray-800 rounded-lg p-6">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-lg font-semibold">İlerleme</span>
+                            <span className="text-2xl font-bold text-blue-400">{currentProgress.watch_percentage}%</span>
+                          </div>
+                          <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+                            <div
+                              className={`h-full transition-all duration-500 ${
+                                currentProgress.watch_percentage >= 80 ? 'bg-green-500' : 'bg-blue-500'
+                              }`}
+                              style={{ width: `${currentProgress.watch_percentage}%` }}
+                            ></div>
+                          </div>
+                          {currentProgress.watch_percentage >= 80 && (
+                            <p className="text-green-400 mt-3 font-medium">
+                              ✓ Tebrikler! Videoyu tamamladınız!
+                            </p>
+                          )}
+                        </div>
+                      ) : null;
+                    })()}
+
+                    {!getVideoProgress(selectedVideo.id)?.watched && (
+                      <button
+                        onClick={() => handleVideoComplete()}
+                        className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
+                      >
+                        Tamamlandı Olarak İşaretle
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : (
-                <div className="space-y-8">
-                  {/* Category-based Video Playlists */}
-                  {videoCategories.length === 0 ? (
-                    <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-                      <Film size={48} className="mx-auto text-gray-400 mb-3" />
-                      <p className="text-gray-500">Henüz kategori yok. Admin panelden kategori ekleyin.</p>
-                    </div>
-                  ) : (
-                    videoCategories.map(category => {
-                    const categoryVideos = videos
-                      .filter(v => {
-                        // Match by category_id or category name (exact or partial)
-                        if (v.category_id === category.id) return true;
-                        if (v.category === category.name) return true;
-                        // Partial match for backwards compatibility
-                        if (v.category && category.name.includes(v.category)) return true;
-                        return false;
-                      })
-                      .sort((a, b) => (a.order || 0) - (b.order || 0));
-                    
-                    if (categoryVideos.length === 0) return null;
-                    
-                    const completedCount = categoryVideos.filter(v => {
-                      const progress = getVideoProgress(v.id);
-                      return progress?.watched;
-                    }).length;
-                    const completionPercentage = (completedCount / categoryVideos.length) * 100;
-                    
-                    return (
-                      <div key={category.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 mb-8">
-                        {/* Category Header */}
-                        <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 text-white">
-                          <h3 className="text-2xl font-bold mb-2">{category.name}</h3>
-                          <p className="text-purple-100 text-sm mb-4">{category.description}</p>
-                          
-                          <div className="flex items-center gap-6 text-sm">
-                            <div className="flex items-center gap-2">
-                              <Film size={16} />
-                              <span>{categoryVideos.length} video</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <CheckCircle2 size={16} className="text-green-300" />
-                              <span>{completedCount} tamamlandı</span>
-                            </div>
-                          </div>
-                          
-                          {/* Progress Bar */}
-                          <div className="mt-4">
-                            <div className="flex justify-between text-xs mb-1">
-                              <span>İlerleme</span>
-                              <span className="font-semibold">{Math.round(completionPercentage)}%</span>
-                            </div>
-                            <div className="w-full bg-white/20 rounded-full h-2">
-                              <div
-                                className="bg-green-400 h-2 rounded-full transition-all duration-500"
-                                style={{ width: `${completionPercentage}%` }}
-                              ></div>
-                            </div>
-                          </div>
+                <div>
+                  {/* Hero Banner */}
+                  <div className="relative h-[60vh] bg-gradient-to-b from-transparent to-gray-900">
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-900/50 to-blue-900/50" />
+                    <div className="relative z-10 h-full flex flex-col justify-end px-12 pb-16 max-w-7xl mx-auto">
+                      <h1 className="text-6xl font-bold mb-4">🎓 Eğitim Merkezi</h1>
+                      <p className="text-2xl text-gray-200 mb-6">Profesyonel gelişim yolculuğunuz başlıyor</p>
+                      <div className="flex gap-6">
+                        <div className="bg-white/10 backdrop-blur-sm px-6 py-3 rounded-lg border border-white/20">
+                          <span className="text-3xl font-bold">{videos.length}</span>
+                          <span className="text-gray-300 ml-2">Video</span>
                         </div>
-                        
-                        {/* Videos Grid */}
-                        <div className="p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                          {categoryVideos.map((video, index) => {
-                            const progress = getVideoProgress(video.id);
-                            // Video unlock logic: First video is always unlocked, others require previous video to be watched
-                            const previousVideo = index > 0 ? categoryVideos[index - 1] : null;
-                            const previousProgress = previousVideo ? getVideoProgress(previousVideo.id) : null;
-                            const unlocked = index === 0 || (previousProgress && previousProgress.watched);
+                        <div className="bg-white/10 backdrop-blur-sm px-6 py-3 rounded-lg border border-white/20">
+                          <span className="text-3xl font-bold text-green-400">{userProgress.filter(p => p.watched).length}</span>
+                          <span className="text-gray-300 ml-2">Tamamlandı</span>
+                        </div>
+                        <div className="bg-white/10 backdrop-blur-sm px-6 py-3 rounded-lg border border-white/20">
+                          <span className="text-3xl font-bold text-blue-400">{videoCategories.length}</span>
+                          <span className="text-gray-300 ml-2">Kategori</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-                            return (
-                              <div key={video.id}>
-                                <div
-                                  className={`group bg-white rounded-xl overflow-hidden shadow-md border border-gray-200 ${
-                                    unlocked ? 'cursor-pointer hover:shadow-2xl hover:scale-[1.02]' : 'opacity-70'
-                                  } transition-all duration-300`}
-                                  onClick={() => unlocked && openVideo(video)}
-                                >
-                                  <div className="relative aspect-video bg-gradient-to-br from-gray-200 to-gray-300">
-                                    <img
-                                      src={`https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg`}
-                                      alt={video.title}
-                                      className="w-full h-full object-cover"
-                                    />
-                                    <div className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-center justify-center ${
-                                      unlocked ? 'group-hover:bg-black/40' : ''
-                                    } transition-all`}>
-                                      {unlocked ? (
-                                        progress?.watched ? (
-                                          <div className="bg-green-500 rounded-full p-4">
-                                            <Check className="text-white" size={32} />
-                                          </div>
+                  {/* Categories with Horizontal Scroll */}
+                  <div className="px-12 py-8 space-y-12">
+                    {videoCategories.map(category => {
+                      const categoryVideos = videos
+                        .filter(v => {
+                          if (v.category_id === category.id) return true;
+                          if (v.category === category.name) return true;
+                          if (v.category && category.name.includes(v.category)) return true;
+                          return false;
+                        })
+                        .sort((a, b) => (a.order || 0) - (b.order || 0));
+                      
+                      if (categoryVideos.length === 0) return null;
+                      
+                      const completedCount = categoryVideos.filter(v => {
+                        const progress = getVideoProgress(v.id);
+                        return progress?.watched;
+                      }).length;
+                      
+                      return (
+                        <div key={category.id} className="group">
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <h2 className="text-2xl font-bold text-white group-hover:text-purple-400 transition-colors">
+                                {category.name}
+                              </h2>
+                              <p className="text-gray-400 text-sm mt-1">
+                                {categoryVideos.length} video · {completedCount} tamamlandı
+                              </p>
+                            </div>
+                            {completedCount > 0 && (
+                              <div className="text-sm text-gray-400">
+                                {Math.round((completedCount / categoryVideos.length) * 100)}% tamamlandı
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Horizontal Scroll Container */}
+                          <div className="relative">
+                            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+                              {categoryVideos.map((video, index) => {
+                                const progress = getVideoProgress(video.id);
+                                const previousVideo = index > 0 ? categoryVideos[index - 1] : null;
+                                const previousProgress = previousVideo ? getVideoProgress(previousVideo.id) : null;
+                                const unlocked = index === 0 || (previousProgress && previousProgress.watched);
+
+                                return (
+                                  <div
+                                    key={video.id}
+                                    className={`flex-shrink-0 w-80 snap-start group/card ${
+                                      unlocked ? 'cursor-pointer' : 'opacity-60'
+                                    }`}
+                                    onClick={() => unlocked && openVideo(video)}
+                                  >
+                                    <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-800 mb-3">
+                                      <img
+                                        src={`https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg`}
+                                        alt={video.title}
+                                        className="w-full h-full object-cover transform group-hover/card:scale-110 transition-transform duration-500"
+                                      />
+                                      
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 group-hover/card:from-black/90" />
+                                      
+                                      {/* Play/Lock Icon */}
+                                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity">
+                                        {unlocked ? (
+                                          progress?.watched ? (
+                                            <div className="bg-green-500 rounded-full p-4">
+                                              <Check size={32} className="text-white" />
+                                            </div>
+                                          ) : (
+                                            <div className="bg-white rounded-full p-5">
+                                              <Play size={40} className="text-gray-900" fill="currentColor" />
+                                            </div>
+                                          )
                                         ) : (
-                                          <div className="bg-white/90 rounded-full p-4 group-hover:scale-110 transition-transform">
-                                            <Play className="text-purple-600" size={32} />
+                                          <div className="bg-gray-700 rounded-full p-4">
+                                            <Lock size={32} className="text-gray-400" />
                                           </div>
-                                        )
-                                      ) : (
-                                        <div className="bg-gray-800/90 rounded-full p-4">
-                                          <Lock className="text-gray-300" size={32} />
+                                        )}
+                                      </div>
+                                      
+                                      {/* Progress Bar */}
+                                      {progress && progress.watch_percentage > 0 && (
+                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
+                                          <div
+                                            className={`h-full ${progress.watch_percentage >= 80 ? 'bg-green-500' : 'bg-red-600'}`}
+                                            style={{ width: `${progress.watch_percentage}%` }}
+                                          />
                                         </div>
                                       )}
+                                      
+                                      {/* Duration Badge */}
+                                      <div className="absolute top-2 right-2 bg-black/75 px-2 py-1 rounded text-xs font-semibold">
+                                        {video.duration}
+                                      </div>
+                                      
+                                      {/* Index */}
+                                      <div className="absolute top-2 left-2 bg-purple-600 px-2 py-1 rounded text-xs font-bold">
+                                        #{index + 1}
+                                      </div>
                                     </div>
                                     
-                                    {/* Video duration badge */}
-                                    <div className="absolute bottom-2 right-2 bg-black/75 text-white text-xs px-2 py-1 rounded">
-                                      {video.duration}
-                                    </div>
-                                  </div>
-
-                                  <div className="p-5">
-                                    <div className="flex items-start justify-between mb-3">
-                                      <div className="flex items-center gap-2">
-                                        <span className="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded">
-                                          #{index + 1}
-                                        </span>
+                                    <div className="px-1">
+                                      <div className="flex items-center gap-2 mb-2">
                                         {video.level && (
-                                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                                            video.level === 'Başlangıç' ? 'bg-green-100 text-green-700' :
-                                            video.level === 'Orta' ? 'bg-yellow-100 text-yellow-700' :
-                                            'bg-red-100 text-red-700'
+                                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                                            video.level === 'Başlangıç' ? 'bg-green-500/20 text-green-400' :
+                                            video.level === 'Orta' ? 'bg-yellow-500/20 text-yellow-400' :
+                                            'bg-red-500/20 text-red-400'
                                           }`}>
                                             {video.level}
                                           </span>
                                         )}
+                                        {progress?.watched && (
+                                          <span className="text-green-400 text-xs flex items-center gap-1">
+                                            <CheckCircle2 size={14} />
+                                            Tamamlandı
+                                          </span>
+                                        )}
                                       </div>
+                                      <h3 className="font-semibold text-white line-clamp-2 group-hover/card:text-purple-400 transition-colors">
+                                        {video.title}
+                                      </h3>
+                                      <p className="text-sm text-gray-400 line-clamp-2 mt-1">{video.description}</p>
+                                      
+                                      {!unlocked && (
+                                        <p className="text-xs text-yellow-500 mt-2 flex items-center gap-1">
+                                          <Lock size={12} />
+                                          Önceki videoyu tamamlayın
+                                        </p>
+                                      )}
                                     </div>
-                                    <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 text-lg group-hover:text-purple-600 transition-colors">
-                                      {video.title}
-                                    </h3>
-                                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{video.description}</p>
-                                    
-                                    {/* Progress Bar */}
-                                    {progress && progress.watch_percentage > 0 && (
-                                      <div className="mt-3">
-                                        <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
-                                          <span>İlerleme</span>
-                                          <span>{progress.watch_percentage}%</span>
-                                        </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                                          <div
-                                            className={`h-full transition-all duration-300 ${
-                                              progress.watch_percentage >= 80 ? 'bg-green-500' : 'bg-blue-500'
-                                            }`}
-                                            style={{ width: `${progress.watch_percentage}%` }}
-                                          ></div>
-                                        </div>
-                                      </div>
-                                    )}
                                   </div>
-                                </div>
-                                
-                                {!unlocked && index > 0 && (
-                                  <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-center">
-                                    <Lock className="inline-block text-yellow-600 mb-1" size={16} />
-                                    <p className="text-xs text-yellow-800">
-                                      Önceki videoyu tamamlayın
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
+                                );
+                              })}
+                            </div>
+                          </div>
                         </div>
+                      );
+                    })}
+                    
+                    {videos.length === 0 && (
+                      <div className="text-center py-20">
+                        <Film size={80} className="mx-auto text-gray-600 mb-6" />
+                        <h3 className="text-2xl font-semibold text-gray-400 mb-2">Henüz video yok</h3>
+                        <p className="text-gray-500">Eğitim videoları eklendiğinde burada görünecek</p>
                       </div>
-                    );
-                  })
-                  )}
+                    )}
+                  </div>
                 </div>
               )}
             </div>
