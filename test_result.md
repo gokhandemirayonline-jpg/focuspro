@@ -344,6 +344,8 @@ test_plan:
   test_priority: "high_first"
 
 agent_communication:
+  - agent: "testing"
+    message: "FocusProApp eğitim sistemi ve video izleme akışı kapsamlı testi başlatılıyor. Test edilecek özellikler: 1) Admin girişi (admin@focuspro.com/admin123) 2) Eğitimler sayfası erişimi 3) Video modal açılması 4) YouTube iframe yüklenmesi 5) Play/pause kontrolleri 6) Progress bar 7) Yorum alanı kontrolleri 8) Modal kapatma 9) Çıkış yap butonu. Uygulama URL: https://focuspro-revamp.preview.emergentagent.com"
   - agent: "main"
     message: "Google Calendar benzeri takvim arayüzü başarıyla implement edildi. Tüm görünüm seçenekleri (Gün, Hafta, 4 Gün, Ay, Planlama) çalışıyor. Filtreler ve kategori sistemi aktif. Sürükle-bırak özelliği kod olarak eklendi, manuel test edilmeli."
   - agent: "main"
