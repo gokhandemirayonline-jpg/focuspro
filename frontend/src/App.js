@@ -2134,80 +2134,130 @@ const FocusProApp = () => {
           )}
           
           {/* VIDEOS PAGE */}
-          {/* NETFLIX-STYLE TRAINING PAGE */}
+          {/* TRAINING PAGE - LIGHT THEME */}
           {currentPage === 'videos' && (
-            <div className="min-h-screen bg-gray-900 text-white">
-              {selectedVideo ? (
-                <div className="bg-gray-900">
-                  <button
-                    onClick={() => setSelectedVideo(null)}
-                    className="fixed top-20 left-6 z-50 bg-gray-800/90 backdrop-blur-sm hover:bg-gray-700 px-4 py-2 rounded-full flex items-center gap-2 transition-all"
-                  >
-                    <ChevronLeft size={20} />
-                    <span>Geri</span>
-                  </button>
-
-                  <div className="relative h-[70vh] bg-black">
-                    <iframe
-                      className="w-full h-full"
-                      src={`https://www.youtube.com/embed/${selectedVideo.youtube_id}?autoplay=1`}
-                      title={selectedVideo.title}
-                      allowFullScreen
-                      allow="autoplay"
-                    />
-                  </div>
-
-                  <div className="max-w-6xl mx-auto px-8 py-8">
-                    <div className="flex items-start gap-4 mb-6">
-                      {selectedVideo.level && (
-                        <span className={`px-3 py-1 rounded text-sm font-semibold ${
-                          selectedVideo.level === 'Başlangıç' ? 'bg-green-500' :
-                          selectedVideo.level === 'Orta' ? 'bg-yellow-500' :
-                          'bg-red-500'
-                        }`}>
-                          {selectedVideo.level}
-                        </span>
-                      )}
-                    </div>
-                    <h1 className="text-4xl font-bold mb-4">{selectedVideo.title}</h1>
-                    <p className="text-gray-300 text-lg mb-6">{selectedVideo.description}</p>
-                    
-                    {(() => {
-                      const currentProgress = getVideoProgress(selectedVideo.id);
-                      return currentProgress && currentProgress.watch_percentage > 0 ? (
-                        <div className="mb-6 bg-gray-800 rounded-lg p-6">
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-lg font-semibold">İlerleme</span>
-                            <span className="text-2xl font-bold text-blue-400">{currentProgress.watch_percentage}%</span>
-                          </div>
-                          <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
-                            <div
-                              className={`h-full transition-all duration-500 ${
-                                currentProgress.watch_percentage >= 80 ? 'bg-green-500' : 'bg-blue-500'
-                              }`}
-                              style={{ width: `${currentProgress.watch_percentage}%` }}
-                            ></div>
-                          </div>
-                          {currentProgress.watch_percentage >= 80 && (
-                            <p className="text-green-400 mt-3 font-medium">
-                              ✓ Tebrikler! Videoyu tamamladınız!
-                            </p>
-                          )}
-                        </div>
-                      ) : null;
-                    })()}
-
-                    {!getVideoProgress(selectedVideo.id)?.watched && (
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
+              {/* Video Modal/Popup */}
+              {selectedVideo && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                  <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[95vh] overflow-y-auto">
+                    {/* Header with Close Button */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+                      <div className="flex items-center gap-3">
+                        {selectedVideo.level && (
+                          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                            selectedVideo.level === 'Başlangıç' ? 'bg-green-100 text-green-700' :
+                            selectedVideo.level === 'Orta' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-red-100 text-red-700'
+                          }`}>
+                            {selectedVideo.level}
+                          </span>
+                        )}
+                        <h2 className="text-xl font-bold text-gray-800">{selectedVideo.title}</h2>
+                      </div>
                       <button
-                        onClick={() => handleVideoComplete()}
-                        className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
+                        onClick={() => setSelectedVideo(null)}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                       >
-                        Tamamlandı Olarak İşaretle
+                        <X size={24} className="text-gray-600" />
                       </button>
-                    )}
+                    </div>
+
+                    {/* Video Player */}
+                    <div className="relative aspect-video bg-black">
+                      <iframe
+                        className="w-full h-full"
+                        src={`https://www.youtube.com/embed/${selectedVideo.youtube_id}?enablejsapi=1`}
+                        title={selectedVideo.title}
+                        allowFullScreen
+                        onLoad={() => {
+                          setVideoWatched(true);
+                          // Simulated progress tracking
+                          const interval = setInterval(async () => {
+                            const currentProgress = getVideoProgress(selectedVideo.id);
+                            const newPercentage = Math.min((currentProgress?.watch_percentage || 0) + 10, 100);
+                            if (newPercentage <= 100) {
+                              try {
+                                await progressAPI.updateProgress(selectedVideo.id, { watch_percentage: newPercentage });
+                                await loadUserProgress();
+                              } catch (error) {
+                                console.error('Progress update failed:', error);
+                              }
+                            }
+                            if (newPercentage >= 100) {
+                              clearInterval(interval);
+                            }
+                          }, 10000);
+                        }}
+                      />
+                    </div>
+
+                    {/* Video Info */}
+                    <div className="p-6">
+                      <p className="text-gray-600 mb-6">{selectedVideo.description}</p>
+                      
+                      {/* Progress Section */}
+                      {(() => {
+                        const currentProgress = getVideoProgress(selectedVideo.id);
+                        return currentProgress && currentProgress.watch_percentage > 0 ? (
+                          <div className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="text-lg font-semibold text-gray-800">İzleme İlerlemeniz</span>
+                              <span className="text-2xl font-bold text-purple-600">{currentProgress.watch_percentage}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                              <div
+                                className={`h-full transition-all duration-500 ${
+                                  currentProgress.watch_percentage >= 80 ? 'bg-green-500' : 'bg-purple-500'
+                                }`}
+                                style={{ width: `${currentProgress.watch_percentage}%` }}
+                              ></div>
+                            </div>
+                            {currentProgress.watch_percentage >= 80 && (
+                              <p className="text-green-600 mt-3 font-medium flex items-center gap-2">
+                                <CheckCircle2 size={20} />
+                                Tebrikler! Videoyu %80'den fazla izlediniz ve rozet kazandınız!
+                              </p>
+                            )}
+                          </div>
+                        ) : null;
+                      })()}
+
+                      {/* Comment Section */}
+                      {getVideoProgress(selectedVideo.id)?.watched && getVideoProgress(selectedVideo.id)?.comment && (
+                        <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                          <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                            <MessageSquare size={18} />
+                            Notunuz
+                          </h4>
+                          <p className="text-gray-700">{getVideoProgress(selectedVideo.id).comment}</p>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-3">
+                        {!getVideoProgress(selectedVideo.id)?.watched && (
+                          <button
+                            onClick={() => handleVideoComplete()}
+                            className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl"
+                          >
+                            ✓ Tamamlandı Olarak İşaretle
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setSelectedVideo(null)}
+                          className="px-6 py-3 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg font-semibold transition-colors"
+                        >
+                          Kapat
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              ) : (
+              )}
+
+              {/* Main Content */}
+              <div className={selectedVideo ? 'blur-sm pointer-events-none' : ''}>
                 <div>
                   {/* Hero Banner */}
                   <div className="relative h-[60vh] bg-gradient-to-b from-transparent to-gray-900">
