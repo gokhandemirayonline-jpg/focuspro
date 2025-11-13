@@ -1855,47 +1855,81 @@ const FocusProApp = () => {
 
             {/* Notifications Dropdown */}
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 md:w-96 bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-y-auto z-50">
-                <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                  <h3 className="font-bold text-gray-800">Bildirimler</h3>
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={markAllNotificationsRead}
-                      className="text-sm text-purple-600 hover:underline"
-                    >
-                      Tümünü Okundu İşaretle
-                    </button>
-                  )}
-                </div>
-                <div className="divide-y divide-gray-100">
-                  {notifications.length === 0 ? (
-                    <div className="p-8 text-center text-gray-500">
-                      Henüz bildirim yok
-                    </div>
-                  ) : (
-                    notifications.slice(0, 10).map(notif => (
-                      <div
-                        key={notif.id}
-                        onClick={() => !notif.read && markNotificationRead(notif.id)}
-                        className={`p-4 cursor-pointer hover:bg-gray-50 ${!notif.read ? 'bg-purple-50' : ''}`}
+              <>
+                {/* Backdrop */}
+                <div 
+                  className="fixed inset-0 z-40" 
+                  onClick={() => setShowNotifications(false)}
+                />
+                <div className="absolute right-0 mt-2 w-80 md:w-96 bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-y-auto z-50">
+                  <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+                    <h3 className="font-bold text-gray-800">Bildirimler</h3>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={markAllNotificationsRead}
+                        className="text-sm text-purple-600 hover:underline"
                       >
-                        <div className="flex items-start gap-3">
-                          <div className={`w-2 h-2 rounded-full mt-2 ${!notif.read ? 'bg-purple-600' : 'bg-gray-300'}`} />
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-gray-800 text-sm">{notif.title}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{notif.message}</p>
-                            <p className="text-xs text-gray-400 mt-2">
-                              {new Date(notif.created_at).toLocaleDateString('tr-TR', { 
-                                day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
-                              })}
-                            </p>
-                          </div>
-                        </div>
+                        Tümünü Okundu İşaretle
+                      </button>
+                    )}
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {notifications.length === 0 ? (
+                      <div className="p-8 text-center text-gray-500">
+                        Henüz bildirim yok
                       </div>
-                    ))
-                  )}
+                    ) : (
+                      notifications.slice(0, 10).map(notif => {
+                        // Determine page based on notification type
+                        const getNotificationPage = (type) => {
+                          const typeMap = {
+                            'user': 'admin',
+                            'partner': 'partners',
+                            'goal': 'agenda',
+                            'video': 'videos',
+                            'badge': 'badges',
+                            'message': 'inbox',
+                            'task': 'agenda',
+                            'prospect': 'agenda'
+                          };
+                          return typeMap[type] || 'dashboard';
+                        };
+
+                        return (
+                          <div
+                            key={notif.id}
+                            onClick={() => {
+                              if (!notif.read) markNotificationRead(notif.id);
+                              const targetPage = getNotificationPage(notif.type);
+                              setCurrentPage(targetPage);
+                              if (targetPage === 'agenda') {
+                                if (notif.type === 'task') setAgendaTab('tasks');
+                                else if (notif.type === 'goal') setAgendaTab('goals');
+                                else if (notif.type === 'prospect') setAgendaTab('prospects');
+                              }
+                              setShowNotifications(false);
+                            }}
+                            className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${!notif.read ? 'bg-purple-50' : ''}`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`w-2 h-2 rounded-full mt-2 ${!notif.read ? 'bg-purple-600' : 'bg-gray-300'}`} />
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-gray-800 text-sm">{notif.title}</h4>
+                                <p className="text-sm text-gray-600 mt-1">{notif.message}</p>
+                                <p className="text-xs text-gray-400 mt-2">
+                                  {new Date(notif.created_at).toLocaleDateString('tr-TR', { 
+                                    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
+                                  })}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
                 </div>
-              </div>
+              </>
             )}
             </div>
           </div>
