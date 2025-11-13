@@ -2274,6 +2274,12 @@ const FocusProApp = () => {
                             const progressBar = document.getElementById('video-progress-bar-${selectedVideo.id}');
                             if (progressBar) progressBar.style.width = percentage + '%';
                             
+                            // Update percentage display
+                            const percentageDisplay = document.getElementById('video-percentage-${selectedVideo.id}');
+                            if (percentageDisplay) {
+                              percentageDisplay.textContent = '%' + Math.floor(percentage);
+                            }
+                            
                             // Update time display
                             const timeDisplay = document.getElementById('video-time-${selectedVideo.id}');
                             if (timeDisplay) {
