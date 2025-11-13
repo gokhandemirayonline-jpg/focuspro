@@ -258,6 +258,18 @@ frontend:
         agent: "testing"
         comment: "✅ EĞİTİM SİSTEMİ KAPSAMLI TEST TAMAMLANDI! Test sonuçları: 1) Admin girişi (admin@focuspro.com/admin123) ✅ 2) Eğitimler sayfası erişimi ✅ 3) Video kartları (7 adet) ve modal açılması ✅ 4) YouTube iframe yüklenmesi ✅ 5) Özel play/pause kontrolleri ✅ 6) İlerleme çubuğu (progress bar) ✅ 7) 'Video Hakkında Yorumunuz' bölümü ✅ 8) Yorum alanı ve gönderim sistemi ✅ 9) İlerleme takibi (%30 - Videoyu tamamlayın mesajı) ✅ 10) Çıkış yap butonu ✅. Video modal sistemi tam çalışıyor, YouTube entegrasyonu başarılı, yorum sistemi aktif. Minor: Modal kapatma overlay sorunu (işlevsellik etkilenmiyor)."
 
+  - task: "Video oynatıcı yeni özellikleri - İzleme İlerlemesi ve Yüzde Göstergesi"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "YENİ ÖZELLİKLER TESTİ BAŞLATILIYOR: Video kontrollerinin altına eklenen 'İzleme İlerlemesi' etiketi, yüzde göstergesi (%0, %5, %10... %100), gerçek zamanlı yüzde güncellenmesi, ilerleme çubuğunun videoya göre ilerlemesi, Play/Pause butonunun çalışması test edilecek."
+
   - task: "react-big-calendar kütüphanesi entegrasyonu"
     implemented: true
     working: true
