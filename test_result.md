@@ -337,7 +337,8 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Eğitimler sayfası ve video izleme sistemi"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
