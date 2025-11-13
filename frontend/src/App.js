@@ -2281,8 +2281,8 @@ const FocusProApp = () => {
                     </div>
                   </div>
 
-                  {/* Categories with Horizontal Scroll */}
-                  <div className="px-12 py-8 space-y-12">
+                  {/* Categories with Horizontal Scroll - Light Theme */}
+                  <div className="max-w-7xl mx-auto px-8 py-8 space-y-10">
                     {videoCategories.map(category => {
                       const categoryVideos = videos
                         .filter(v => {
