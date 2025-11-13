@@ -2367,50 +2367,50 @@ const FocusProApp = () => {
                                       
                                       {/* Progress Bar */}
                                       {progress && progress.watch_percentage > 0 && (
-                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
+                                        <div className="absolute bottom-0 left-0 right-0 h-2 bg-gray-200">
                                           <div
-                                            className={`h-full ${progress.watch_percentage >= 80 ? 'bg-green-500' : 'bg-red-600'}`}
+                                            className={`h-full ${progress.watch_percentage >= 80 ? 'bg-green-500' : 'bg-purple-500'}`}
                                             style={{ width: `${progress.watch_percentage}%` }}
                                           />
                                         </div>
                                       )}
                                       
                                       {/* Duration Badge */}
-                                      <div className="absolute top-2 right-2 bg-black/75 px-2 py-1 rounded text-xs font-semibold">
+                                      <div className="absolute top-3 right-3 bg-black/80 text-white px-2 py-1 rounded text-xs font-semibold">
                                         {video.duration}
                                       </div>
                                       
                                       {/* Index */}
-                                      <div className="absolute top-2 left-2 bg-purple-600 px-2 py-1 rounded text-xs font-bold">
+                                      <div className="absolute top-3 left-3 bg-purple-600 text-white px-2.5 py-1 rounded-full text-xs font-bold shadow-lg">
                                         #{index + 1}
                                       </div>
                                     </div>
                                     
-                                    <div className="px-1">
+                                    <div className="px-2">
                                       <div className="flex items-center gap-2 mb-2">
                                         {video.level && (
-                                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                                            video.level === 'Başlangıç' ? 'bg-green-500/20 text-green-400' :
-                                            video.level === 'Orta' ? 'bg-yellow-500/20 text-yellow-400' :
-                                            'bg-red-500/20 text-red-400'
+                                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                            video.level === 'Başlangıç' ? 'bg-green-100 text-green-700' :
+                                            video.level === 'Orta' ? 'bg-yellow-100 text-yellow-700' :
+                                            'bg-red-100 text-red-700'
                                           }`}>
                                             {video.level}
                                           </span>
                                         )}
                                         {progress?.watched && (
-                                          <span className="text-green-400 text-xs flex items-center gap-1">
+                                          <span className="text-green-600 text-xs flex items-center gap-1 bg-green-50 px-2 py-0.5 rounded-full">
                                             <CheckCircle2 size={14} />
                                             Tamamlandı
                                           </span>
                                         )}
                                       </div>
-                                      <h3 className="font-semibold text-white line-clamp-2 group-hover/card:text-purple-400 transition-colors">
+                                      <h3 className="font-bold text-gray-800 line-clamp-2 group-hover/card:text-purple-600 transition-colors">
                                         {video.title}
                                       </h3>
-                                      <p className="text-sm text-gray-400 line-clamp-2 mt-1">{video.description}</p>
+                                      <p className="text-sm text-gray-600 line-clamp-2 mt-1">{video.description}</p>
                                       
                                       {!unlocked && (
-                                        <p className="text-xs text-yellow-500 mt-2 flex items-center gap-1">
+                                        <p className="text-xs text-orange-600 mt-2 flex items-center gap-1 bg-orange-50 px-2 py-1 rounded">
                                           <Lock size={12} />
                                           Önceki videoyu tamamlayın
                                         </p>
