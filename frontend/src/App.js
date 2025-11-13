@@ -392,11 +392,44 @@ const FocusProApp = () => {
     }
   };
 
+  // Extract YouTube video ID from various URL formats
+  const extractYouTubeId = (url) => {
+    if (!url) return '';
+    
+    // If it's already just an ID (no URL), return it
+    if (url.length === 11 && !url.includes('/') && !url.includes('?')) {
+      return url;
+    }
+    
+    // Different YouTube URL patterns
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+      /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+      /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+      /(?:youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    
+    return url; // Return as is if no pattern matches
+  };
+
   const addOrUpdateVideo = async () => {
-    if (!newVideo.title || !newVideo.youtube_id) {
-      alert('Video başlığı ve YouTube ID gerekli!');
+    // Extract ID from URL if needed
+    const videoId = extractYouTubeId(newVideo.youtube_id);
+    
+    if (!newVideo.title || !videoId) {
+      alert('Video başlığı ve YouTube linki gerekli!');
       return;
     }
+    
+    // Update the video object with extracted ID
+    const videoToSave = { ...newVideo, youtube_id: videoId };
     
     try {
       if (editingVideo) {
