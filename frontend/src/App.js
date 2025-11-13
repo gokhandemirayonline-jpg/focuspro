@@ -2258,6 +2258,7 @@ const FocusProApp = () => {
 
               {/* Main Content */}
               <div className={selectedVideo ? 'blur-sm pointer-events-none' : ''}>
+                {!selectedVideo && (
                 <div>
                   {/* Hero Banner - Light Theme */}
                   <div className="relative bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-12 py-16 mb-8">
