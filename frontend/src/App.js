@@ -2175,28 +2175,31 @@ const FocusProApp = () => {
                       />
                       
                       {/* Custom Play/Pause Overlay */}
-                      <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-sm rounded-lg p-3">
+                      <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-sm rounded-lg p-4">
                         <div className="flex items-center gap-3">
                           <button
                             id={`play-pause-btn-${selectedVideo.id}`}
-                            onClick={() => {
-                              const iframe = document.getElementById(`youtube-player-${selectedVideo.id}`);
-                              iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-                            }}
-                            className="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-full transition-colors"
+                            className="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full transition-colors shadow-lg"
+                            title="Oynat/Duraklat"
                           >
-                            <Play size={20} fill="currentColor" />
+                            <Play size={24} fill="currentColor" />
                           </button>
                           <div className="flex-1">
-                            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                            <div 
+                              id={`progress-container-${selectedVideo.id}`}
+                              className="h-3 bg-gray-700 rounded-full overflow-hidden cursor-pointer hover:h-4 transition-all"
+                              title="Video içinde gezinmek için tıklayın"
+                            >
                               <div
                                 id={`video-progress-bar-${selectedVideo.id}`}
-                                className="h-full bg-purple-500 transition-all duration-300"
+                                className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-300 relative"
                                 style={{ width: '0%' }}
-                              ></div>
+                              >
+                                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg"></div>
+                              </div>
                             </div>
                           </div>
-                          <span id={`video-time-${selectedVideo.id}`} className="text-white text-sm font-medium">
+                          <span id={`video-time-${selectedVideo.id}`} className="text-white text-sm font-medium min-w-[100px] text-right">
                             0:00 / {selectedVideo.duration}
                           </span>
                         </div>
