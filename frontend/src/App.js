@@ -2257,6 +2257,8 @@ const FocusProApp = () => {
                             if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
                           } else if (event.data === YT.PlayerState.ENDED) {
                             stopProgressTracking();
+                            const percentageDisplay = document.getElementById('video-percentage-${selectedVideo.id}');
+                            if (percentageDisplay) percentageDisplay.textContent = '%100';
                             updateProgress(100);
                           }
                         }
