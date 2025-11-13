@@ -2450,8 +2450,7 @@ const FocusProApp = () => {
                         </div>
                       </div>
                     );
-                  }))
-                  }
+                  })
                   
                   {videos.length === 0 && videoCategories.length > 0 && (
                     <div className="text-center py-16">
