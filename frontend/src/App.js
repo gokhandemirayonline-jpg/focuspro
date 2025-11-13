@@ -5609,13 +5609,18 @@ const FocusProApp = () => {
                 placeholder="Video Başlığı"
                 className="w-full px-4 py-2 border rounded-lg"
               />
-              <input
-                type="text"
-                value={newVideo.youtube_id}
-                onChange={(e) => setNewVideo({...newVideo, youtube_id: e.target.value})}
-                placeholder="YouTube Video ID"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
+              <div>
+                <input
+                  type="text"
+                  value={newVideo.youtube_id}
+                  onChange={(e) => setNewVideo({...newVideo, youtube_id: e.target.value})}
+                  placeholder="YouTube Video Linki (örn: https://youtube.com/watch?v=...)"
+                  className="w-full px-4 py-2 border rounded-lg"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  💡 YouTube video linkini yapıştırın veya sadece video ID'sini girin
+                </p>
+              </div>
               <textarea
                 value={newVideo.description}
                 onChange={(e) => setNewVideo({...newVideo, description: e.target.value})}
