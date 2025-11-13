@@ -103,13 +103,17 @@
 #====================================================================================================
 
 user_problem_statement: |
-  FocusProApp için Google Calendar benzeri gelişmiş takvim arayüzü eklenmesi.
-  Özellikler:
-  - Gün/Hafta/Ay/Planlama/4 Gün görünümleri
-  - Sürükle-bırak ile toplantı taşıma
-  - Renkli kategoriler (İş, Kişisel, Önemli)
-  - Filtreleme (hafta sonları, reddedilen, tamamlanan)
-  - Toplantılara kategori ve renk ekleme
+  FocusProApp için kapsamlı eğitim sistemi ve video izleme akışı testi yapılması gerekiyor.
+  Test Edilecek Özellikler:
+  1. Eğitimler Sayfası Erişimi - Admin (admin@focuspro.com / admin123) ile giriş yap
+  2. Video Modal Açılması - İlk video kartına tıkla, modal/popup açılması
+  3. YouTube iframe yüklenmesi - Video modal içinde YouTube iframe kontrolü
+  4. Özel play/pause kontrollerinin görünümü
+  5. İlerleme çubuğunun (progress bar) görünümü
+  6. Yorum Alanı Kontrolü - "Video Hakkında Yorumunuz" bölümü, textarea disabled durumu
+  7. "Adminine Gönder" butonunun görünümü ve disabled durumu
+  8. Modal Kapatma - X butonuna tıklayarak modal kapatma
+  9. Çıkış Yap Butonu görünürlüğü
 
 backend:
   - task: "Meeting modeline yeni alanlar ekleme"
