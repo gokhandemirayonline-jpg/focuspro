@@ -2337,14 +2337,14 @@ const FocusProApp = () => {
                                     }`}
                                     onClick={() => unlocked && openVideo(video)}
                                   >
-                                    <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-800 mb-3">
+                                    <div className="relative aspect-video rounded-xl overflow-hidden bg-white shadow-lg border-2 border-gray-200 mb-3 group-hover/card:shadow-2xl group-hover/card:border-purple-300 transition-all">
                                       <img
                                         src={`https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg`}
                                         alt={video.title}
-                                        className="w-full h-full object-cover transform group-hover/card:scale-110 transition-transform duration-500"
+                                        className="w-full h-full object-cover transform group-hover/card:scale-105 transition-transform duration-500"
                                       />
                                       
-                                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 group-hover/card:from-black/90" />
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover/card:from-black/70" />
                                       
                                       {/* Play/Lock Icon */}
                                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity">
