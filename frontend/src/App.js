@@ -2347,8 +2347,7 @@ const FocusProApp = () => {
                         
                         {/* Videos Grid */}
                         <div className="p-6">
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                           {categoryVideos.map((video, index) => {
                             const progress = getVideoProgress(video.id);
                             // Video unlock logic: First video is always unlocked, others require previous video to be watched
