@@ -1072,6 +1072,164 @@ const FocusProApp = () => {
     }
   }, [currentUser]);
 
+  // YouTube Player useEffect
+  useEffect(() => {
+    if (!selectedVideo) return;
+
+    const videoId = selectedVideo.id;
+    const durationStr = selectedVideo.duration;
+    let player = null;
+    let progressInterval = null;
+    let lastSavedPercentage = 0;
+
+    // Parse duration string to seconds
+    const parseDuration = (durationStr) => {
+      const parts = durationStr.split(':').map(p => parseInt(p));
+      if (parts.length === 2) return parts[0] * 60 + parts[1];
+      if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+      return 0;
+    };
+
+    const videoDuration = parseDuration(durationStr);
+
+    // Load YouTube IFrame API
+    const loadYouTubeAPI = () => {
+      if (window.YT && window.YT.Player) {
+        initializePlayer();
+      } else {
+        if (!window.onYouTubeIframeAPIReady) {
+          const tag = document.createElement('script');
+          tag.src = 'https://www.youtube.com/iframe_api';
+          const firstScriptTag = document.getElementsByTagName('script')[0];
+          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+          window.onYouTubeIframeAPIReady = () => {
+            initializePlayer();
+          };
+        } else {
+          setTimeout(loadYouTubeAPI, 100);
+        }
+      }
+    };
+
+    const initializePlayer = () => {
+      player = new window.YT.Player(`youtube-player-${videoId}`, {
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange
+        }
+      });
+    };
+
+    const onPlayerReady = (event) => {
+      console.log('Player ready');
+      setupControls();
+    };
+
+    const onPlayerStateChange = (event) => {
+      const btn = document.getElementById(`play-pause-btn-${videoId}`);
+      if (event.data === window.YT.PlayerState.PLAYING) {
+        startProgressTracking();
+        if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+      } else if (event.data === window.YT.PlayerState.PAUSED) {
+        stopProgressTracking();
+        if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+      } else if (event.data === window.YT.PlayerState.ENDED) {
+        stopProgressTracking();
+        const percentageDisplay = document.getElementById(`video-percentage-${videoId}`);
+        if (percentageDisplay) percentageDisplay.textContent = '%100';
+        updateProgress(100);
+      }
+    };
+
+    const startProgressTracking = () => {
+      if (progressInterval) clearInterval(progressInterval);
+
+      progressInterval = setInterval(() => {
+        if (!player || !player.getCurrentTime) return;
+
+        const currentTime = player.getCurrentTime();
+        const percentage = Math.min((currentTime / videoDuration) * 100, 100);
+
+        const progressBar = document.getElementById(`video-progress-bar-${videoId}`);
+        if (progressBar) progressBar.style.width = percentage + '%';
+
+        const percentageDisplay = document.getElementById(`video-percentage-${videoId}`);
+        if (percentageDisplay) percentageDisplay.textContent = '%' + Math.floor(percentage);
+
+        const timeDisplay = document.getElementById(`video-time-${videoId}`);
+        if (timeDisplay) {
+          const mins = Math.floor(currentTime / 60);
+          const secs = Math.floor(currentTime % 60);
+          timeDisplay.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs + ' / ' + durationStr;
+        }
+
+        const roundedPercentage = Math.floor(percentage / 5) * 5;
+        if (roundedPercentage > lastSavedPercentage && roundedPercentage <= 100) {
+          lastSavedPercentage = roundedPercentage;
+          updateProgress(roundedPercentage);
+        }
+      }, 1000);
+    };
+
+    const stopProgressTracking = () => {
+      if (progressInterval) clearInterval(progressInterval);
+    };
+
+    const updateProgress = (percentage) => {
+      fetch(`${process.env.REACT_APP_BACKEND_URL}/api/videos/${videoId}/progress`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify({ watch_percentage: percentage })
+      }).then(() => {
+        if (percentage >= 100) {
+          window.location.reload();
+        }
+      });
+    };
+
+    const setupControls = () => {
+      const playBtn = document.getElementById(`play-pause-btn-${videoId}`);
+      if (playBtn) {
+        playBtn.onclick = () => {
+          if (!player) return;
+
+          const state = player.getPlayerState();
+          if (state === window.YT.PlayerState.PLAYING) {
+            player.pauseVideo();
+          } else {
+            player.playVideo();
+          }
+        };
+      }
+
+      const progressContainer = document.getElementById(`progress-container-${videoId}`);
+      if (progressContainer) {
+        progressContainer.onclick = (e) => {
+          if (!player) return;
+
+          const rect = progressContainer.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          const percentage = (clickX / rect.width);
+          const seekTime = percentage * videoDuration;
+
+          player.seekTo(seekTime, true);
+        };
+      }
+    };
+
+    loadYouTubeAPI();
+
+    // Cleanup
+    return () => {
+      if (progressInterval) clearInterval(progressInterval);
+      if (player && player.destroy) player.destroy();
+    };
+  }, [selectedVideo]);
+
   const deleteProspect = async (id) => {
     try {
       await prospectAPI.delete(id);
