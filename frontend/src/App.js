@@ -2259,24 +2259,23 @@ const FocusProApp = () => {
               {/* Main Content */}
               <div className={selectedVideo ? 'blur-sm pointer-events-none' : ''}>
                 <div>
-                  {/* Hero Banner */}
-                  <div className="relative h-[60vh] bg-gradient-to-b from-transparent to-gray-900">
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-900/50 to-blue-900/50" />
-                    <div className="relative z-10 h-full flex flex-col justify-end px-12 pb-16 max-w-7xl mx-auto">
-                      <h1 className="text-6xl font-bold mb-4">🎓 Eğitim Merkezi</h1>
-                      <p className="text-2xl text-gray-200 mb-6">Profesyonel gelişim yolculuğunuz başlıyor</p>
-                      <div className="flex gap-6">
-                        <div className="bg-white/10 backdrop-blur-sm px-6 py-3 rounded-lg border border-white/20">
-                          <span className="text-3xl font-bold">{videos.length}</span>
-                          <span className="text-gray-300 ml-2">Video</span>
+                  {/* Hero Banner - Light Theme */}
+                  <div className="relative bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-12 py-16 mb-8">
+                    <div className="max-w-7xl mx-auto">
+                      <h1 className="text-5xl font-bold mb-3">🎓 Eğitim Platformu</h1>
+                      <p className="text-xl text-purple-100 mb-8">Profesyonel gelişim yolculuğunuz başlıyor</p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-white/10 backdrop-blur-sm px-6 py-4 rounded-xl border border-white/20">
+                          <div className="text-3xl font-bold">{videos.length}</div>
+                          <div className="text-purple-100">Toplam Video</div>
                         </div>
-                        <div className="bg-white/10 backdrop-blur-sm px-6 py-3 rounded-lg border border-white/20">
-                          <span className="text-3xl font-bold text-green-400">{userProgress.filter(p => p.watched).length}</span>
-                          <span className="text-gray-300 ml-2">Tamamlandı</span>
+                        <div className="bg-white/10 backdrop-blur-sm px-6 py-4 rounded-xl border border-white/20">
+                          <div className="text-3xl font-bold text-green-300">{userProgress.filter(p => p.watched).length}</div>
+                          <div className="text-purple-100">Tamamlandı</div>
                         </div>
-                        <div className="bg-white/10 backdrop-blur-sm px-6 py-3 rounded-lg border border-white/20">
-                          <span className="text-3xl font-bold text-blue-400">{videoCategories.length}</span>
-                          <span className="text-gray-300 ml-2">Kategori</span>
+                        <div className="bg-white/10 backdrop-blur-sm px-6 py-4 rounded-xl border border-white/20">
+                          <div className="text-3xl font-bold text-blue-300">{videoCategories.length}</div>
+                          <div className="text-purple-100">Kategori</div>
                         </div>
                       </div>
                     </div>
