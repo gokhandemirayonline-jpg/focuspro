@@ -15,7 +15,7 @@ import time
 from typing import Dict, Any
 
 # Backend URL from environment
-BACKEND_URL = "https://adminpanel-11.preview.emergentagent.com"
+BACKEND_URL = "https://focuspro-revamp.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class FocusedRegistrationTester:
