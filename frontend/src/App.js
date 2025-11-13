@@ -2211,6 +2211,7 @@ const FocusProApp = () => {
                         let player;
                         let videoDuration = 0;
                         let progressInterval;
+                        let lastSavedPercentage = 0;
                         
                         // Parse duration string to seconds
                         function parseDuration(durationStr) {
@@ -2243,10 +2244,16 @@ const FocusProApp = () => {
                         }
                         
                         function onPlayerStateChange(event) {
+                          const btn = document.getElementById('play-pause-btn-${selectedVideo.id}');
                           if (event.data === YT.PlayerState.PLAYING) {
                             startProgressTracking();
-                          } else {
+                            if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+                          } else if (event.data === YT.PlayerState.PAUSED) {
                             stopProgressTracking();
+                            if (btn) btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+                          } else if (event.data === YT.PlayerState.ENDED) {
+                            stopProgressTracking();
+                            updateProgress(100);
                           }
                         }
                         
@@ -2271,22 +2278,32 @@ const FocusProApp = () => {
                               timeDisplay.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs + ' / ${selectedVideo.duration}';
                             }
                             
-                            // Send progress to backend every 5 seconds
-                            if (Math.floor(currentTime) % 5 === 0) {
-                              fetch('${process.env.REACT_APP_BACKEND_URL}/api/videos/${selectedVideo.id}/progress', {
-                                method: 'PATCH',
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                  'Authorization': 'Bearer ' + localStorage.getItem('token')
-                                },
-                                body: JSON.stringify({ watch_percentage: Math.round(percentage) })
-                              });
+                            // Send to backend every 5% progress
+                            const roundedPercentage = Math.floor(percentage / 5) * 5;
+                            if (roundedPercentage > lastSavedPercentage && roundedPercentage <= 100) {
+                              lastSavedPercentage = roundedPercentage;
+                              updateProgress(roundedPercentage);
                             }
                           }, 1000);
                         }
                         
                         function stopProgressTracking() {
                           if (progressInterval) clearInterval(progressInterval);
+                        }
+                        
+                        function updateProgress(percentage) {
+                          fetch('${process.env.REACT_APP_BACKEND_URL}/api/videos/${selectedVideo.id}/progress', {
+                            method: 'PATCH',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': 'Bearer ' + localStorage.getItem('token')
+                            },
+                            body: JSON.stringify({ watch_percentage: percentage })
+                          }).then(() => {
+                            if (percentage >= 100) {
+                              window.location.reload(); // Reload to show comment field
+                            }
+                          });
                         }
                         
                         // Play/Pause button
@@ -2296,11 +2313,21 @@ const FocusProApp = () => {
                           const state = player.getPlayerState();
                           if (state === YT.PlayerState.PLAYING) {
                             player.pauseVideo();
-                            this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
                           } else {
                             player.playVideo();
-                            this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
                           }
+                        });
+                        
+                        // Seekable progress bar
+                        document.getElementById('progress-container-${selectedVideo.id}').addEventListener('click', function(e) {
+                          if (!player) return;
+                          
+                          const rect = this.getBoundingClientRect();
+                          const clickX = e.clientX - rect.left;
+                          const percentage = (clickX / rect.width);
+                          const seekTime = percentage * videoDuration;
+                          
+                          player.seekTo(seekTime, true);
                         });
                       })();
                     ` }} />
