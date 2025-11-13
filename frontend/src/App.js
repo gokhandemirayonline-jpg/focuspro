@@ -2450,17 +2450,17 @@ const FocusProApp = () => {
                         </div>
                       </div>
                     );
-                  })
-                  )}
+                  }))
+                  }
                   
-                  {videos.length === 0 && (
+                  {videos.length === 0 && videoCategories.length > 0 && (
                     <div className="text-center py-16">
                       <Film size={64} className="mx-auto text-gray-300 mb-4" />
-                      <p className="text-gray-500 text-lg">Henüz video eklenmemiş</p>
+                      <p className="text-gray-500 text-lg">Bu kategorilerde henüz video yok</p>
                     </div>
                   )}
                 </div>
-              </div>
+              )}
             </div>
           )}
 
