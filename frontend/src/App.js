@@ -4961,8 +4961,14 @@ const FocusProApp = () => {
       
       {/* Meeting Modal */}
       {showMeetingModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          onClick={() => setShowMeetingModal(false)}
+        >
+          <div 
+            className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-xl font-bold text-gray-800 mb-4">
               {editingMeeting ? 'Görüşme Düzenle' : 'Yeni Görüşme'}
             </h3>
