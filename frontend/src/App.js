@@ -1608,7 +1608,8 @@ const FocusProApp = () => {
   };
 
   const openVideo = (video) => {
-    if (isVideoUnlocked(video.id)) {
+    // Admin can access all videos, others need unlock
+    if (currentUser?.role === 'admin' || isVideoUnlocked(video.id)) {
       setSelectedVideo(video);
       setVideoWatched(false);
       const progress = getVideoProgress(video.id);
