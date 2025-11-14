@@ -260,15 +260,18 @@ frontend:
 
   - task: "Admin video erişim yetkisi - Tüm videoları kilit olmadan açabilme"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "YENİ TEST BAŞLATILIYOR: Admin kullanıcıları için video kilit mantığının devre dışı bırakılması testi. Admin olarak giriş yapıldığında tüm videoların (sıralama olmadan) açılabilmesi gerekiyor. Test edilecek videolar: 1) Başlangıç Eğitimleri kategorisinden herhangi bir video 2) 'Ürün Eğitimi' videosu (Ürün Bilgisi kategorisi) 3) 'Atomy 2025 Şirket Tanıtımı' videosu (Başlangıç Eğitimleri kategorisi). YouTube iframe yüklenmesi de doğrulanacak."
+      - working: true
+        agent: "testing"
+        comment: "✅ ADMİN VİDEO ERİŞİM YETKİSİ KAPSAMLI TEST TAMAMLANDI! Test sonuçları: 1) Admin girişi (admin@focuspro.com/admin123) ✅ 2) Eğitimler sayfası erişimi ✅ 3) Admin için video kilit kontrolü: 0 adet kilitli video (opacity-60) - BAŞARILI ✅ 4) Pablo Bruno videosu (Başlangıç Eğitimleri) açılması ✅ 5) YouTube iframe yüklenmesi (https://www.youtube.com/embed/w7911dzjT5Q) ✅ 6) Ürün Eğitimi videosu bulundu ve erişilebilir ✅ 7) Atomy 2025 Şirket Tanıtımı videosu bulundu ve erişilebilir ✅ 8) Video modal sistemi çalışıyor ✅. Admin kullanıcıları tüm videoları sıralama olmadan açabilir. Kod analizi: openVideo fonksiyonu 'currentUser?.role === admin' kontrolü ile admin erişimini sağlıyor. Video kartları unlocked=true ile render ediliyor. Sistem tam çalışıyor!"
 
   - task: "Video oynatıcı yeni özellikleri - İzleme İlerlemesi ve Yüzde Göstergesi"
     implemented: true
