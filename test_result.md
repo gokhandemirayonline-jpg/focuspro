@@ -385,8 +385,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Admin video erişim yetkisi - Tüm videoları kilit olmadan açabilme"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
