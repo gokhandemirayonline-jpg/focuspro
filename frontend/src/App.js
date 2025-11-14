@@ -3507,7 +3507,7 @@ const FocusProApp = () => {
           {/* AGENDA PAGE */}
           {currentPage === 'agenda' && (
             <div className="p-6">
-              <h1 className="text-3xl font-bold text-gray-800 mb-6">📋 Ajanda</h1>
+              <h1 className="text-3xl font-bold text-gray-800 mb-6">Ajanda</h1>
               
               {/* Tabs */}
               <div className="mb-6 flex gap-2 border-b border-gray-200">
