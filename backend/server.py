@@ -972,6 +972,43 @@ async def get_habits(current_user: dict = Depends(get_current_user)):
     
     return habits
 
+@api_router.post("/habits", response_model=Habit)
+async def create_habit(habit_data: dict, current_user: dict = Depends(get_current_user)):
+    habit = Habit(
+        user_id=current_user['id'],
+        title=habit_data.get('title'),
+        target=habit_data.get('target', 1),
+        completed=0,
+        done=False
+    )
+    doc = habit.model_dump()
+    await db.habits.insert_one(doc)
+    return habit
+
+@api_router.put("/habits/{habit_id}")
+async def update_habit_full(habit_id: str, habit_data: dict, current_user: dict = Depends(get_current_user)):
+    habit = await db.habits.find_one({"id": habit_id, "user_id": current_user['id']}, {"_id": 0})
+    if not habit:
+        raise HTTPException(status_code=404, detail="Habit not found")
+    
+    update_fields = {}
+    if 'title' in habit_data:
+        update_fields['title'] = habit_data['title']
+    if 'target' in habit_data:
+        update_fields['target'] = habit_data['target']
+    if 'completed' in habit_data:
+        new_completed = min(habit_data['completed'], habit_data.get('target', habit['target']))
+        update_fields['completed'] = new_completed
+        update_fields['done'] = new_completed >= habit_data.get('target', habit['target'])
+    
+    if update_fields:
+        await db.habits.update_one(
+            {"id": habit_id},
+            {"$set": update_fields}
+        )
+    
+    return {"message": "Habit updated successfully"}
+
 @api_router.patch("/habits/{habit_id}")
 async def update_habit(habit_id: str, completed: int, current_user: dict = Depends(get_current_user)):
     habit = await db.habits.find_one({"id": habit_id, "user_id": current_user['id']}, {"_id": 0})
@@ -987,6 +1024,15 @@ async def update_habit(habit_id: str, completed: int, current_user: dict = Depen
     )
     
     return {"message": "Habit updated"}
+
+@api_router.delete("/habits/{habit_id}")
+async def delete_habit(habit_id: str, current_user: dict = Depends(get_current_user)):
+    habit = await db.habits.find_one({"id": habit_id, "user_id": current_user['id']}, {"_id": 0})
+    if not habit:
+        raise HTTPException(status_code=404, detail="Habit not found")
+    
+    await db.habits.delete_one({"id": habit_id})
+    return {"message": "Habit deleted successfully"}
 
 
 # ============= EVENT ENDPOINTS =============
