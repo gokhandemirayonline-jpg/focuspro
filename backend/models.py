@@ -292,6 +292,24 @@ class Reason(ReasonBase):
     user_id: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+# Dream Priority Models
+class DreamPriorityBase(BaseModel):
+    initial_dreams: List[str] = []  # 10 hayalin ilk listesi
+    final_priorities: List[str] = []  # 10'dan 1'e elendikten sonraki öncelik sırası
+    target_income: str = ""  # Hedef gelir
+    target_months: str = ""  # Hedef süre (ay)
+    daily_hours: str = ""  # Günlük ayırabileceği saat
+
+class DreamPriorityCreate(DreamPriorityBase):
+    pass
+
+class DreamPriority(DreamPriorityBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
 
 # Prospect Models
 class ProspectBase(BaseModel):
