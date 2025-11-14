@@ -927,6 +927,44 @@ const FocusProApp = () => {
       alert('Silme işlemi başarısız!');
     }
   };
+
+  const addOrUpdateHabit = async () => {
+    if (!newHabit.title || newHabit.target < 1) return;
+    
+    try {
+      if (editingHabit) {
+        await habitAPI.updateFull(editingHabit.id, newHabit);
+      } else {
+        await habitAPI.create(newHabit);
+      }
+      await loadDailyHabits();
+      setNewHabit({ title: '', target: 1 });
+      setEditingHabit(null);
+      setShowHabitModal(false);
+    } catch (error) {
+      alert('İşlem başarısız!');
+    }
+  };
+
+  const deleteHabit = async (id) => {
+    if (!confirm('Bu alışkanlığı silmek istediğinizden emin misiniz?')) return;
+    
+    try {
+      await habitAPI.delete(id);
+      await loadDailyHabits();
+    } catch (error) {
+      alert('Silme işlemi başarısız!');
+    }
+  };
+
+  const updateHabitProgress = async (habitId, newCompleted) => {
+    try {
+      await habitAPI.update(habitId, newCompleted);
+      await loadDailyHabits();
+    } catch (error) {
+      alert('Güncelleme başarısız!');
+    }
+  };
   
   const handleImageUpload = async (event, setter) => {
     const file = event.target.files[0];
