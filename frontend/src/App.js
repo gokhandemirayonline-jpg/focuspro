@@ -6666,6 +6666,216 @@ const FocusProApp = () => {
         </div>
       )}
 
+      {/* Event Detail Modal */}
+      {selectedEvent && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto"
+          onClick={() => setSelectedEvent(null)}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl my-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Event Image Header */}
+            <div className="relative h-64 md:h-80 bg-gradient-to-br from-purple-400 to-indigo-600 rounded-t-2xl overflow-hidden">
+              {selectedEvent.image ? (
+                <img src={selectedEvent.image} alt={selectedEvent.title} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <CalendarDays size={96} className="text-white opacity-50" />
+                </div>
+              )}
+              <button
+                onClick={() => setSelectedEvent(null)}
+                className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Event Details */}
+            <div className="p-6 md:p-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">{selectedEvent.title}</h2>
+              
+              {/* Event Info Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg">
+                  <Calendar size={24} className="text-purple-600 flex-shrink-0 mt-1" />
+                  <div>
+                    <p className="text-sm text-gray-600 font-medium">Tarih</p>
+                    <p className="text-lg text-gray-900">
+                      {new Date(selectedEvent.date).toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg">
+                  <Clock size={24} className="text-purple-600 flex-shrink-0 mt-1" />
+                  <div>
+                    <p className="text-sm text-gray-600 font-medium">Saat</p>
+                    <p className="text-lg text-gray-900">{selectedEvent.time}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg md:col-span-2">
+                  <MapPin size={24} className="text-purple-600 flex-shrink-0 mt-1" />
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-600 font-medium">Konum</p>
+                    <p className="text-lg text-gray-900">{selectedEvent.location}</p>
+                  </div>
+                </div>
+                
+                {selectedEvent.max_participants && (
+                  <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg md:col-span-2">
+                    <Users size={24} className="text-purple-600 flex-shrink-0 mt-1" />
+                    <div>
+                      <p className="text-sm text-gray-600 font-medium">Katılımcılar</p>
+                      <p className="text-lg text-gray-900">
+                        {eventRegistrations.filter(r => r.event_id === selectedEvent.id).length} / {selectedEvent.max_participants}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Description */}
+              {selectedEvent.description && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Açıklama</h3>
+                  <p className="text-gray-700 leading-relaxed">{selectedEvent.description}</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-3">
+                {/* Join/Status Button (for users) */}
+                {currentUser?.role !== 'admin' && (() => {
+                  const userRegistration = eventRegistrations.find(r => r.event_id === selectedEvent.id && r.user_id === currentUser.id);
+                  const isPast = new Date(selectedEvent.date) < new Date();
+                  
+                  if (userRegistration) {
+                    return (
+                      <div className={`flex-1 py-3 rounded-lg text-center font-semibold ${
+                        userRegistration.status === 'approved' ? 'bg-green-100 text-green-700' :
+                        userRegistration.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {userRegistration.status === 'approved' ? '✓ Katılıyorsunuz' :
+                         userRegistration.status === 'rejected' ? '✗ Reddedildi' : '⏳ Beklemede'}
+                      </div>
+                    );
+                  } else if (!isPast) {
+                    return (
+                      <button
+                        onClick={() => {
+                          registerForEvent(selectedEvent.id);
+                          setSelectedEvent(null);
+                        }}
+                        className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition-colors"
+                      >
+                        Katıl
+                      </button>
+                    );
+                  }
+                  return null;
+                })()}
+
+                {/* Calendar Save Button */}
+                <button
+                  onClick={() => {
+                    const eventDate = new Date(selectedEvent.date + 'T' + selectedEvent.time);
+                    const endDate = new Date(eventDate.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
+                    const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+DTSTART:${eventDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z
+DTEND:${endDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z
+SUMMARY:${selectedEvent.title}
+LOCATION:${selectedEvent.location}
+DESCRIPTION:${selectedEvent.description}
+END:VEVENT
+END:VCALENDAR`;
+                    const blob = new Blob([icsContent], { type: 'text/calendar' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${selectedEvent.title}.ics`;
+                    a.click();
+                  }}
+                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                >
+                  <Download size={20} />
+                  Takvime Kaydet
+                </button>
+
+                {/* Location Button */}
+                <button
+                  onClick={() => {
+                    const query = encodeURIComponent(selectedEvent.location);
+                    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+                  }}
+                  className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
+                >
+                  <MapPin size={20} />
+                  Yer Bilgisi
+                </button>
+
+                {/* Share Button */}
+                <button
+                  onClick={() => {
+                    const shareText = `${selectedEvent.title}\n📅 ${selectedEvent.date}\n🕐 ${selectedEvent.time}\n📍 ${selectedEvent.location}`;
+                    if (navigator.share) {
+                      navigator.share({
+                        title: selectedEvent.title,
+                        text: shareText,
+                        url: window.location.href
+                      });
+                    } else {
+                      navigator.clipboard.writeText(shareText);
+                      alert('Etkinlik bilgileri panoya kopyalandı!');
+                    }
+                  }}
+                  className="flex items-center gap-2 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors"
+                >
+                  <Share2 size={20} />
+                  Paylaş
+                </button>
+
+                {/* Admin Edit/Delete Buttons */}
+                {currentUser?.role === 'admin' && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setEditingEvent(selectedEvent);
+                        setNewEvent(selectedEvent);
+                        setShowEventModal(true);
+                        setSelectedEvent(null);
+                      }}
+                      className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                    >
+                      <Edit size={20} />
+                      Düzenle
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm('Bu etkinliği silmek istediğinizden emin misiniz?')) {
+                          deleteEvent(selectedEvent.id);
+                          setSelectedEvent(null);
+                        }
+                      }}
+                      className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors"
+                    >
+                      <Trash2 size={20} />
+                      Sil
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* Recommendation Modal (Admin) */}
       {showRecommendationModal && (
