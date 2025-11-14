@@ -2536,7 +2536,7 @@ const FocusProApp = () => {
                                 const progress = getVideoProgress(video.id);
                                 const previousVideo = index > 0 ? categoryVideos[index - 1] : null;
                                 const previousProgress = previousVideo ? getVideoProgress(previousVideo.id) : null;
-                                const unlocked = index === 0 || (previousProgress && previousProgress.watched);
+                                const unlocked = currentUser?.role === 'admin' || index === 0 || (previousProgress && previousProgress.watched);
 
                                 return (
                                   <div
