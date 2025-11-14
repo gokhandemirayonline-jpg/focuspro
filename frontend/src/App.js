@@ -6821,17 +6821,28 @@ END:VCALENDAR`;
 
                 {/* Share Button */}
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     const shareText = `${selectedEvent.title}\n📅 ${selectedEvent.date}\n🕐 ${selectedEvent.time}\n📍 ${selectedEvent.location}`;
                     if (navigator.share) {
-                      navigator.share({
-                        title: selectedEvent.title,
-                        text: shareText,
-                        url: window.location.href
-                      });
+                      try {
+                        await navigator.share({
+                          title: selectedEvent.title,
+                          text: shareText,
+                          url: window.location.href
+                        });
+                      } catch (err) {
+                        // User canceled share, do nothing
+                        if (err.name !== 'AbortError') {
+                          console.error('Share failed:', err);
+                        }
+                      }
                     } else {
-                      navigator.clipboard.writeText(shareText);
-                      alert('Etkinlik bilgileri panoya kopyalandı!');
+                      try {
+                        await navigator.clipboard.writeText(shareText);
+                        alert('Etkinlik bilgileri panoya kopyalandı!');
+                      } catch (err) {
+                        console.error('Clipboard write failed:', err);
+                      }
                     }
                   }}
                   className="flex items-center gap-2 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors"
