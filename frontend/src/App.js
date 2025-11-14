@@ -1123,7 +1123,13 @@ const FocusProApp = () => {
 
     const onPlayerReady = (event) => {
       console.log('Player ready');
-      setupControls();
+      // Load saved progress and seek to that position
+      const savedProgress = getVideoProgress(videoId);
+      if (savedProgress && savedProgress.watch_percentage > 0 && savedProgress.watch_percentage < 100) {
+        const seekTime = (savedProgress.watch_percentage / 100) * videoDuration;
+        player.seekTo(seekTime, true);
+        console.log(`Resuming from ${savedProgress.watch_percentage}% (${seekTime}s)`);
+      }
     };
 
     const onPlayerStateChange = (event) => {
