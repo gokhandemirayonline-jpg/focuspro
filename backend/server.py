@@ -35,7 +35,7 @@ from models import (
     ActivityLogCreate, ActivityLog,
     RecommendationCreate, Recommendation,
     BlogCreate, Blog,
-    MessageCreate, Message
+    MessageCreate, Message, MessageReply
 )
 
 
