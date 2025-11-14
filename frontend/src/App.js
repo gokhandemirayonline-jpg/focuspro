@@ -37,7 +37,7 @@ const FocusProApp = () => {
   const [agendaTab, setAgendaTab] = useState('tasks'); // tasks, prospects, goals, dreams
   
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [calendarView, setCalendarView] = useState('month');
   const [showWeekends, setShowWeekends] = useState(true);
   const [showRejected, setShowRejected] = useState(false);
