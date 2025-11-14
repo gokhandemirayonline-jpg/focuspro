@@ -138,6 +138,8 @@ const FocusProApp = () => {
   const [showHabitModal, setShowHabitModal] = useState(false);
   const [editingHabit, setEditingHabit] = useState(null);
   const [newHabit, setNewHabit] = useState({ title: '', target: 1 });
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [showEventModal, setShowEventModal] = useState(false);
   const [showRecommendationModal, setShowRecommendationModal] = useState(false);
   const [showBlogModal, setShowBlogModal] = useState(false);
