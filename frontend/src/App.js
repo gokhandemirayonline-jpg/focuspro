@@ -1155,19 +1155,15 @@ const FocusProApp = () => {
         const currentTime = player.getCurrentTime();
         const percentage = Math.min((currentTime / videoDuration) * 100, 100);
 
+        // Update progress bar overlay
         const progressBar = document.getElementById(`video-progress-bar-${videoId}`);
         if (progressBar) progressBar.style.width = percentage + '%';
 
+        // Update percentage display overlay
         const percentageDisplay = document.getElementById(`video-percentage-${videoId}`);
         if (percentageDisplay) percentageDisplay.textContent = '%' + Math.floor(percentage);
 
-        const timeDisplay = document.getElementById(`video-time-${videoId}`);
-        if (timeDisplay) {
-          const mins = Math.floor(currentTime / 60);
-          const secs = Math.floor(currentTime % 60);
-          timeDisplay.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs + ' / ' + durationStr;
-        }
-
+        // Save to backend every 5% progress
         const roundedPercentage = Math.floor(percentage / 5) * 5;
         if (roundedPercentage > lastSavedPercentage && roundedPercentage <= 100) {
           lastSavedPercentage = roundedPercentage;
