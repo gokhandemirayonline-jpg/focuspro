@@ -884,6 +884,59 @@ async def delete_reason(reason_id: str, current_user: dict = Depends(get_current
     return {"message": "Reason deleted successfully"}
 
 
+# ============= DREAM PRIORITY ENDPOINTS =============
+@api_router.get("/dream-priorities", response_model=DreamPriority)
+async def get_dream_priority(current_user: dict = Depends(get_current_user)):
+    """Get user's dream priority data"""
+    dream_priority = await db.dream_priorities.find_one(
+        {"user_id": current_user['id']},
+        {"_id": 0}
+    )
+    
+    if not dream_priority:
+        # Return empty structure if not exists
+        return DreamPriority(
+            user_id=current_user['id'],
+            initial_dreams=[],
+            final_priorities=[],
+            target_income="",
+            target_months="",
+            daily_hours=""
+        )
+    
+    return DreamPriority(**dream_priority)
+
+@api_router.post("/dream-priorities", response_model=DreamPriority)
+async def create_or_update_dream_priority(
+    dream_data: DreamPriorityCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Create or update user's dream priority"""
+    # Check if exists
+    existing = await db.dream_priorities.find_one({"user_id": current_user['id']}, {"_id": 0})
+    
+    dream_priority = DreamPriority(
+        user_id=current_user['id'],
+        **dream_data.model_dump()
+    )
+    
+    dream_doc = dream_priority.model_dump()
+    dream_doc['created_at'] = dream_doc['created_at'].isoformat()
+    dream_doc['updated_at'] = datetime.utcnow().isoformat()
+    
+    if existing:
+        # Update existing
+        await db.dream_priorities.update_one(
+            {"user_id": current_user['id']},
+            {"$set": dream_doc}
+        )
+    else:
+        # Create new
+        await db.dream_priorities.insert_one(dream_doc)
+    
+    return dream_priority
+
+
 # ============= PROSPECT ENDPOINTS =============
 @api_router.get("/prospects", response_model=List[Prospect])
 async def get_prospects(current_user: dict = Depends(get_current_user)):
