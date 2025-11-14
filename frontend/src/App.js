@@ -2878,88 +2878,165 @@ const FocusProApp = () => {
             </div>
           )}
 
-          {/* EVENTS PAGE */}
+          {/* EVENTS PAGE - NEW DESIGN */}
           {currentPage === 'events' && (
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold text-gray-800">Etkinlikler</h2>
-                {currentUser?.role === 'admin' && (
+            <div className="space-y-6">
+              {/* Header with Calendar Date Slider */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-3xl font-bold text-gray-800">Etkinlikler</h2>
+                  {currentUser?.role === 'admin' && (
+                    <button
+                      onClick={() => {
+                        setShowEventModal(true);
+                        setEditingEvent(null);
+                        setNewEvent({ title: '', date: '', time: '', location: '', description: '', max_participants: '', image: '' });
+                      }}
+                      className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                    >
+                      <Plus size={20} />
+                      Yeni Etkinlik
+                    </button>
+                  )}
+                </div>
+
+                {/* Date Slider */}
+                <div className="flex items-center gap-4">
                   <button
                     onClick={() => {
-                      setShowEventModal(true);
-                      setEditingEvent(null);
-                      setNewEvent({ title: '', date: '', time: '', location: '', description: '', max_participants: '' });
+                      const newDate = new Date(selectedDate);
+                      newDate.setDate(newDate.getDate() - 1);
+                      setSelectedDate(newDate);
                     }}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                    className="p-2 hover:bg-gray-100 rounded-lg"
                   >
-                    <Plus size={20} />
-                    Yeni Etkinlik
+                    <ChevronLeft size={24} />
                   </button>
-                )}
+                  
+                  <div className="flex-1 flex items-center justify-center gap-2">
+                    <Calendar size={20} className="text-purple-600" />
+                    <span className="text-xl font-semibold text-gray-800">
+                      {selectedDate.toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    </span>
+                  </div>
+                  
+                  <button
+                    onClick={() => {
+                      const newDate = new Date(selectedDate);
+                      newDate.setDate(newDate.getDate() + 1);
+                      setSelectedDate(newDate);
+                    }}
+                    className="p-2 hover:bg-gray-100 rounded-lg"
+                  >
+                    <ChevronRight size={24} />
+                  </button>
+                  
+                  <button
+                    onClick={() => setSelectedDate(new Date())}
+                    className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 font-medium"
+                  >
+                    Bugün
+                  </button>
+                </div>
               </div>
 
+              {/* Events Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {events.map(event => {
-                  const userRegistration = eventRegistrations.find(r => r.event_id === event.id && r.user_id === currentUser.id);
-                  const allRegistrations = eventRegistrations.filter(r => r.event_id === event.id);
+                {events
+                  .filter(event => {
+                    const eventDate = new Date(event.date);
+                    const selected = new Date(selectedDate);
+                    return eventDate.toDateString() === selected.toDateString();
+                  })
+                  .map(event => {
+                    const userRegistration = eventRegistrations.find(r => r.event_id === event.id && r.user_id === currentUser.id);
+                    const allRegistrations = eventRegistrations.filter(r => r.event_id === event.id);
+                    const eventDate = new Date(event.date);
+                    const isPast = eventDate < new Date();
 
-                  return (
-                    <div key={event.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">{event.title}</h3>
-                      <div className="space-y-2 text-sm text-gray-600 mb-4">
-                        <p>📅 {event.date}</p>
-                        <p>🕐 {event.time}</p>
-                        <p>📍 {event.location}</p>
-                        <p className="text-gray-700">{event.description}</p>
-                        {event.max_participants && (
-                          <p>👥 Katılımcı: {allRegistrations.length}/{event.max_participants}</p>
-                        )}
+                    return (
+                      <div 
+                        key={event.id} 
+                        className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                        onClick={() => setSelectedEvent(event)}
+                      >
+                        {/* Event Image */}
+                        <div className="relative h-48 bg-gradient-to-br from-purple-400 to-indigo-600">
+                          {event.image ? (
+                            <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <CalendarDays size={64} className="text-white opacity-50" />
+                            </div>
+                          )}
+                          {isPast && (
+                            <div className="absolute top-3 right-3 bg-gray-800/80 text-white px-3 py-1 rounded-full text-sm">
+                              Geçmiş
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Event Info */}
+                        <div className="p-4">
+                          <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-2">{event.title}</h3>
+                          <div className="space-y-2 text-sm text-gray-600 mb-4">
+                            <div className="flex items-center gap-2">
+                              <Clock size={16} className="text-purple-600" />
+                              <span>{event.time}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <MapPin size={16} className="text-purple-600" />
+                              <span className="line-clamp-1">{event.location}</span>
+                            </div>
+                            {event.max_participants && (
+                              <div className="flex items-center gap-2">
+                                <Users size={16} className="text-purple-600" />
+                                <span>{allRegistrations.length}/{event.max_participants} Katılımcı</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Status Badge */}
+                          {currentUser?.role !== 'admin' && (
+                            userRegistration ? (
+                              <div className={`py-2 rounded-lg text-center font-medium text-sm ${
+                                userRegistration.status === 'approved' ? 'bg-green-100 text-green-700' :
+                                userRegistration.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                'bg-yellow-100 text-yellow-700'
+                              }`}>
+                                {userRegistration.status === 'approved' ? '✓ Katılıyorsunuz' :
+                                 userRegistration.status === 'rejected' ? '✗ Reddedildi' : '⏳ Beklemede'}
+                              </div>
+                            ) : !isPast && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  registerForEvent(event.id);
+                                }}
+                                className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 font-medium"
+                              >
+                                Katıl
+                              </button>
+                            )
+                          )}
+                        </div>
                       </div>
+                    );
+                  })}
+              </div>
 
-                      {currentUser?.role === 'admin' ? (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              setEditingEvent(event);
-                              setNewEvent(event);
-                              setShowEventModal(true);
-                            }}
-                            className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-                          >
-                            Düzenle
-                          </button>
-                          <button
-                            onClick={() => deleteEvent(event.id)}
-                            className="px-4 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      ) : userRegistration ? (
-                        <div className={`py-2 rounded-lg text-center font-medium ${
-                          userRegistration.status === 'approved' ? 'bg-green-100 text-green-700' :
-                          userRegistration.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                          'bg-yellow-100 text-yellow-700'
-                        }`}>
-                          {userRegistration.status === 'approved' ? 'Onaylandı' :
-                           userRegistration.status === 'rejected' ? 'Reddedildi' : 'Beklemede'}
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => registerForEvent(event.id)}
-                          className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
-                        >
-                          Katıl
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-                {events.length === 0 && (
-                  <div className="col-span-3 text-center py-12 text-gray-500">
-                    Henüz etkinlik eklenmemiş
-                  </div>
-                )}
+              {/* No Events Message */}
+              {events.filter(event => {
+                const eventDate = new Date(event.date);
+                const selected = new Date(selectedDate);
+                return eventDate.toDateString() === selected.toDateString();
+              }).length === 0 && (
+                <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+                  <CalendarDays size={64} className="mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-600 text-lg">Bu tarihte etkinlik bulunmuyor</p>
+                  <p className="text-gray-500 text-sm mt-2">Farklı bir tarih seçmek için yukarıdaki ok butonlarını kullanın</p>
+                </div>
+              )}
               </div>
 
               {currentUser?.role === 'admin' && eventRegistrations.length > 0 && (
