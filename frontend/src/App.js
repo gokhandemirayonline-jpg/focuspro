@@ -6636,13 +6636,62 @@ const FocusProApp = () => {
                 placeholder="Maksimum Katılımcı"
                 className="w-full px-4 py-2 border rounded-lg"
               />
-              <input
-                type="text"
-                value={newEvent.image || ''}
-                onChange={(e) => setNewEvent({...newEvent, image: e.target.value})}
-                placeholder="Görsel URL"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
+              
+              {/* Image Upload Section */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Etkinlik Görseli
+                </label>
+                
+                {/* Preview */}
+                {newEvent.image && (
+                  <div className="mb-3 relative">
+                    <img 
+                      src={newEvent.image} 
+                      alt="Preview" 
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setNewEvent({...newEvent, image: ''})}
+                      className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+                
+                {/* File Upload */}
+                <div className="space-y-2">
+                  <label className="block">
+                    <span className="sr-only">Dosyadan Yükle</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, (imageData) => setNewEvent({...newEvent, image: imageData}))}
+                      className="block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-lg file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-purple-50 file:text-purple-700
+                        hover:file:bg-purple-100 cursor-pointer"
+                    />
+                  </label>
+                  
+                  {/* URL Input */}
+                  <div className="relative">
+                    <span className="text-xs text-gray-500 block mb-1">veya URL ile:</span>
+                    <input
+                      type="text"
+                      value={newEvent.image && !newEvent.image.startsWith('data:') ? newEvent.image : ''}
+                      onChange={(e) => setNewEvent({...newEvent, image: e.target.value})}
+                      placeholder="https://example.com/image.jpg"
+                      className="w-full px-4 py-2 border rounded-lg text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+              
               <div className="flex gap-3">
                 <button
                   onClick={addOrUpdateEvent}
