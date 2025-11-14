@@ -3514,6 +3514,17 @@ const FocusProApp = () => {
                   <MessageSquare className="inline mr-2" size={20} />
                   Hayaller
                 </button>
+                <button
+                  onClick={() => setAgendaTab('habits')}
+                  className={`px-6 py-3 font-semibold transition-all ${
+                    agendaTab === 'habits' 
+                      ? 'text-purple-600 border-b-2 border-purple-600' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <CheckCircle2 className="inline mr-2" size={20} />
+                  Günlük Alışkanlıklar
+                </button>
               </div>
 
               {/* Tab Content */}
