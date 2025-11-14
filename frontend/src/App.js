@@ -6637,6 +6637,13 @@ const FocusProApp = () => {
                 placeholder="Maksimum Katılımcı"
                 className="w-full px-4 py-2 border rounded-lg"
               />
+              <input
+                type="text"
+                value={newEvent.image || ''}
+                onChange={(e) => setNewEvent({...newEvent, image: e.target.value})}
+                placeholder="Görsel URL"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
               <div className="flex gap-3">
                 <button
                   onClick={addOrUpdateEvent}
