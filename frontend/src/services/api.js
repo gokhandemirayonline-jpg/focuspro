@@ -190,6 +190,8 @@ export const messageAPI = {
   markRead: (messageId) => api.patch(`/messages/${messageId}/read`),
   markAllRead: () => api.patch('/messages/read-all'),
   delete: (messageId) => api.delete(`/messages/${messageId}`),
+  reply: (messageId, content) => api.post(`/messages/${messageId}/reply`, { content }),
+  getThread: (messageId) => api.get(`/messages/${messageId}/thread`),
 };
 
 // Statistics & Analytics API
