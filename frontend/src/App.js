@@ -3036,8 +3036,8 @@ const FocusProApp = () => {
                   <p className="text-gray-500 text-sm mt-2">Farklı bir tarih seçmek için yukarıdaki ok butonlarını kullanın</p>
                 </div>
               )}
-              </div>
 
+              {/* Admin Event Registrations */}
               {currentUser?.role === 'admin' && eventRegistrations.length > 0 && (
                 <div className="mt-8">
                   <h3 className="text-2xl font-bold text-gray-800 mb-4">Katılım Talepleri</h3>
