@@ -5731,6 +5731,81 @@ const FocusProApp = () => {
         </div>
       )}
 
+      {/* Habit Modal */}
+      {showHabitModal && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          onClick={() => setShowHabitModal(false)}
+        >
+          <div 
+            className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-2xl font-bold text-gray-800">
+                {editingHabit ? 'Alışkanlığı Düzenle' : 'Yeni Alışkanlık'}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowHabitModal(false);
+                  setEditingHabit(null);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Alışkanlık Başlığı
+                </label>
+                <input
+                  type="text"
+                  value={newHabit.title}
+                  onChange={(e) => setNewHabit({...newHabit, title: e.target.value})}
+                  placeholder="Örn: Yeni kişilerle konuş"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Günlük Hedef
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={newHabit.target}
+                  onChange={(e) => setNewHabit({...newHabit, target: parseInt(e.target.value) || 1})}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+                <p className="text-sm text-gray-500 mt-1">Bu alışkanlığı günde kaç kez yapmak istiyorsunuz?</p>
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={addOrUpdateHabit}
+                  className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
+                >
+                  {editingHabit ? 'Güncelle' : 'Kaydet'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowHabitModal(false);
+                    setEditingHabit(null);
+                  }}
+                  className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  İptal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Prospect Modal */}
       {showProspectModal && (
         <div 
