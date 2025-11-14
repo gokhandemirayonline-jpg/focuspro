@@ -258,6 +258,18 @@ frontend:
         agent: "testing"
         comment: "✅ EĞİTİM SİSTEMİ KAPSAMLI TEST TAMAMLANDI! Test sonuçları: 1) Admin girişi (admin@focuspro.com/admin123) ✅ 2) Eğitimler sayfası erişimi ✅ 3) Video kartları (7 adet) ve modal açılması ✅ 4) YouTube iframe yüklenmesi ✅ 5) Özel play/pause kontrolleri ✅ 6) İlerleme çubuğu (progress bar) ✅ 7) 'Video Hakkında Yorumunuz' bölümü ✅ 8) Yorum alanı ve gönderim sistemi ✅ 9) İlerleme takibi (%30 - Videoyu tamamlayın mesajı) ✅ 10) Çıkış yap butonu ✅. Video modal sistemi tam çalışıyor, YouTube entegrasyonu başarılı, yorum sistemi aktif. Minor: Modal kapatma overlay sorunu (işlevsellik etkilenmiyor)."
 
+  - task: "Admin video erişim yetkisi - Tüm videoları kilit olmadan açabilme"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "YENİ TEST BAŞLATILIYOR: Admin kullanıcıları için video kilit mantığının devre dışı bırakılması testi. Admin olarak giriş yapıldığında tüm videoların (sıralama olmadan) açılabilmesi gerekiyor. Test edilecek videolar: 1) Başlangıç Eğitimleri kategorisinden herhangi bir video 2) 'Ürün Eğitimi' videosu (Ürün Bilgisi kategorisi) 3) 'Atomy 2025 Şirket Tanıtımı' videosu (Başlangıç Eğitimleri kategorisi). YouTube iframe yüklenmesi de doğrulanacak."
+
   - task: "Video oynatıcı yeni özellikleri - İzleme İlerlemesi ve Yüzde Göstergesi"
     implemented: true
     working: true
