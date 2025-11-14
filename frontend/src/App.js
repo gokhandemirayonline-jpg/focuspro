@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Calendar, Users, GraduationCap, User, Play, Lock, Check, Shield, Plus, Trash2, Target, ListChecks, MessageSquare, BarChart3, LogOut, Eye, EyeOff, TrendingUp, Clock, CheckCircle2, Menu, X, Edit, ChevronLeft, ChevronRight, CalendarDays, UserPlus, Bell, Search, Book, Film, Bookmark, FileText, Mail, Send, Download, Activity, Award } from 'lucide-react';
+import { Home, Calendar, Users, GraduationCap, User, Play, Lock, Check, Shield, Plus, Trash2, Target, ListChecks, MessageSquare, BarChart3, LogOut, Eye, EyeOff, TrendingUp, Clock, CheckCircle2, Menu, X, Edit, ChevronLeft, ChevronRight, CalendarDays, UserPlus, Bell, Search, Book, Film, Bookmark, FileText, Mail, Send, Download, Activity, Award, MapPin, Share2 } from 'lucide-react';
 import { authAPI, userAPI, videoCategoryAPI, videoAPI, progressAPI, meetingAPI, taskAPI, goalAPI, reasonAPI, prospectAPI, partnerAPI, habitAPI, eventAPI, eventRegistrationAPI, notificationAPI, recommendationAPI, blogAPI, searchAPI, fileAPI, messageAPI, statisticsAPI, activityLogAPI, learningPathAPI, badgeAPI } from './services/api';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import * as XLSX from 'xlsx';
