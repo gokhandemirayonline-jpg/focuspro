@@ -115,7 +115,10 @@ export const partnerAPI = {
 // Habit API
 export const habitAPI = {
   getAll: () => api.get('/habits'),
+  create: (habitData) => api.post('/habits', habitData),
+  updateFull: (habitId, habitData) => api.put(`/habits/${habitId}`, habitData),
   update: (habitId, completed) => api.patch(`/habits/${habitId}`, null, { params: { completed } }),
+  delete: (habitId) => api.delete(`/habits/${habitId}`),
 };
 
 // Event API
