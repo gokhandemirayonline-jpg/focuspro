@@ -6683,7 +6683,7 @@ const FocusProApp = () => {
                     <span className="text-xs text-gray-500 block mb-1">veya URL ile:</span>
                     <input
                       type="text"
-                      value={newEvent.image && !newEvent.image.startsWith('data:') ? newEvent.image : ''}
+                      value={newEvent.image && typeof newEvent.image === 'string' && !newEvent.image.startsWith('data:') ? newEvent.image : ''}
                       onChange={(e) => setNewEvent({...newEvent, image: e.target.value})}
                       placeholder="https://example.com/image.jpg"
                       className="w-full px-4 py-2 border rounded-lg text-sm"
