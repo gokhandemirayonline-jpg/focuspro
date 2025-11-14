@@ -1850,7 +1850,7 @@ const FocusProApp = () => {
             }`}
           >
             <Bookmark size={20} />
-            {sidebarOpen && <span>📋 Ajanda</span>}
+            {sidebarOpen && <span>Ajanda</span>}
           </button>
 
           <button
