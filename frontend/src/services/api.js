@@ -121,6 +121,12 @@ export const habitAPI = {
   delete: (habitId) => api.delete(`/habits/${habitId}`),
 };
 
+// Dream Priority API
+export const dreamPriorityAPI = {
+  get: () => api.get('/dream-priorities'),
+  createOrUpdate: (dreamData) => api.post('/dream-priorities', dreamData),
+};
+
 // Event API
 export const eventAPI = {
   getAll: () => api.get('/events'),
