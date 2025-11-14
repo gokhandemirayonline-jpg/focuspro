@@ -6698,38 +6698,38 @@ const FocusProApp = () => {
               
               {/* Event Info Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg">
+                <div className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border border-purple-100">
                   <Calendar size={24} className="text-purple-600 flex-shrink-0 mt-1" />
                   <div>
-                    <p className="text-sm text-gray-600 font-medium">Tarih</p>
-                    <p className="text-lg text-gray-900">
+                    <p className="text-sm text-purple-600 font-semibold">Tarih</p>
+                    <p className="text-lg text-gray-900 font-medium">
                       {new Date(selectedEvent.date).toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                     </p>
                   </div>
                 </div>
                 
-                <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg">
+                <div className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border border-purple-100">
                   <Clock size={24} className="text-purple-600 flex-shrink-0 mt-1" />
                   <div>
-                    <p className="text-sm text-gray-600 font-medium">Saat</p>
-                    <p className="text-lg text-gray-900">{selectedEvent.time}</p>
+                    <p className="text-sm text-purple-600 font-semibold">Saat</p>
+                    <p className="text-lg text-gray-900 font-medium">{selectedEvent.time}</p>
                   </div>
                 </div>
                 
-                <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg md:col-span-2">
+                <div className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border border-purple-100 md:col-span-2">
                   <MapPin size={24} className="text-purple-600 flex-shrink-0 mt-1" />
                   <div className="flex-1">
-                    <p className="text-sm text-gray-600 font-medium">Konum</p>
-                    <p className="text-lg text-gray-900">{selectedEvent.location}</p>
+                    <p className="text-sm text-purple-600 font-semibold">Konum</p>
+                    <p className="text-lg text-gray-900 font-medium">{selectedEvent.location}</p>
                   </div>
                 </div>
                 
                 {selectedEvent.max_participants && (
-                  <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg md:col-span-2">
+                  <div className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border border-purple-100 md:col-span-2">
                     <Users size={24} className="text-purple-600 flex-shrink-0 mt-1" />
                     <div>
-                      <p className="text-sm text-gray-600 font-medium">Katılımcılar</p>
-                      <p className="text-lg text-gray-900">
+                      <p className="text-sm text-purple-600 font-semibold">Katılımcılar</p>
+                      <p className="text-lg text-gray-900 font-medium">
                         {eventRegistrations.filter(r => r.event_id === selectedEvent.id).length} / {selectedEvent.max_participants}
                       </p>
                     </div>
