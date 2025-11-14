@@ -2342,38 +2342,22 @@ const FocusProApp = () => {
                         allowFullScreen
                       />
                       
-                      {/* Custom Play/Pause Overlay */}
-                      <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-sm rounded-lg p-4">
-                        <div className="flex items-center gap-3 mb-2">
-                          <button
-                            id={`play-pause-btn-${selectedVideo.id}`}
-                            className="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full transition-colors shadow-lg"
-                            title="Oynat/Duraklat"
-                          >
-                            <Play size={24} fill="currentColor" />
-                          </button>
-                          <div className="flex-1">
-                            <div 
-                              id={`progress-container-${selectedVideo.id}`}
-                              className="h-3 bg-gray-700 rounded-full overflow-hidden cursor-pointer hover:h-4 transition-all"
-                              title="Video içinde gezinmek için tıklayın"
-                            >
-                              <div
-                                id={`video-progress-bar-${selectedVideo.id}`}
-                                className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-300 relative"
-                                style={{ width: '0%' }}
-                              >
-                                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg"></div>
+                      {/* Progress Badge Overlay */}
+                      <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg z-10">
+                        <div className="flex items-center gap-3">
+                          <div className="text-white text-xs">
+                            <div className="text-gray-300 mb-1">İzleme İlerlemesi</div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 h-2 bg-gray-700 rounded-full overflow-hidden">
+                                <div
+                                  id={`video-progress-bar-${selectedVideo.id}`}
+                                  className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-300"
+                                  style={{ width: '0%' }}
+                                />
                               </div>
+                              <span id={`video-percentage-${selectedVideo.id}`} className="font-bold text-sm text-purple-300">%0</span>
                             </div>
                           </div>
-                          <span id={`video-time-${selectedVideo.id}`} className="text-white text-sm font-medium min-w-[100px] text-right">
-                            0:00 / {selectedVideo.duration}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-white text-xs">
-                          <span className="text-gray-300">İzleme İlerlemesi</span>
-                          <span id={`video-percentage-${selectedVideo.id}`} className="font-bold text-lg text-purple-300">%0</span>
                         </div>
                       </div>
                     </div>
