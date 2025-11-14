@@ -3036,66 +3036,6 @@ const FocusProApp = () => {
                   <p className="text-gray-500 text-sm mt-2">Farklı bir tarih seçmek için yukarıdaki ok butonlarını kullanın</p>
                 </div>
               )}
-
-              {/* Admin Event Registrations */}
-              {currentUser?.role === 'admin' && eventRegistrations.length > 0 && (
-                <div className="mt-8">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Katılım Talepleri</h3>
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <table className="w-full">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Etkinlik</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Katılımcı</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {eventRegistrations.map(reg => {
-                          const event = events.find(e => e.id === reg.event_id);
-                          return (
-                            <tr key={reg.id}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{event?.title}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{reg.user_name}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{reg.user_email}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  reg.status === 'approved' ? 'bg-green-100 text-green-700' :
-                                  reg.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                                  'bg-yellow-100 text-yellow-700'
-                                }`}>
-                                  {reg.status === 'approved' ? 'Onaylandı' :
-                                   reg.status === 'rejected' ? 'Reddedildi' : 'Beklemede'}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                {reg.status === 'pending' && (
-                                  <div className="flex gap-2">
-                                    <button
-                                      onClick={() => updateRegistrationStatus(reg.id, 'approved')}
-                                      className="text-green-600 hover:text-green-700"
-                                    >
-                                      Onayla
-                                    </button>
-                                    <button
-                                      onClick={() => updateRegistrationStatus(reg.id, 'rejected')}
-                                      className="text-red-600 hover:text-red-700"
-                                    >
-                                      Reddet
-                                    </button>
-                                  </div>
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
