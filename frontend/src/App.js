@@ -1935,7 +1935,7 @@ const FocusProApp = () => {
             }`}
           >
             <Award size={20} />
-            {sidebarOpen && <span>🏆 Rozetlerim</span>}
+            {sidebarOpen && <span>Rozetlerim</span>}
           </button>
 
           {currentUser?.role === 'admin' && (
