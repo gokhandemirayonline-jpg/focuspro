@@ -35,7 +35,8 @@ from models import (
     ActivityLogCreate, ActivityLog,
     RecommendationCreate, Recommendation,
     BlogCreate, Blog,
-    MessageCreate, Message, MessageReply
+    MessageCreate, Message, MessageReply,
+    DreamPriorityCreate, DreamPriority
 )
 
 
