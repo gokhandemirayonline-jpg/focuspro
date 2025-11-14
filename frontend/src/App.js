@@ -981,7 +981,7 @@ const FocusProApp = () => {
     setUploadingImage(true);
     try {
       const response = await fileAPI.uploadImage(file);
-      setter(prev => ({ ...prev, image: response.data.data }));
+      setter(response.data.data); // Pass the base64 data directly
       alert(`Görsel yüklendi! (${response.data.size_kb}KB)`);
     } catch (error) {
       alert(error.response?.data?.detail || 'Görsel yüklenirken hata oluştu');
