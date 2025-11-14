@@ -475,10 +475,15 @@ class EventRegistration(EventRegistrationBase):
 class MessageBase(BaseModel):
     subject: str
     content: str
-    type: str = "inbox"  # inbox, notification
+    type: str = "inbox"  # inbox, notification, video_comment
 
 class MessageCreate(MessageBase):
     recipient_ids: List[str]  # List of user IDs to send message to
+    video_id: Optional[str] = None  # For video comments
+    parent_id: Optional[str] = None  # For replies
+
+class MessageReply(BaseModel):
+    content: str
 
 class Message(MessageBase):
     model_config = ConfigDict(extra="ignore")
@@ -486,5 +491,8 @@ class Message(MessageBase):
     sender_id: str
     sender_name: str
     recipient_id: str
+    video_id: Optional[str] = None
+    video_title: Optional[str] = None
+    parent_id: Optional[str] = None
     read: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
