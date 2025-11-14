@@ -357,6 +357,7 @@ class EventBase(BaseModel):
     location: str = ""
     description: str = ""
     max_participants: str = ""
+    image: Optional[str] = None
 
 class EventCreate(EventBase):
     pass
