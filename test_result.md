@@ -273,6 +273,18 @@ frontend:
         agent: "testing"
         comment: "🎉 YENİ VİDEO OYNATICI ÖZELLİKLERİ BAŞARIYLA TEST EDİLDİ! Test sonuçları: ✅ Admin girişi (admin@focuspro.com/admin123) ✅ Eğitimler sayfası erişimi ✅ Pablo Bruno video modal açılması ✅ YouTube iframe yüklenmesi ✅ 'İzleme İlerlemesi' etiketi görünür ✅ Yüzde göstergesi mevcut (başlangıçta %0) ✅ Özel Play/Pause butonu (mor, yuvarlak) ✅ İlerleme çubuğu (progress bar) ✅ Zaman göstergesi (0:00 / duration) ✅ Gerçek zamanlı yüzde güncellenmesi çalışıyor! Play butonuna tıklandığında yüzde takibi aktif oluyor. Tüm yeni özellikler tam operasyonel ve kullanıcı deneyimi mükemmel."
 
+  - task: "Video oynatıcı React useEffect düzeltmeleri - YouTube IFrame API entegrasyonu"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "YENİ VİDEO OYNATICI DÜZELTMELERİ TESTİ BAŞLATILIYOR: React'te dangerouslySetInnerHTML ile çalışmayan script bloğu kaldırıldı, YouTube IFrame API entegrasyonu useEffect ile yeniden yapıldı, Player kontrollerinin çalışması React lifecycle'a uygun hale getirildi. Test edilecek: Play/Pause butonunun çalışması, video süresinin gerçek zamanlı güncellenmesi (0:00'dan artmalı), yüzde göstergesinin %0'dan artması, ilerleme çubuğunun hareketi, Pause ile sayaçların durması."
+
   - task: "react-big-calendar kütüphanesi entegrasyonu"
     implemented: true
     working: true
