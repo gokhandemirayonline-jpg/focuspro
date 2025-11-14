@@ -615,6 +615,38 @@ async def complete_video(video_id: str, comment: str, current_user: dict = Depen
         }}
     )
     
+    # Send comment as message to admin if comment exists
+    if comment and comment.strip():
+        # Find admin user
+        admin = await db.users.find_one({"role": "admin"}, {"_id": 0})
+        if admin:
+            message = Message(
+                sender_id=current_user['id'],
+                sender_name=current_user['name'],
+                recipient_id=admin['id'],
+                subject=f"Video Yorumu: {video['title'][:50]}",
+                content=comment,
+                type="video_comment",
+                video_id=video_id,
+                video_title=video['title'],
+                read=False
+            )
+            msg_doc = message.model_dump()
+            msg_doc['created_at'] = msg_doc['created_at'].isoformat()
+            await db.messages.insert_one(msg_doc)
+            
+            # Create notification for admin
+            admin_notification = Notification(
+                user_id=admin['id'],
+                title="Yeni Video Yorumu",
+                message=f"{current_user['name']} '{video['title']}'  videosuna yorum yaptı",
+                type="message",
+                link="/messages"
+            )
+            admin_notif_doc = admin_notification.model_dump()
+            admin_notif_doc['created_at'] = admin_notif_doc['created_at'].isoformat()
+            await db.notifications.insert_one(admin_notif_doc)
+    
     # Create notification for video completion
     notification = Notification(
         user_id=current_user['id'],
