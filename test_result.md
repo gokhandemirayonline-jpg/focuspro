@@ -367,7 +367,8 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Video oynatıcı React useEffect düzeltmeleri - YouTube IFrame API entegrasyonu"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
