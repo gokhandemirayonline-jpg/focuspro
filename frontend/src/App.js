@@ -3018,6 +3018,58 @@ const FocusProApp = () => {
                               </button>
                             )
                           )}
+
+                          {/* Admin: Registration Requests for this Event */}
+                          {currentUser?.role === 'admin' && allRegistrations.length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-gray-200" onClick={(e) => e.stopPropagation()}>
+                              <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                <Users size={16} />
+                                Katılım Talepleri ({allRegistrations.length})
+                              </h4>
+                              <div className="space-y-2">
+                                {allRegistrations.map(reg => (
+                                  <div key={reg.id} className="bg-gray-50 rounded-lg p-3">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <div className="flex-1">
+                                        <p className="text-sm font-medium text-gray-800">{reg.user_name}</p>
+                                        <p className="text-xs text-gray-500">{reg.user_email}</p>
+                                      </div>
+                                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                        reg.status === 'approved' ? 'bg-green-100 text-green-700' :
+                                        reg.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                        'bg-yellow-100 text-yellow-700'
+                                      }`}>
+                                        {reg.status === 'approved' ? 'Onaylandı' :
+                                         reg.status === 'rejected' ? 'Reddedildi' : 'Beklemede'}
+                                      </span>
+                                    </div>
+                                    {reg.status === 'pending' && (
+                                      <div className="flex gap-2">
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            updateRegistrationStatus(reg.id, 'approved');
+                                          }}
+                                          className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1.5 rounded-lg font-medium"
+                                        >
+                                          Onayla
+                                        </button>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            updateRegistrationStatus(reg.id, 'rejected');
+                                          }}
+                                          className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs py-1.5 rounded-lg font-medium"
+                                        >
+                                          Reddet
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
