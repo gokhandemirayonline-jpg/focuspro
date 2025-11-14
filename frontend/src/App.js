@@ -1147,6 +1147,7 @@ const FocusProApp = () => {
 
       progressInterval = setInterval(() => {
         if (!player || !player.getCurrentTime) return;
+        if (videoDuration <= 0) return; // Prevent division by zero
 
         const currentTime = player.getCurrentTime();
         const percentage = Math.min((currentTime / videoDuration) * 100, 100);
@@ -1177,6 +1178,10 @@ const FocusProApp = () => {
     };
 
     const updateProgress = (percentage) => {
+      // Only reload when video is actually completed (100%)
+      // Don't reload for progress updates
+      const shouldReload = percentage === 100;
+      
       fetch(`${process.env.REACT_APP_BACKEND_URL}/api/videos/${videoId}/progress`, {
         method: 'PATCH',
         headers: {
@@ -1184,10 +1189,13 @@ const FocusProApp = () => {
           'Authorization': 'Bearer ' + localStorage.getItem('token')
         },
         body: JSON.stringify({ watch_percentage: percentage })
-      }).then(() => {
-        if (percentage >= 100) {
-          window.location.reload();
+      }).then(async (response) => {
+        if (shouldReload) {
+          // Reload to refresh progress and unlock next video
+          await loadUserProgress();
         }
+      }).catch(err => {
+        console.error('Progress update failed:', err);
       });
     };
 
