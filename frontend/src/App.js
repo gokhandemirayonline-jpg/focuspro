@@ -2335,10 +2335,11 @@ const FocusProApp = () => {
                       <iframe
                         id={`youtube-player-${selectedVideo.id}`}
                         className="w-full h-full"
-                        src={`https://www.youtube.com/embed/${selectedVideo.youtube_id}?controls=0&disablekb=1&modestbranding=1&rel=0&showinfo=0&enablejsapi=1&origin=${window.location.origin}`}
+                        src={`https://www.youtube.com/embed/${selectedVideo.youtube_id}?controls=1&disablekb=1&modestbranding=1&rel=0&showinfo=0&fs=1&enablejsapi=1&origin=${window.location.origin}`}
                         title={selectedVideo.title}
-                        allow="autoplay; encrypted-media"
                         frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                        allowFullScreen
                       />
                       
                       {/* Custom Play/Pause Overlay */}
