@@ -1491,6 +1491,95 @@ async def delete_message(message_id: str, current_user: dict = Depends(get_curre
     
     return {"success": True}
 
+@api_router.post("/messages/{message_id}/reply", response_model=Message)
+async def reply_to_message(message_id: str, reply_data: MessageReply, current_user: dict = Depends(get_current_user)):
+    """Reply to a message"""
+    # Get original message
+    original_msg = await db.messages.find_one({"id": message_id}, {"_id": 0})
+    if not original_msg:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    # Ensure user is recipient or sender of original message
+    if current_user['id'] not in [original_msg['sender_id'], original_msg['recipient_id']]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Determine recipient (reply to sender if I'm recipient, or to recipient if I'm sender)
+    if current_user['id'] == original_msg['recipient_id']:
+        recipient_id = original_msg['sender_id']
+    else:
+        recipient_id = original_msg['recipient_id']
+    
+    # Get recipient info
+    recipient = await db.users.find_one({"id": recipient_id}, {"_id": 0})
+    if not recipient:
+        raise HTTPException(status_code=404, detail="Recipient not found")
+    
+    # Create reply message
+    reply_message = Message(
+        sender_id=current_user['id'],
+        sender_name=current_user['name'],
+        recipient_id=recipient_id,
+        subject=f"Re: {original_msg['subject']}" if not original_msg['subject'].startswith('Re:') else original_msg['subject'],
+        content=reply_data.content,
+        type=original_msg['type'],
+        video_id=original_msg.get('video_id'),
+        video_title=original_msg.get('video_title'),
+        parent_id=original_msg.get('parent_id') or message_id,  # Use parent_id if exists, otherwise use current message_id
+        read=False
+    )
+    
+    msg_doc = reply_message.model_dump()
+    msg_doc['created_at'] = msg_doc['created_at'].isoformat()
+    await db.messages.insert_one(msg_doc)
+    
+    # Create notification for recipient
+    notification = Notification(
+        user_id=recipient_id,
+        title="Yeni Mesaj Cevabı",
+        message=f"{current_user['name']} mesajınıza cevap verdi",
+        type="message",
+        link="/messages"
+    )
+    notif_doc = notification.model_dump()
+    notif_doc['created_at'] = notif_doc['created_at'].isoformat()
+    await db.notifications.insert_one(notif_doc)
+    
+    return reply_message
+
+@api_router.get("/messages/{message_id}/thread", response_model=List[Message])
+async def get_message_thread(message_id: str, current_user: dict = Depends(get_current_user)):
+    """Get message thread (parent + all replies)"""
+    # Get the message
+    message = await db.messages.find_one({"id": message_id}, {"_id": 0})
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    # Ensure user is part of conversation
+    if current_user['id'] not in [message['sender_id'], message['recipient_id']]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Find root message (if this is a reply, find parent)
+    root_id = message.get('parent_id') or message_id
+    
+    # Get root message and all replies
+    thread_messages = []
+    
+    # Get root
+    root_msg = await db.messages.find_one({"id": root_id}, {"_id": 0})
+    if root_msg:
+        thread_messages.append(Message(**root_msg))
+    
+    # Get all replies
+    replies = await db.messages.find(
+        {"parent_id": root_id},
+        {"_id": 0}
+    ).sort("created_at", 1).to_list(1000)
+    
+    for reply in replies:
+        thread_messages.append(Message(**reply))
+    
+    return thread_messages
+
 
 # ============= STATISTICS & ANALYTICS ENDPOINTS =============
 @api_router.get("/statistics/dashboard")
