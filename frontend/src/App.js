@@ -1205,36 +1205,6 @@ const FocusProApp = () => {
       });
     };
 
-    const setupControls = () => {
-      const playBtn = document.getElementById(`play-pause-btn-${videoId}`);
-      if (playBtn) {
-        playBtn.onclick = () => {
-          if (!player) return;
-
-          const state = player.getPlayerState();
-          if (state === window.YT.PlayerState.PLAYING) {
-            player.pauseVideo();
-          } else {
-            player.playVideo();
-          }
-        };
-      }
-
-      const progressContainer = document.getElementById(`progress-container-${videoId}`);
-      if (progressContainer) {
-        progressContainer.onclick = (e) => {
-          if (!player) return;
-
-          const rect = progressContainer.getBoundingClientRect();
-          const clickX = e.clientX - rect.left;
-          const percentage = (clickX / rect.width);
-          const seekTime = percentage * videoDuration;
-
-          player.seekTo(seekTime, true);
-        };
-      }
-    };
-
     loadYouTubeAPI();
 
     // Cleanup
