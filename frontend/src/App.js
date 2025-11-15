@@ -4289,21 +4289,365 @@ const FocusProApp = () => {
                   <div>
                     <div className="mb-6">
                       <h2 className="text-3xl font-bold text-gray-800 mb-2">🧠 Karakter Analizi</h2>
-                      <p className="text-gray-600">AI destekli kişilik analizi ve öneriler</p>
+                      <p className="text-gray-600">AI destekli kişilik analizi ile kendinizi keşfedin</p>
                     </div>
-                    
-                    <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-8 mb-6">
-                      <div className="text-center">
-                        <div className="text-6xl mb-4">🎯</div>
-                        <h3 className="text-2xl font-bold text-gray-800 mb-2">Yakında!</h3>
-                        <p className="text-gray-600 mb-4">
-                          Karakter analizi özelliği şu anda geliştirme aşamasındadır.
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Bu özellik ile kişilik özelliklerinizi keşfedecek, güçlü yönlerinizi ve gelişim alanlarınızı belirleyeceksiniz.
-                        </p>
+
+                    {/* Progress Bar */}
+                    <div className="mb-8">
+                      <div className="flex justify-between items-center mb-2">
+                        {[1, 2, 3, 4].map((step) => (
+                          <div key={step} className="flex items-center">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                              characterStep >= step ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-600'
+                            }`}>
+                              {step}
+                            </div>
+                            {step < 4 && <div className={`w-32 h-1 mx-2 ${
+                              characterStep > step ? 'bg-purple-600' : 'bg-gray-200'
+                            }`} />}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex justify-between text-sm text-gray-600 mt-2">
+                        <span>Son Olaylar</span>
+                        <span>İdeal Gün</span>
+                        <span>90 Gün Planı</span>
+                        <span>Analiz</span>
                       </div>
                     </div>
+
+                    {/* Step 1: Recent Events */}
+                    {characterStep === 1 && (
+                      <div className="bg-white rounded-xl p-8 shadow-md">
+                        <h3 className="text-2xl font-bold text-purple-700 mb-6">📝 Son Zamanlarda Yaşadığınız Olaylar</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">😊 Sizi mutlu eden bir olay</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="3"
+                              value={characterData.recent_events.happy}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                recent_events: { ...characterData.recent_events, happy: e.target.value }
+                              })}
+                              placeholder="Sizi mutlu eden bir olayı anlatın..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">😢 Sizi üzen bir olay</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="3"
+                              value={characterData.recent_events.sad}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                recent_events: { ...characterData.recent_events, sad: e.target.value }
+                              })}
+                              placeholder="Sizi üzen bir olayı anlatın..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">😠 Sizi kızdıran bir olay</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="3"
+                              value={characterData.recent_events.angry}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                recent_events: { ...characterData.recent_events, angry: e.target.value }
+                              })}
+                              placeholder="Sizi kızdıran bir olayı anlatın..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">⏳ Sabrınızı zorlayan bir olay</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="3"
+                              value={characterData.recent_events.patience_heavy}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                recent_events: { ...characterData.recent_events, patience_heavy: e.target.value }
+                              })}
+                              placeholder="Sabrınızı zorlayan bir olayı anlatın..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">🏆 Sizi gururlandıran bir olay</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="3"
+                              value={characterData.recent_events.proud}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                recent_events: { ...characterData.recent_events, proud: e.target.value }
+                              })}
+                              placeholder="Sizi gururlandıran bir olayı anlatın..."
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-6 flex justify-end">
+                          <button
+                            onClick={() => setCharacterStep(2)}
+                            className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700"
+                          >
+                            Sonraki Adım →
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Step 2: Ideal Day */}
+                    {characterStep === 2 && (
+                      <div className="bg-white rounded-xl p-8 shadow-md">
+                        <h3 className="text-2xl font-bold text-purple-700 mb-6">🌟 İdeal Gününüz</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">🌅 Sabah nasıl başlar?</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="2"
+                              value={characterData.ideal_day.morning}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                ideal_day: { ...characterData.ideal_day, morning: e.target.value }
+                              })}
+                              placeholder="İdeal gününüzde sabah nasıl başlar?"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">☀️ Öğlen ne yaparsınız?</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="2"
+                              value={characterData.ideal_day.afternoon}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                ideal_day: { ...characterData.ideal_day, afternoon: e.target.value }
+                              })}
+                              placeholder="Öğlen saatlerinde ne yaparsınız?"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">🌆 Akşam nasıl geçer?</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="2"
+                              value={characterData.ideal_day.evening}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                ideal_day: { ...characterData.ideal_day, evening: e.target.value }
+                              })}
+                              placeholder="Akşam saatleriniz nasıl geçer?"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">🌙 Uyumadan önce ne yaparsınız?</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="2"
+                              value={characterData.ideal_day.before_sleep}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                ideal_day: { ...characterData.ideal_day, before_sleep: e.target.value }
+                              })}
+                              placeholder="Uyku öncesi rutininiz..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">💬 İnsanlar sizin için ne der?</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="2"
+                              value={characterData.ideal_day.peoples_say}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                ideal_day: { ...characterData.ideal_day, peoples_say: e.target.value }
+                              })}
+                              placeholder="İdeal gününüzde insanlar sizin için ne der?"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">❤️ Nasıl hissedersiniz?</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="2"
+                              value={characterData.ideal_day.feelings}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                ideal_day: { ...characterData.ideal_day, feelings: e.target.value }
+                              })}
+                              placeholder="Bu günün sonunda nasıl hissedersiniz?"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">⭐ Hangi değerler öne çıkar?</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="2"
+                              value={characterData.ideal_day.values}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                ideal_day: { ...characterData.ideal_day, values: e.target.value }
+                              })}
+                              placeholder="İdeal gününüzde hangi değerler önemli?"
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-6 flex justify-between">
+                          <button
+                            onClick={() => setCharacterStep(1)}
+                            className="px-6 py-3 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400"
+                          >
+                            ← Geri
+                          </button>
+                          <button
+                            onClick={() => setCharacterStep(3)}
+                            className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700"
+                          >
+                            Sonraki Adım →
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Step 3: 90 Day Plan */}
+                    {characterStep === 3 && (
+                      <div className="bg-white rounded-xl p-8 shadow-md">
+                        <h3 className="text-2xl font-bold text-purple-700 mb-6">🎯 90 Gün Planınız</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">👤 Ana kimliğiniz ne olacak?</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="2"
+                              value={characterData.ninety_day_plan.main_identity}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                ninety_day_plan: { ...characterData.ninety_day_plan, main_identity: e.target.value }
+                              })}
+                              placeholder="90 gün sonra nasıl biri olmak istiyorsunuz?"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">📅 Haftalık aksiyonunuz nedir?</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="2"
+                              value={characterData.ninety_day_plan.weekly_action}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                ninety_day_plan: { ...characterData.ninety_day_plan, weekly_action: e.target.value }
+                              })}
+                              placeholder="Her hafta yapacağınız ana aksiyon..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">🚧 Karşılaşabileceğiniz engeller</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="2"
+                              value={characterData.ninety_day_plan.obstacles}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                ninety_day_plan: { ...characterData.ninety_day_plan, obstacles: e.target.value }
+                              })}
+                              placeholder="Hangi zorluklar çıkabilir?"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">🔄 Plan B nedir?</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="2"
+                              value={characterData.ninety_day_plan.plan_b}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                ninety_day_plan: { ...characterData.ninety_day_plan, plan_b: e.target.value }
+                              })}
+                              placeholder="İşler ters giderse ne yaparsınız?"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">✅ Haftalık kontrol nasıl?</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="2"
+                              value={characterData.ninety_day_plan.weekly_check_in}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                ninety_day_plan: { ...characterData.ninety_day_plan, weekly_check_in: e.target.value }
+                              })}
+                              placeholder="Kendinizi haftalık nasıl kontrol edeceksiniz?"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 font-semibold mb-2">🚀 İlk hafta hedefleriniz</label>
+                            <textarea
+                              className="w-full p-3 border border-gray-300 rounded-lg"
+                              rows="2"
+                              value={characterData.ninety_day_plan.first_week}
+                              onChange={(e) => setCharacterData({
+                                ...characterData,
+                                ninety_day_plan: { ...characterData.ninety_day_plan, first_week: e.target.value }
+                              })}
+                              placeholder="İlk haftada ne yapacaksınız?"
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-6 flex justify-between">
+                          <button
+                            onClick={() => setCharacterStep(2)}
+                            className="px-6 py-3 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400"
+                          >
+                            ← Geri
+                          </button>
+                          <button
+                            onClick={analyzeCharacter}
+                            disabled={isAnalyzing}
+                            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50"
+                          >
+                            {isAnalyzing ? '🔄 Analiz Ediliyor...' : '🧠 AI ile Analiz Et'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Step 4: Results */}
+                    {characterStep === 4 && aiAnalysisResult && (
+                      <div className="bg-white rounded-xl p-8 shadow-md">
+                        <h3 className="text-2xl font-bold text-purple-700 mb-6">🎉 Karakter Analizi Sonuçlarınız</h3>
+                        <div className="prose max-w-none mb-6">
+                          <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-lg whitespace-pre-wrap">
+                            {aiAnalysisResult}
+                          </div>
+                        </div>
+                        <div className="flex gap-4">
+                          <button
+                            onClick={saveCharacterAnalysis}
+                            className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700"
+                          >
+                            💾 Analizi Kaydet
+                          </button>
+                          <button
+                            onClick={() => {
+                              setCharacterStep(1);
+                              setAiAnalysisResult(null);
+                              setCharacterData({
+                                recent_events: { happy: '', sad: '', angry: '', patience_heavy: '', proud: '' },
+                                ideal_day: { morning: '', afternoon: '', evening: '', before_sleep: '', peoples_say: '', feelings: '', values: '' },
+                                ninety_day_plan: { main_identity: '', weekly_action: '', obstacles: '', plan_b: '', weekly_check_in: '', first_week: '' },
+                                ai_insights: ''
+                              });
+                            }}
+                            className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700"
+                          >
+                            🔄 Yeni Analiz Yap
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
