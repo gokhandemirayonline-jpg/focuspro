@@ -253,4 +253,15 @@ export const characterAnalysisAPI = {
   aiAnalyze: (analysisData) => api.post('/character-analysis/ai-analyze', analysisData),
 };
 
+// Future Character API
+export const futureCharacterAPI = {
+  getAll: () => api.get('/future-character'),
+  getById: (characterId) => api.get(`/future-character/${characterId}`),
+  create: (characterData) => api.post('/future-character', characterData),
+  update: (characterId, characterData) => api.put(`/future-character/${characterId}`, characterData),
+  delete: (characterId) => api.delete(`/future-character/${characterId}`),
+  aiAnalyze: (characterData) => api.post('/future-character/ai-analyze', characterData),
+  gapAnalysis: (analysisData) => api.post('/character-gap-analysis', analysisData),
+};
+
 export default api;
