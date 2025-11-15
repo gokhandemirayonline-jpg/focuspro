@@ -2536,6 +2536,194 @@ async def upload_image(
         logger.error(f"Error uploading file: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Dosya yüklenirken hata oluştu: {str(e)}")
 
+# ==================== CHARACTER ANALYSIS ====================
+@api_router.post("/character-analysis", response_model=CharacterAnalysis)
+async def create_character_analysis(
+    analysis: CharacterAnalysisCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Yeni bir karakter analizi oluşturur"""
+    try:
+        analysis_dict = analysis.model_dump()
+        analysis_dict["user_id"] = current_user["id"]
+        analysis_dict["id"] = str(uuid.uuid4())
+        analysis_dict["created_at"] = datetime.utcnow()
+        analysis_dict["updated_at"] = datetime.utcnow()
+        
+        await db.character_analysis.insert_one(analysis_dict)
+        return analysis_dict
+    except Exception as e:
+        logger.error(f"Error creating character analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Karakter analizi oluşturulurken hata oluştu: {str(e)}")
+
+@api_router.get("/character-analysis", response_model=List[CharacterAnalysis])
+async def get_user_character_analyses(
+    current_user: dict = Depends(get_current_user)
+):
+    """Kullanıcının tüm karakter analizlerini getirir"""
+    try:
+        analyses = await db.character_analysis.find(
+            {"user_id": current_user["id"]},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(100)
+        return analyses
+    except Exception as e:
+        logger.error(f"Error fetching character analyses: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Karakter analizleri getirilirken hata oluştu: {str(e)}")
+
+@api_router.get("/character-analysis/{analysis_id}", response_model=CharacterAnalysis)
+async def get_character_analysis(
+    analysis_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Belirli bir karakter analizini getirir"""
+    try:
+        analysis = await db.character_analysis.find_one(
+            {"id": analysis_id, "user_id": current_user["id"]},
+            {"_id": 0}
+        )
+        if not analysis:
+            raise HTTPException(status_code=404, detail="Karakter analizi bulunamadı")
+        return analysis
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching character analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Karakter analizi getirilirken hata oluştu: {str(e)}")
+
+@api_router.put("/character-analysis/{analysis_id}", response_model=CharacterAnalysis)
+async def update_character_analysis(
+    analysis_id: str,
+    analysis_update: CharacterAnalysisCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Mevcut bir karakter analizini günceller"""
+    try:
+        existing = await db.character_analysis.find_one(
+            {"id": analysis_id, "user_id": current_user["id"]},
+            {"_id": 0}
+        )
+        if not existing:
+            raise HTTPException(status_code=404, detail="Karakter analizi bulunamadı")
+        
+        update_dict = analysis_update.model_dump()
+        update_dict["updated_at"] = datetime.utcnow()
+        
+        await db.character_analysis.update_one(
+            {"id": analysis_id},
+            {"$set": update_dict}
+        )
+        
+        updated = await db.character_analysis.find_one({"id": analysis_id}, {"_id": 0})
+        return updated
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating character analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Karakter analizi güncellenirken hata oluştu: {str(e)}")
+
+@api_router.delete("/character-analysis/{analysis_id}")
+async def delete_character_analysis(
+    analysis_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Bir karakter analizini siler"""
+    try:
+        result = await db.character_analysis.delete_one(
+            {"id": analysis_id, "user_id": current_user["id"]}
+        )
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Karakter analizi bulunamadı")
+        return {"success": True, "message": "Karakter analizi başarıyla silindi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting character analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Karakter analizi silinirken hata oluştu: {str(e)}")
+
+@api_router.post("/character-analysis/ai-analyze")
+async def analyze_character_with_ai(
+    analysis_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Kullanıcının karakter analizi verilerini AI ile analiz eder
+    """
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        # Kullanıcı verilerini formatlı metne dönüştür
+        recent_events = analysis_data.get("recent_events", {})
+        ideal_day = analysis_data.get("ideal_day", {})
+        ninety_day = analysis_data.get("ninety_day_plan", {})
+        
+        # AI için prompt oluştur
+        prompt = f"""Sen profesyonel bir yaşam koçu ve kişisel gelişim uzmanısın. Aşağıdaki bilgilere dayanarak detaylı bir karakter analizi yap:
+
+**SON OLAYLAR:**
+- Mutlu eden: {recent_events.get('happy', '')}
+- Üzen: {recent_events.get('sad', '')}
+- Kızdıran: {recent_events.get('angry', '')}
+- Sabırla yüklü: {recent_events.get('patience_heavy', '')}
+- Gururlandıran: {recent_events.get('proud', '')}
+
+**İDEAL GÜN:**
+- Sabah: {ideal_day.get('morning', '')}
+- Öğlen: {ideal_day.get('afternoon', '')}
+- Akşam: {ideal_day.get('evening', '')}
+- Uyku öncesi: {ideal_day.get('before_sleep', '')}
+- İnsanlar ne der: {ideal_day.get('peoples_say', '')}
+- Hissettikleri: {ideal_day.get('feelings', '')}
+- Değerler: {ideal_day.get('values', '')}
+
+**90 GÜN PLANI:**
+- Ana kimlik: {ninety_day.get('main_identity', '')}
+- Haftalık aksiyon: {ninety_day.get('weekly_action', '')}
+- Engeller: {ninety_day.get('obstacles', '')}
+- Plan B: {ninety_day.get('plan_b', '')}
+- Haftalık kontrol: {ninety_day.get('weekly_check_in', '')}
+- İlk hafta: {ninety_day.get('first_week', '')}
+
+Lütfen şu başlıklar altında detaylı bir analiz yap:
+
+1. KİŞİLİK PROFİLİ: Kişinin genel karakter özellikleri
+2. DUYGUSAL DURUM: Mevcut duygusal durumu ve eğilimleri
+3. GÜÇLÜ YÖNLER: Belirgin güçlü yanları ve yetenekleri
+4. GELİŞİM ALANLARI: Geliştirilmesi gereken alanlar
+5. YAŞAM VİZYONU: İdeal yaşam hedefleri ve değerleri
+6. ÖNERİLER: Kişisel gelişim için somut öneriler
+7. EYLEM PLANI: 90 günlük plan için somut adımlar
+
+Analizi pozitif, motivasyonel ve yapıcı bir dille yaz. Her bölüm en az 2-3 paragraf olsun."""
+
+        # Claude ile AI analizi yap
+        emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+        if not emergent_key:
+            raise HTTPException(status_code=500, detail="AI servisi yapılandırılmamış")
+        
+        chat = LlmChat(
+            api_key=emergent_key,
+            session_id=f"char_analysis_{current_user['id']}_{uuid.uuid4()}",
+            system_message="Sen profesyonel bir yaşam koçu ve kişisel gelişim uzmanısın. Detaylı, empatik ve motivasyonel analizler yaparsın."
+        ).with_model("anthropic", "claude-sonnet-4-20250514")
+        
+        user_message = UserMessage(text=prompt)
+        ai_response = await chat.send_message(user_message)
+        
+        return {
+            "success": True,
+            "analysis": ai_response,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in AI character analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI analizi yapılırken hata oluştu: {str(e)}")
+
+# ==================== END CHARACTER ANALYSIS ====================
+
 @app.on_event("startup")
 async def startup_event():
     await init_default_admin()
