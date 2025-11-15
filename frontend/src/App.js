@@ -4780,6 +4780,479 @@ const FocusProApp = () => {
                         </div>
                       </div>
                     )}
+                      </div>
+                    )}
+
+                    {/* FUTURE CHARACTER TAB */}
+                    {characterTab === 'future' && (
+                      <div>
+                        <div className="mb-4 bg-green-50 border-l-4 border-green-600 p-4 rounded">
+                          <p className="text-sm text-green-800">
+                            <strong>İstenilen Karakter:</strong> 5+ yıl sonra nasıl bir insan olmak istiyorsunuz?
+                          </p>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="mb-8">
+                          <div className="flex justify-between items-center mb-2">
+                            {[1, 2, 3, 4].map((step) => (
+                              <div key={step} className="flex items-center">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                                  futureCharacterStep >= step ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'
+                                }`}>
+                                  {step}
+                                </div>
+                                {step < 4 && <div className={`w-32 h-1 mx-2 ${
+                                  futureCharacterStep > step ? 'bg-green-600' : 'bg-gray-200'
+                                }`} />}
+                              </div>
+                            ))}
+                          </div>
+                          <div className="flex justify-between text-sm text-gray-600 mt-2">
+                            <span>Geleceğin Karakteri</span>
+                            <span>Yaşam Vizyonu</span>
+                            <span>Dönüşüm Planı</span>
+                            <span>Analiz</span>
+                          </div>
+                        </div>
+
+                        {/* Future Step 1: Character Traits */}
+                        {futureCharacterStep === 1 && (
+                          <div className="bg-white rounded-xl p-8 shadow-md">
+                            <h3 className="text-2xl font-bold text-green-700 mb-6">🎯 Geleceğin Karakteri</h3>
+                            <div className="space-y-4">
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  ✨ 5 yıl sonra kendinizi tanımlarken kullanmak istediğiniz 5 kelime
+                                </label>
+                                <div className="grid grid-cols-5 gap-2">
+                                  {futureCharacterData.character_traits.keywords.map((keyword, index) => (
+                                    <input
+                                      key={index}
+                                      type="text"
+                                      className="w-full p-3 border border-gray-300 rounded-lg text-center"
+                                      placeholder={`Kelime ${index + 1}`}
+                                      value={keyword}
+                                      onChange={(e) => {
+                                        const newKeywords = [...futureCharacterData.character_traits.keywords];
+                                        newKeywords[index] = e.target.value;
+                                        setFutureCharacterData({
+                                          ...futureCharacterData,
+                                          character_traits: { ...futureCharacterData.character_traits, keywords: newKeywords }
+                                        });
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  🎭 Hangi kişilik özelliklerine sahip olmak istersiniz?
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.character_traits.personality_traits}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    character_traits: { ...futureCharacterData.character_traits, personality_traits: e.target.value }
+                                  })}
+                                  placeholder="Örn: Sakin, özgüvenli, lider, yaratıcı, disiplinli..."
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  💪 Hangi güçlü yönlere sahip olmak istersiniz?
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.character_traits.strengths}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    character_traits: { ...futureCharacterData.character_traits, strengths: e.target.value }
+                                  })}
+                                  placeholder="Güçlü yönlerinizi tanımlayın..."
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  ❤️ Duygusal olarak nasıl biri olmak istersiniz?
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.character_traits.emotional_state}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    character_traits: { ...futureCharacterData.character_traits, emotional_state: e.target.value }
+                                  })}
+                                  placeholder="Duygusal durumunuzu tanımlayın..."
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  🧠 Zihinsel olarak hangi yeteneklere sahip olmak istersiniz?
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.character_traits.mental_abilities}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    character_traits: { ...futureCharacterData.character_traits, mental_abilities: e.target.value }
+                                  })}
+                                  placeholder="Zihinsel yeteneklerinizi tanımlayın..."
+                                />
+                              </div>
+                            </div>
+                            <div className="mt-6 flex justify-end">
+                              <button
+                                onClick={() => setFutureCharacterStep(2)}
+                                className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700"
+                              >
+                                Sonraki Adım →
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Future Step 2: Life Vision - WILL ADD IN NEXT PART */}
+                        {futureCharacterStep === 2 && (
+                          <div className="bg-white rounded-xl p-8 shadow-md">
+                            <h3 className="text-2xl font-bold text-green-700 mb-6">🌟 Gelecekteki Yaşam Vizyonu</h3>
+                            <p className="text-gray-600 mb-6">5 yıl sonraki hayatınızı detaylı olarak tanımlayın</p>
+                            <div className="space-y-4">
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  🏡 5 yıl sonra hayatınız nasıl görünüyor?
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.life_vision.life_overview}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    life_vision: { ...futureCharacterData.life_vision, life_overview: e.target.value }
+                                  })}
+                                  placeholder="Genel yaşam görünümünüzü tanımlayın..."
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  👥 İnsanlarla ilişkileriniz nasıl olmalı?
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.life_vision.relationships}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    life_vision: { ...futureCharacterData.life_vision, relationships: e.target.value }
+                                  })}
+                                  placeholder="İlişkilerinizi tanımlayın..."
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  💼 Kariyerinizde nerede olmak istersiniz?
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.life_vision.career}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    life_vision: { ...futureCharacterData.life_vision, career: e.target.value }
+                                  })}
+                                  placeholder="Kariyer hedeflerinizi tanımlayın..."
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  🎨 Hangi alanlarda ustalaşmış olmak istersiniz?
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.life_vision.mastery_areas}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    life_vision: { ...futureCharacterData.life_vision, mastery_areas: e.target.value }
+                                  })}
+                                  placeholder="Uzmanlık alanlarınızı tanımlayın..."
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  ⚖️ Hangi değerleri benimsemiş olmalısınız?
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.life_vision.core_values}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    life_vision: { ...futureCharacterData.life_vision, core_values: e.target.value }
+                                  })}
+                                  placeholder="Değerlerinizi tanımlayın..."
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  🌟 Çevreniz sizi nasıl tanımlasın?
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.life_vision.social_perception}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    life_vision: { ...futureCharacterData.life_vision, social_perception: e.target.value }
+                                  })}
+                                  placeholder="Sosyal algınızı tanımlayın..."
+                                />
+                              </div>
+                            </div>
+                            <div className="mt-6 flex justify-between">
+                              <button
+                                onClick={() => setFutureCharacterStep(1)}
+                                className="px-6 py-3 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400"
+                              >
+                                ← Geri
+                              </button>
+                              <button
+                                onClick={() => setFutureCharacterStep(3)}
+                                className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700"
+                              >
+                                Sonraki Adım →
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Future Step 3: Transformation Plan - WILL ADD IN NEXT PART */}
+                        {futureCharacterStep === 3 && (
+                          <div className="bg-white rounded-xl p-8 shadow-md">
+                            <h3 className="text-2xl font-bold text-green-700 mb-6">🔄 Dönüşüm Planı</h3>
+                            <p className="text-gray-600 mb-6">Mevcut halinizden ideal halinize geçmek için plan yapın</p>
+                            <div className="space-y-4">
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  🔄 Mevcut halinizden ideal halinize geçmek için neleri değiştirmelisiniz?
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.transformation_plan.changes_needed}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    transformation_plan: { ...futureCharacterData.transformation_plan, changes_needed: e.target.value }
+                                  })}
+                                  placeholder="Değişmesi gerekenleri yazın..."
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  📚 Hangi alışkanlıkları edinmelisiniz?
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.transformation_plan.habits_to_gain}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    transformation_plan: { ...futureCharacterData.transformation_plan, habits_to_gain: e.target.value }
+                                  })}
+                                  placeholder="Kazanılacak alışkanlıkları yazın..."
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  🚫 Hangi alışkanlıklardan kurtulmalısınız?
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.transformation_plan.habits_to_remove}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    transformation_plan: { ...futureCharacterData.transformation_plan, habits_to_remove: e.target.value }
+                                  })}
+                                  placeholder="Bırakılacak alışkanlıkları yazın..."
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  🎓 Hangi becerileri öğrenmelisiniz?
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.transformation_plan.skills_to_learn}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    transformation_plan: { ...futureCharacterData.transformation_plan, skills_to_learn: e.target.value }
+                                  })}
+                                  placeholder="Öğrenilecek becerileri yazın..."
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  👨‍🏫 Kimlerden mentorluk almalısınız?
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.transformation_plan.mentors}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    transformation_plan: { ...futureCharacterData.transformation_plan, mentors: e.target.value }
+                                  })}
+                                  placeholder="Mentorları yazın..."
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-gray-700 font-semibold mb-2">
+                                  🚀 İlk yıl hedefleriniz
+                                </label>
+                                <textarea
+                                  className="w-full p-3 border border-gray-300 rounded-lg"
+                                  rows="3"
+                                  value={futureCharacterData.transformation_plan.first_year_actions}
+                                  onChange={(e) => setFutureCharacterData({
+                                    ...futureCharacterData,
+                                    transformation_plan: { ...futureCharacterData.transformation_plan, first_year_actions: e.target.value }
+                                  })}
+                                  placeholder="İlk yıl aksiyonlarınızı yazın..."
+                                />
+                              </div>
+                            </div>
+                            <div className="mt-6 flex justify-between">
+                              <button
+                                onClick={() => setFutureCharacterStep(2)}
+                                className="px-6 py-3 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400"
+                              >
+                                ← Geri
+                              </button>
+                              <button
+                                onClick={analyzeFutureCharacter}
+                                disabled={isAnalyzingFuture}
+                                className="px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-blue-700 disabled:opacity-50"
+                              >
+                                {isAnalyzingFuture ? '🔄 Analiz Ediliyor...' : '🧠 AI ile Analiz Et'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Future Step 4: Results */}
+                        {futureCharacterStep === 4 && futureAiAnalysisResult && (
+                          <div className="bg-white rounded-xl p-8 shadow-md">
+                            <h3 className="text-2xl font-bold text-green-700 mb-6">🎉 Gelecek Karakter Analizi Sonuçlarınız</h3>
+                            <div className="prose max-w-none mb-6">
+                              <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg whitespace-pre-wrap">
+                                {futureAiAnalysisResult}
+                              </div>
+                            </div>
+                            <div className="flex gap-4">
+                              <button
+                                onClick={saveFutureCharacter}
+                                className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700"
+                              >
+                                💾 Profili Kaydet
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setFutureCharacterStep(1);
+                                  setFutureAiAnalysisResult(null);
+                                }}
+                                className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700"
+                              >
+                                🔄 Yeni Profil Oluştur
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* GAP ANALYSIS TAB */}
+                    {characterTab === 'gap' && (
+                      <div>
+                        <div className="mb-4 bg-blue-50 border-l-4 border-blue-600 p-4 rounded">
+                          <p className="text-sm text-blue-800">
+                            <strong>Karşılaştırma & Plan:</strong> Mevcut durumunuz ile hedefleriniz arasındaki farkları görün
+                          </p>
+                        </div>
+
+                        {isAnalyzingGap && (
+                          <div className="text-center py-12">
+                            <div className="text-6xl mb-4">🔄</div>
+                            <p className="text-xl text-gray-600">Gap Analizi yapılıyor...</p>
+                          </div>
+                        )}
+
+                        {gapAnalysisResult && !isAnalyzingGap && (
+                          <div className="bg-white rounded-xl p-8 shadow-md">
+                            <h3 className="text-2xl font-bold text-blue-700 mb-6">📊 Gap Analizi ve Roadmap</h3>
+                            <div className="prose max-w-none mb-6">
+                              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg whitespace-pre-wrap">
+                                {gapAnalysisResult}
+                              </div>
+                            </div>
+                            <div className="flex gap-4">
+                              <button
+                                onClick={() => window.print()}
+                                className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700"
+                              >
+                                🖨️ Yazdır
+                              </button>
+                              <button
+                                onClick={analyzeGap}
+                                className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700"
+                              >
+                                🔄 Yeniden Analiz Et
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {!gapAnalysisResult && !isAnalyzingGap && (
+                          <div className="text-center py-12 bg-gray-50 rounded-xl">
+                            <div className="text-6xl mb-4">📊</div>
+                            <h3 className="text-xl font-bold text-gray-700 mb-2">Gap Analizi İçin Hazır Değilsiniz</h3>
+                            <p className="text-gray-600 mb-4">
+                              Önce "Mevcut Durum Analizi" ve "İstenilen Karakter" sekmelerini tamamlayın
+                            </p>
+                            <div className="flex justify-center gap-4">
+                              <button
+                                onClick={() => setCharacterTab('current')}
+                                disabled={aiAnalysisResult}
+                                className={`px-6 py-3 font-semibold rounded-lg ${
+                                  aiAnalysisResult
+                                    ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                                    : 'bg-purple-600 text-white hover:bg-purple-700'
+                                }`}
+                              >
+                                {aiAnalysisResult ? '✅ Mevcut Durum Tamamlandı' : '📍 Mevcut Durum Analizi Yap'}
+                              </button>
+                              <button
+                                onClick={() => setCharacterTab('future')}
+                                disabled={futureAiAnalysisResult}
+                                className={`px-6 py-3 font-semibold rounded-lg ${
+                                  futureAiAnalysisResult
+                                    ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                                    : 'bg-green-600 text-white hover:bg-green-700'
+                                }`}
+                              >
+                                {futureAiAnalysisResult ? '✅ İstenilen Karakter Tamamlandı' : '🎯 İstenilen Karakter Tanımla'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
