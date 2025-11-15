@@ -3887,14 +3887,14 @@ const FocusProApp = () => {
                       {[1, 2, 3, 4].map((step) => (
                         <div key={step} className="flex items-center">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                            dreamStep === step ? 'bg-purple-600 text-white' :
-                            dreamStep > step ? 'bg-green-500 text-white' :
+                            dreamStep === step ? 'bg-gray-800 text-white' :
+                            dreamStep > step ? 'bg-gray-600 text-white' :
                             'bg-gray-200 text-gray-500'
                           }`}>
                             {dreamStep > step ? '✓' : step}
                           </div>
                           {step < 4 && (
-                            <div className={`w-24 h-1 ${dreamStep > step ? 'bg-green-500' : 'bg-gray-200'}`} />
+                            <div className={`w-24 h-1 ${dreamStep > step ? 'bg-gray-600' : 'bg-gray-200'}`} />
                           )}
                         </div>
                       ))}
