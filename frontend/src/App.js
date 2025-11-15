@@ -154,6 +154,38 @@ const FocusProApp = () => {
   const [showRecommendationModal, setShowRecommendationModal] = useState(false);
   const [showBlogModal, setShowBlogModal] = useState(false);
   
+  // Character Analysis States
+  const [characterStep, setCharacterStep] = useState(1);
+  const [characterData, setCharacterData] = useState({
+    recent_events: {
+      happy: '',
+      sad: '',
+      angry: '',
+      patience_heavy: '',
+      proud: ''
+    },
+    ideal_day: {
+      morning: '',
+      afternoon: '',
+      evening: '',
+      before_sleep: '',
+      peoples_say: '',
+      feelings: '',
+      values: ''
+    },
+    ninety_day_plan: {
+      main_identity: '',
+      weekly_action: '',
+      obstacles: '',
+      plan_b: '',
+      weekly_check_in: '',
+      first_week: ''
+    },
+    ai_insights: ''
+  });
+  const [aiAnalysisResult, setAiAnalysisResult] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  
   const [editingUser, setEditingUser] = useState(null);
   const [editingMeeting, setEditingMeeting] = useState(null);
   const [editingTask, setEditingTask] = useState(null);
