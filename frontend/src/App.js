@@ -529,6 +529,27 @@ const FocusProApp = () => {
     }
   };
 
+  const loadDreamPriority = async () => {
+    try {
+      const response = await dreamPriorityAPI.get();
+      if (response.data.initial_dreams.length > 0) {
+        setDreamData(response.data);
+        setDreamStep(4); // Show results if already completed
+      }
+    } catch (error) {
+      console.error('Dream priority yüklenemedi:', error);
+    }
+  };
+
+  const saveDreamPriority = async () => {
+    try {
+      await dreamPriorityAPI.createOrUpdate(dreamData);
+      alert('Hayalleriniz kaydedildi!');
+    } catch (error) {
+      alert('Kaydetme hatası!');
+    }
+  };
+
   const loadProspects = async () => {
     try {
       const response = await prospectAPI.getAll();
