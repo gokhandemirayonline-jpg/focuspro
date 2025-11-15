@@ -2721,6 +2721,9 @@ Analizi pozitif, motivasyonel ve yapıcı bir dille yaz. Her bölüm en az 2-3 p
 
 # ==================== END CHARACTER ANALYSIS ====================
 
+# Include the router in the main app
+app.include_router(api_router)
+
 @app.on_event("startup")
 async def startup_event():
     await init_default_admin()
