@@ -36,7 +36,8 @@ from models import (
     RecommendationCreate, Recommendation,
     BlogCreate, Blog,
     MessageCreate, Message, MessageReply,
-    DreamPriorityCreate, DreamPriority
+    DreamPriorityCreate, DreamPriority,
+    CharacterAnalysisCreate, CharacterAnalysis
 )
 
 
