@@ -1143,8 +1143,11 @@ const FocusProApp = () => {
   useEffect(() => {
     if (currentUser) {
       loadProfile();
+      if (agendaTab === 'dreams') {
+        loadDreamPriority();
+      }
     }
-  }, [currentUser]);
+  }, [currentUser, agendaTab]);
 
   // YouTube Player useEffect
   useEffect(() => {
