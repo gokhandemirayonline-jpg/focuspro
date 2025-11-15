@@ -355,6 +355,47 @@ class CharacterAnalysis(CharacterAnalysisBase):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+# Future Character Models (5+ years vision)
+class FutureCharacterTraits(BaseModel):
+    keywords: List[str] = []  # 5 kelime
+    personality_traits: str = ""  # Kişilik özellikleri
+    strengths: str = ""  # Güçlü yönler
+    emotional_state: str = ""  # Duygusal hal
+    mental_abilities: str = ""  # Zihinsel yetenekler
+
+class FutureLifeVision(BaseModel):
+    life_overview: str = ""  # Genel yaşam
+    relationships: str = ""  # İlişkiler
+    career: str = ""  # Kariyer
+    mastery_areas: str = ""  # Uzmanlık alanları
+    core_values: str = ""  # Değerler
+    social_perception: str = ""  # Çevre nasıl tanımlasın
+
+class TransformationPlan(BaseModel):
+    changes_needed: str = ""  # Değişmesi gerekenler
+    habits_to_gain: str = ""  # Kazanılacak alışkanlıklar
+    habits_to_remove: str = ""  # Bırakılacak alışkanlıklar
+    skills_to_learn: str = ""  # Öğrenilecek beceriler
+    mentors: str = ""  # Mentorlar
+    first_year_actions: str = ""  # İlk yıl aksiyonları
+
+class FutureCharacterBase(BaseModel):
+    character_traits: FutureCharacterTraits = FutureCharacterTraits()
+    life_vision: FutureLifeVision = FutureLifeVision()
+    transformation_plan: TransformationPlan = TransformationPlan()
+    ai_insights: str = ""
+
+class FutureCharacterCreate(FutureCharacterBase):
+    pass
+
+class FutureCharacter(FutureCharacterBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 # Prospect Models
 class ProspectBase(BaseModel):
     name: str
