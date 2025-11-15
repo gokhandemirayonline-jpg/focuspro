@@ -3876,47 +3876,243 @@ const FocusProApp = () => {
 
                 {agendaTab === 'dreams' && (
                   <div>
-                    {/* DREAMS (REASONS) CONTENT */}
-                    <div className="mb-6 flex items-center justify-between">
-                      <h2 className="text-2xl font-bold text-gray-800">💭 Hayallerim</h2>
-                      <button
-                        onClick={() => {
-                          setShowReasonModal(true);
-                          setEditingReason(null);
-                          setNewReason({ title: '', description: '' });
-                        }}
-                        className="bg-pink-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-pink-700"
-                      >
-                        <Plus size={20} />
-                        Yeni Hayal
-                      </button>
+                    {/* DREAM PRIORITY WIZARD */}
+                    <div className="mb-6">
+                      <h2 className="text-3xl font-bold text-gray-800 mb-2">💭 Değer Önceliklendirme</h2>
+                      <p className="text-gray-600">Hayallerinizi keşfedin ve önceliklerinizi belirleyin</p>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {reasons.map(reason => (
-                        <div key={reason.id} className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl shadow-sm border border-pink-200 p-6">
-                          <h3 className="font-bold text-gray-800 text-lg mb-3">{reason.title}</h3>
-                          <p className="text-gray-600">{reason.description}</p>
-                          <div className="flex gap-2 mt-4 pt-4 border-t border-pink-200">
-                            <button
-                              onClick={() => {
-                                setEditingReason(reason);
-                                setNewReason(reason);
-                                setShowReasonModal(true);
-                              }}
-                              className="text-purple-600 hover:text-purple-800"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button
-                              onClick={() => deleteReason(reason.id)}
-                              className="text-red-600 hover:text-red-800"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+
+                    {/* Progress Steps */}
+                    <div className="flex items-center justify-center mb-8">
+                      {[1, 2, 3, 4].map((step) => (
+                        <div key={step} className="flex items-center">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                            dreamStep === step ? 'bg-purple-600 text-white' :
+                            dreamStep > step ? 'bg-green-500 text-white' :
+                            'bg-gray-200 text-gray-500'
+                          }`}>
+                            {dreamStep > step ? '✓' : step}
                           </div>
+                          {step < 4 && (
+                            <div className={`w-24 h-1 ${dreamStep > step ? 'bg-green-500' : 'bg-gray-200'}`} />
+                          )}
                         </div>
                       ))}
                     </div>
+
+                    {/* Step 1: Initial Dreams Input */}
+                    {dreamStep === 1 && (
+                      <div className="bg-white rounded-xl shadow-lg p-8">
+                        <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                          Adım 1: Hayallerinizi Belirleyin
+                        </h3>
+                        <p className="text-gray-600 mb-6">
+                          Hayatta en çok değer verdiğiniz, sizi heyecanlandıran 10 şeyi yazın
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                          {dreamData.initial_dreams.map((dream, index) => (
+                            <div key={index}>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {index + 1}. Hayaliniz
+                              </label>
+                              <input
+                                type="text"
+                                value={dream}
+                                onChange={(e) => {
+                                  const newDreams = [...dreamData.initial_dreams];
+                                  newDreams[index] = e.target.value;
+                                  setDreamData({...dreamData, initial_dreams: newDreams});
+                                }}
+                                placeholder={`Örn: ${['Finansal özgürlük', 'Aile ile zaman', 'Dünya turu', 'Kendi işim', 'Lüks araç', 'Ev sahibi olmak', 'Erken emeklilik', 'Çocukların eğitimi', 'Sağlıklı yaşam', 'Yardım etmek'][index]}`}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          onClick={() => {
+                            const filledDreams = dreamData.initial_dreams.filter(d => d.trim());
+                            if (filledDreams.length < 5) {
+                              alert('Lütfen en az 5 hayal girin!');
+                              return;
+                            }
+                            setEliminationList(dreamData.initial_dreams.filter(d => d.trim()));
+                            setDreamStep(2);
+                          }}
+                          className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition-colors"
+                        >
+                          Devam Et →
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Step 2: Elimination (10→1) */}
+                    {dreamStep === 2 && (
+                      <div className="bg-white rounded-xl shadow-lg p-8">
+                        <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                          Adım 2: Önceliklendirme ({eliminationList.length} → 1)
+                        </h3>
+                        <p className="text-gray-600 mb-6">
+                          {eliminationList.length > 3 
+                            ? `Aşağıdaki listeden sizin için EN AZ ÖNEMLİ olanı seçip çıkarın. Kalan ${eliminationList.length} maddeden ${eliminationList.length - 1} tanesini seçmeye devam edin.`
+                            : 'Son ${eliminationList.length} madde kaldı! En az önemlisini çıkarın.'}
+                        </p>
+                        <div className="space-y-3 mb-6">
+                          {eliminationList.map((dream, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200 hover:border-purple-400 transition-colors"
+                            >
+                              <span className="font-medium text-gray-800">{dream}</span>
+                              <button
+                                onClick={() => {
+                                  const newList = eliminationList.filter((_, i) => i !== index);
+                                  setEliminationList(newList);
+                                  if (newList.length === 1) {
+                                    setDreamData({...dreamData, final_priorities: newList});
+                                    setDreamStep(3);
+                                  }
+                                }}
+                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                              >
+                                Çıkar
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          onClick={() => setDreamStep(1)}
+                          className="w-full bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold transition-colors"
+                        >
+                          ← Geri Dön
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Step 3: Goal Setting */}
+                    {dreamStep === 3 && (
+                      <div className="bg-white rounded-xl shadow-lg p-8">
+                        <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                          Adım 3: Hedef Belirleme
+                        </h3>
+                        <p className="text-gray-600 mb-6">
+                          Atomy ticaretinden hedeflerinizi belirleyin
+                        </p>
+                        <div className="space-y-6 mb-6">
+                          <div>
+                            <label className="block text-lg font-medium text-gray-700 mb-3">
+                              1. Minimum ne kadar kazanç sizi heyecanlandırır?
+                            </label>
+                            <input
+                              type="text"
+                              value={dreamData.target_income}
+                              onChange={(e) => setDreamData({...dreamData, target_income: e.target.value})}
+                              placeholder="Örn: 10,000 TL veya 1,000 USD"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-lg font-medium text-gray-700 mb-3">
+                              2. Bu gelire en geç kaç ayda ulaşmak istersiniz?
+                            </label>
+                            <input
+                              type="text"
+                              value={dreamData.target_months}
+                              onChange={(e) => setDreamData({...dreamData, target_months: e.target.value})}
+                              placeholder="Örn: 6 ay, 12 ay"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-lg font-medium text-gray-700 mb-3">
+                              3. Mevcut düzeninizi bozmadan günde kaç saat ayırabilirsiniz?
+                            </label>
+                            <input
+                              type="text"
+                              value={dreamData.daily_hours}
+                              onChange={(e) => setDreamData({...dreamData, daily_hours: e.target.value})}
+                              placeholder="Örn: 2-3 saat"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-4">
+                          <button
+                            onClick={() => setDreamStep(2)}
+                            className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold"
+                          >
+                            ← Geri
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (!dreamData.target_income || !dreamData.target_months || !dreamData.daily_hours) {
+                                alert('Lütfen tüm alanları doldurun!');
+                                return;
+                              }
+                              await saveDreamPriority();
+                              setDreamStep(4);
+                            }}
+                            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold"
+                          >
+                            Kaydet ve Bitir →
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Step 4: Results */}
+                    {dreamStep === 4 && (
+                      <div className="space-y-6">
+                        <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl shadow-lg p-8 text-white">
+                          <h3 className="text-3xl font-bold mb-4">🎯 Tebrikler!</h3>
+                          <p className="text-lg">Öncelikleriniz ve hedefleriniz belirlendi</p>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-lg p-8">
+                          <h4 className="text-2xl font-bold text-gray-800 mb-4">En Önemli Önceliğiniz</h4>
+                          <div className="bg-gradient-to-r from-yellow-100 to-orange-100 border-4 border-yellow-400 rounded-xl p-6">
+                            <p className="text-3xl font-bold text-gray-800 text-center">
+                              {dreamData.final_priorities[0]}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-lg p-8">
+                          <h4 className="text-2xl font-bold text-gray-800 mb-4">Hedefleriniz</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
+                              <p className="text-sm text-gray-600 mb-2">Hedef Gelir</p>
+                              <p className="text-2xl font-bold text-blue-600">{dreamData.target_income}</p>
+                            </div>
+                            <div className="bg-green-50 rounded-lg p-6 border border-green-200">
+                              <p className="text-sm text-gray-600 mb-2">Hedef Süre</p>
+                              <p className="text-2xl font-bold text-green-600">{dreamData.target_months}</p>
+                            </div>
+                            <div className="bg-purple-50 rounded-lg p-6 border border-purple-200">
+                              <p className="text-sm text-gray-600 mb-2">Günlük Zaman</p>
+                              <p className="text-2xl font-bold text-purple-600">{dreamData.daily_hours}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            setDreamStep(1);
+                            setDreamData({
+                              initial_dreams: Array(10).fill(''),
+                              final_priorities: [],
+                              target_income: '',
+                              target_months: '',
+                              daily_hours: ''
+                            });
+                            setEliminationList([]);
+                          }}
+                          className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold"
+                        >
+                          Yeniden Başla
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
