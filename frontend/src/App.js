@@ -4223,6 +4223,28 @@ const FocusProApp = () => {
                     </div>
                   </div>
                 )}
+
+                {agendaTab === 'character' && (
+                  <div>
+                    <div className="mb-6">
+                      <h2 className="text-3xl font-bold text-gray-800 mb-2">🧠 Karakter Analizi</h2>
+                      <p className="text-gray-600">AI destekli kişilik analizi ve öneriler</p>
+                    </div>
+                    
+                    <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-8 mb-6">
+                      <div className="text-center">
+                        <div className="text-6xl mb-4">🎯</div>
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2">Yakında!</h3>
+                        <p className="text-gray-600 mb-4">
+                          Karakter analizi özelliği şu anda geliştirme aşamasındadır.
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Bu özellik ile kişilik özelliklerinizi keşfedecek, güçlü yönlerinizi ve gelişim alanlarınızı belirleyeceksiniz.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
