@@ -140,6 +140,17 @@ const FocusProApp = () => {
   const [newHabit, setNewHabit] = useState({ title: '', target: 1 });
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventModal, setShowEventModal] = useState(false);
+  
+  // Dream Priority States
+  const [dreamStep, setDreamStep] = useState(1);
+  const [dreamData, setDreamData] = useState({
+    initial_dreams: Array(10).fill(''),
+    final_priorities: [],
+    target_income: '',
+    target_months: '',
+    daily_hours: ''
+  });
+  const [eliminationList, setEliminationList] = useState([]);
   const [showRecommendationModal, setShowRecommendationModal] = useState(false);
   const [showBlogModal, setShowBlogModal] = useState(false);
   
