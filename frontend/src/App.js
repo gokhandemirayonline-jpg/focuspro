@@ -4642,6 +4642,63 @@ const FocusProApp = () => {
             </div>
           )}
 
+          {/* HAYALLER PAGE */}
+          {currentPage === 'hayaller' && (
+            <div className="p-6">
+              <h1 className="text-3xl font-bold text-gray-800 mb-6">🌟 Hayaller</h1>
+              
+              {/* Tabs */}
+              <div className="mb-6 flex gap-2 border-b border-gray-200">
+                <button
+                  onClick={() => setAgendaTab('dreams')}
+                  className={`px-6 py-3 font-semibold transition-all ${
+                    agendaTab === 'dreams' 
+                      ? 'text-purple-600 border-b-2 border-purple-600' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <Target className="inline mr-2" size={20} />
+                  Değer Önceliklendirme
+                </button>
+                <button
+                  onClick={() => setAgendaTab('character')}
+                  className={`px-6 py-3 font-semibold transition-all ${
+                    agendaTab === 'character' 
+                      ? 'text-purple-600 border-b-2 border-purple-600' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <MessageSquare className="inline mr-2" size={20} />
+                  Karakter Analizi
+                </button>
+              </div>
+
+              {/* Tab Content */}
+              <div>
+                {agendaTab === 'dreams' && (
+                  <div>
+                    <div className="mb-6">
+                      <h2 className="text-3xl font-bold text-gray-800 mb-2">🎯 Değer Önceliklendirme</h2>
+                      <p className="text-gray-600">Hayallerinizi belirleyin ve önceliklerinizi oluşturun</p>
+                    </div>
+                    {/* Copy all dream priority content from agenda */}
+                    {/* This will be done in next step */}
+                  </div>
+                )}
+
+                {agendaTab === 'character' && (
+                  <div>
+                    <div className="mb-6">
+                      <h2 className="text-3xl font-bold text-gray-800 mb-2">🧠 Karakter Analizi</h2>
+                      <p className="text-gray-600">AI destekli kişilik analizi ile kendinizi keşfedin</p>
+                    </div>
+                    {/* Character analysis content stays the same */}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* BADGES PAGE */}
           {currentPage === 'badges' && (
             <BadgeCollection currentUser={currentUser} />
