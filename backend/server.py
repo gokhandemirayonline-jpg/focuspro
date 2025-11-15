@@ -2722,6 +2722,275 @@ Analizi pozitif, motivasyonel ve yapıcı bir dille yaz. Her bölüm en az 2-3 p
 
 # ==================== END CHARACTER ANALYSIS ====================
 
+# ==================== FUTURE CHARACTER ====================
+@api_router.post("/future-character", response_model=FutureCharacter)
+async def create_future_character(
+    future_char: FutureCharacterCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Yeni bir gelecek karakter profili oluşturur"""
+    try:
+        future_dict = future_char.model_dump()
+        future_dict["user_id"] = current_user["id"]
+        future_dict["id"] = str(uuid.uuid4())
+        future_dict["created_at"] = datetime.utcnow()
+        future_dict["updated_at"] = datetime.utcnow()
+        
+        await db.future_character.insert_one(future_dict)
+        return future_dict
+    except Exception as e:
+        logger.error(f"Error creating future character: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Gelecek karakter profili oluşturulurken hata oluştu: {str(e)}")
+
+@api_router.get("/future-character", response_model=List[FutureCharacter])
+async def get_user_future_characters(
+    current_user: dict = Depends(get_current_user)
+):
+    """Kullanıcının tüm gelecek karakter profillerini getirir"""
+    try:
+        characters = await db.future_character.find(
+            {"user_id": current_user["id"]},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(100)
+        return characters
+    except Exception as e:
+        logger.error(f"Error fetching future characters: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Gelecek karakter profilleri getirilirken hata oluştu: {str(e)}")
+
+@api_router.get("/future-character/{character_id}", response_model=FutureCharacter)
+async def get_future_character(
+    character_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Belirli bir gelecek karakter profilini getirir"""
+    try:
+        character = await db.future_character.find_one(
+            {"id": character_id, "user_id": current_user["id"]},
+            {"_id": 0}
+        )
+        if not character:
+            raise HTTPException(status_code=404, detail="Gelecek karakter profili bulunamadı")
+        return character
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching future character: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Gelecek karakter profili getirilirken hata oluştu: {str(e)}")
+
+@api_router.put("/future-character/{character_id}", response_model=FutureCharacter)
+async def update_future_character(
+    character_id: str,
+    character_update: FutureCharacterCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Mevcut bir gelecek karakter profilini günceller"""
+    try:
+        existing = await db.future_character.find_one(
+            {"id": character_id, "user_id": current_user["id"]},
+            {"_id": 0}
+        )
+        if not existing:
+            raise HTTPException(status_code=404, detail="Gelecek karakter profili bulunamadı")
+        
+        update_dict = character_update.model_dump()
+        update_dict["updated_at"] = datetime.utcnow()
+        
+        await db.future_character.update_one(
+            {"id": character_id},
+            {"$set": update_dict}
+        )
+        
+        updated = await db.future_character.find_one({"id": character_id}, {"_id": 0})
+        return updated
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating future character: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Gelecek karakter profili güncellenirken hata oluştu: {str(e)}")
+
+@api_router.delete("/future-character/{character_id}")
+async def delete_future_character(
+    character_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Bir gelecek karakter profilini siler"""
+    try:
+        result = await db.future_character.delete_one(
+            {"id": character_id, "user_id": current_user["id"]}
+        )
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Gelecek karakter profili bulunamadı")
+        return {"success": True, "message": "Gelecek karakter profili başarıyla silindi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting future character: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Gelecek karakter profili silinirken hata oluştu: {str(e)}")
+
+@api_router.post("/future-character/ai-analyze")
+async def analyze_future_character_with_ai(
+    future_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Kullanıcının gelecek karakter hedeflerini AI ile analiz eder
+    """
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        # Kullanıcı verilerini formatlı metne dönüştür
+        traits = future_data.get("character_traits", {})
+        vision = future_data.get("life_vision", {})
+        plan = future_data.get("transformation_plan", {})
+        
+        # AI için prompt oluştur
+        prompt = f"""Sen profesyonel bir yaşam koçu ve kişisel gelişim uzmanısın. Kullanıcının 5+ yıl sonrası için belirlediği hedef karakterini analiz et:
+
+**HEDEF KARAKTERİSTİKLER:**
+- Anahtar Kelimeler: {', '.join(traits.get('keywords', []))}
+- Kişilik Özellikleri: {traits.get('personality_traits', '')}
+- Güçlü Yönler: {traits.get('strengths', '')}
+- Duygusal Durum: {traits.get('emotional_state', '')}
+- Zihinsel Yetenekler: {traits.get('mental_abilities', '')}
+
+**YAŞAM VİZYONU:**
+- Genel Durum: {vision.get('life_overview', '')}
+- İlişkiler: {vision.get('relationships', '')}
+- Kariyer: {vision.get('career', '')}
+- Uzmanlık: {vision.get('mastery_areas', '')}
+- Değerler: {vision.get('core_values', '')}
+- Sosyal Algı: {vision.get('social_perception', '')}
+
+**DÖNÜŞÜM PLANI:**
+- Değişmesi Gerekenler: {plan.get('changes_needed', '')}
+- Kazanılacak Alışkanlıklar: {plan.get('habits_to_gain', '')}
+- Bırakılacak Alışkanlıklar: {plan.get('habits_to_remove', '')}
+- Öğrenilecek Beceriler: {plan.get('skills_to_learn', '')}
+- Mentorlar: {plan.get('mentors', '')}
+- İlk Yıl: {plan.get('first_year_actions', '')}
+
+Lütfen şu başlıklar altında detaylı bir analiz yap:
+
+1. HEDEFLERİN TUTARLILIĞI: Belirlenen hedefler gerçekçi ve uyumlu mu?
+2. VİZYON DEĞERLENDİRMESİ: Yaşam vizyonu ne kadar net ve ulaşılabilir?
+3. DÖNÜŞÜM PLANININ GÜCLENDİRİLMESİ: Plana eklenebilecek öneriler
+4. POTANSİYEL ENGELLER: Karşılaşabileceği zorluklar
+5. BAŞARI STRATEJİLERİ: Hedefe ulaşmak için somut stratejiler
+6. 5 YILLIK YOL HARİTASI: Yıl yıl ne yapmalı?
+7. İLK ADIMLAR: Bugünden başlayarak neler yapabilir?
+
+Analizi motivasyonel, realistik ve detaylı yap. Her bölüm en az 2-3 paragraf olsun."""
+
+        # Claude ile AI analizi yap
+        emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+        if not emergent_key:
+            raise HTTPException(status_code=500, detail="AI servisi yapılandırılmamış")
+        
+        chat = LlmChat(
+            api_key=emergent_key,
+            session_id=f"future_char_{current_user['id']}_{uuid.uuid4()}",
+            system_message="Sen profesyonel bir yaşam koçu ve kişisel gelişim uzmanısın. Kullanıcıların gelecek hedeflerini analiz edip detaylı roadmap'ler oluşturursun."
+        ).with_model("anthropic", "claude-sonnet-4-20250514")
+        
+        user_message = UserMessage(text=prompt)
+        ai_response = await chat.send_message(user_message)
+        
+        return {
+            "success": True,
+            "analysis": ai_response,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in AI future character analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI analizi yapılırken hata oluştu: {str(e)}")
+
+@api_router.post("/character-gap-analysis")
+async def analyze_character_gap(
+    analysis_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Mevcut durum ve gelecek hedefleri karşılaştırıp gap analysis yapar
+    """
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        current = analysis_data.get("current", {})
+        future = analysis_data.get("future", {})
+        
+        prompt = f"""Sen profesyonel bir yaşam koçu ve kişisel gelişim uzmanısın. Kullanıcının MEVCUT karakteri ile İSTENİLEN karakteri arasında GAP ANALİZİ yap:
+
+**MEVCUT DURUM ÖZETİ:**
+{analysis_data.get("current_summary", "Mevcut durum analizi yapılmamış")}
+
+**İSTENİLEN KARAKTER ÖZETİ:**
+{analysis_data.get("future_summary", "Hedef karakter tanımlanmamış")}
+
+Lütfen şu başlıklar altında detaylı bir GAP ANALİZİ yap:
+
+1. 📊 FARK ANALİZİ (GAP ANALYSIS)
+   - Mevcut vs. İstenilen karşılaştırması
+   - Hangi alanlarda en büyük farklar var?
+   - Tablolu karşılaştırma
+
+2. 🎯 ÖNCELİKLİ GELİŞİM ALANLARI
+   - İlk önce hangi alanlara odaklanmalı?
+   - Neden bu alanlar kritik?
+
+3. 📅 5 YILLIK DÖNÜŞÜM ROADMAP'İ
+   - Yıl 1: Temel değişimler
+   - Yıl 2: Alışkanlık yerleştirme
+   - Yıl 3: Beceri geliştirme
+   - Yıl 4: Derinleşme
+   - Yıl 5: Hedef karaktere varış
+
+4. 🚀 HEMEN BAŞLAYACAK AKSIYONLAR
+   - Bu hafta: 3 somut aksiyon
+   - Bu ay: 5 önemli adım
+   - İlk 3 ay: Ana hedefler
+
+5. ⚠️ DİKKAT EDİLMESİ GEREKENLER
+   - Potansiyel tuzaklar
+   - Motivasyon düşüşü anları
+   - Nasıl önlem alınır?
+
+6. 💪 MOTİVASYON VE DESTEK
+   - Motivasyonu yüksek tutma stratejileri
+   - Destek sistemleri kurma
+   - İlerlemeyi ölçme yöntemleri
+
+Analizi son derece detaylı, motivasyonel ve uygulanabilir yap."""
+
+        emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+        if not emergent_key:
+            raise HTTPException(status_code=500, detail="AI servisi yapılandırılmamış")
+        
+        chat = LlmChat(
+            api_key=emergent_key,
+            session_id=f"gap_analysis_{current_user['id']}_{uuid.uuid4()}",
+            system_message="Sen profesyonel bir yaşam koçu ve kişisel gelişim uzmanısın. Mevcut durum ile hedefler arasındaki farkları analiz edip detaylı roadmap'ler oluşturursun."
+        ).with_model("anthropic", "claude-sonnet-4-20250514")
+        
+        user_message = UserMessage(text=prompt)
+        ai_response = await chat.send_message(user_message)
+        
+        return {
+            "success": True,
+            "gap_analysis": ai_response,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in gap analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Gap analizi yapılırken hata oluştu: {str(e)}")
+
+# ==================== END FUTURE CHARACTER ====================
+
 # Include the router in the main app
 app.include_router(api_router)
 
