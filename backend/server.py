@@ -2481,9 +2481,6 @@ async def change_password(password_data: ChangePassword, current_user: dict = De
     return {"message": "Şifre başarıyla değiştirildi"}
 
 
-# Include the router in the main app
-app.include_router(api_router)
-
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
