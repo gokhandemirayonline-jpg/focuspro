@@ -645,6 +645,53 @@ const FocusProApp = () => {
     }
   };
 
+  // Future Character Functions
+  const analyzeFutureCharacter = async () => {
+    try {
+      setIsAnalyzingFuture(true);
+      const response = await futureCharacterAPI.aiAnalyze(futureCharacterData);
+      setFutureAiAnalysisResult(response.data.analysis);
+      setFutureCharacterStep(4); // Move to results step
+    } catch (error) {
+      console.error('AI analizi hatası:', error);
+      alert('Analiz yapılırken bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setIsAnalyzingFuture(false);
+    }
+  };
+
+  const saveFutureCharacter = async () => {
+    try {
+      const dataToSave = {
+        ...futureCharacterData,
+        ai_insights: futureAiAnalysisResult || ''
+      };
+      await futureCharacterAPI.create(dataToSave);
+      alert('Gelecek karakter profiliniz kaydedildi!');
+    } catch (error) {
+      console.error('Kaydetme hatası:', error);
+      alert('Kaydetme sırasında bir hata oluştu.');
+    }
+  };
+
+  const analyzeGap = async () => {
+    try {
+      setIsAnalyzingGap(true);
+      const response = await futureCharacterAPI.gapAnalysis({
+        current: characterData,
+        future: futureCharacterData,
+        current_summary: aiAnalysisResult || '',
+        future_summary: futureAiAnalysisResult || ''
+      });
+      setGapAnalysisResult(response.data.gap_analysis);
+    } catch (error) {
+      console.error('Gap analizi hatası:', error);
+      alert('Gap analizi yapılırken bir hata oluştu.');
+    } finally {
+      setIsAnalyzingGap(false);
+    }
+  };
+
   const loadProspects = async () => {
     try {
       const response = await prospectAPI.getAll();
