@@ -4370,10 +4370,61 @@ const FocusProApp = () => {
                   <div>
                     <div className="mb-6">
                       <h2 className="text-3xl font-bold text-gray-800 mb-2">🧠 Karakter Analizi</h2>
-                      <p className="text-gray-600">AI destekli kişilik analizi ile kendinizi keşfedin</p>
+                      <p className="text-gray-600">Mevcut durumunuzu analiz edin ve geleceğinizi planlayın</p>
                     </div>
 
-                    {/* Progress Bar */}
+                    {/* Character Analysis Sub-Tabs */}
+                    <div className="mb-6 flex gap-2 border-b border-gray-200">
+                      <button
+                        onClick={() => setCharacterTab('current')}
+                        className={`px-6 py-3 font-semibold transition-all ${
+                          characterTab === 'current' 
+                            ? 'text-purple-600 border-b-2 border-purple-600' 
+                            : 'text-gray-600 hover:text-gray-800'
+                        }`}
+                      >
+                        📍 Mevcut Durum Analizi
+                      </button>
+                      <button
+                        onClick={() => setCharacterTab('future')}
+                        className={`px-6 py-3 font-semibold transition-all ${
+                          characterTab === 'future' 
+                            ? 'text-green-600 border-b-2 border-green-600' 
+                            : 'text-gray-600 hover:text-gray-800'
+                        }`}
+                      >
+                        🎯 İstenilen Karakter
+                      </button>
+                      <button
+                        onClick={() => {
+                          setCharacterTab('gap');
+                          if (aiAnalysisResult && futureAiAnalysisResult) {
+                            analyzeGap();
+                          }
+                        }}
+                        disabled={!aiAnalysisResult || !futureAiAnalysisResult}
+                        className={`px-6 py-3 font-semibold transition-all ${
+                          characterTab === 'gap' 
+                            ? 'text-blue-600 border-b-2 border-blue-600' 
+                            : aiAnalysisResult && futureAiAnalysisResult
+                              ? 'text-gray-600 hover:text-gray-800'
+                              : 'text-gray-400 cursor-not-allowed'
+                        }`}
+                      >
+                        📊 Karşılaştırma & Plan
+                      </button>
+                    </div>
+
+                    {/* CURRENT CHARACTER TAB */}
+                    {characterTab === 'current' && (
+                      <div>
+                        <div className="mb-4 bg-purple-50 border-l-4 border-purple-600 p-4 rounded">
+                          <p className="text-sm text-purple-800">
+                            <strong>Mevcut Durum Analizi:</strong> Bugünkü karakterinizi ve kişiliğinizi tanıyın
+                          </p>
+                        </div>
+
+                        {/* Progress Bar */}
                     <div className="mb-8">
                       <div className="flex justify-between items-center mb-2">
                         {[1, 2, 3, 4].map((step) => (
