@@ -243,4 +243,14 @@ export const badgeAPI = {
   awardBadge: (userId, badgeData) => api.post('/admin/badges/award', badgeData, { params: { user_id: userId } }),
 };
 
+// Character Analysis API
+export const characterAnalysisAPI = {
+  getAll: () => api.get('/character-analysis'),
+  getById: (analysisId) => api.get(`/character-analysis/${analysisId}`),
+  create: (analysisData) => api.post('/character-analysis', analysisData),
+  update: (analysisId, analysisData) => api.put(`/character-analysis/${analysisId}`, analysisData),
+  delete: (analysisId) => api.delete(`/character-analysis/${analysisId}`),
+  aiAnalyze: (analysisData) => api.post('/character-analysis/ai-analyze', analysisData),
+};
+
 export default api;
