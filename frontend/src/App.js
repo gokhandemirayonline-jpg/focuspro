@@ -186,6 +186,40 @@ const FocusProApp = () => {
   const [aiAnalysisResult, setAiAnalysisResult] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
+  // Future Character States
+  const [characterTab, setCharacterTab] = useState('current'); // 'current' or 'future' or 'gap'
+  const [futureCharacterStep, setFutureCharacterStep] = useState(1);
+  const [futureCharacterData, setFutureCharacterData] = useState({
+    character_traits: {
+      keywords: ['', '', '', '', ''],
+      personality_traits: '',
+      strengths: '',
+      emotional_state: '',
+      mental_abilities: ''
+    },
+    life_vision: {
+      life_overview: '',
+      relationships: '',
+      career: '',
+      mastery_areas: '',
+      core_values: '',
+      social_perception: ''
+    },
+    transformation_plan: {
+      changes_needed: '',
+      habits_to_gain: '',
+      habits_to_remove: '',
+      skills_to_learn: '',
+      mentors: '',
+      first_year_actions: ''
+    },
+    ai_insights: ''
+  });
+  const [futureAiAnalysisResult, setFutureAiAnalysisResult] = useState(null);
+  const [gapAnalysisResult, setGapAnalysisResult] = useState(null);
+  const [isAnalyzingFuture, setIsAnalyzingFuture] = useState(false);
+  const [isAnalyzingGap, setIsAnalyzingGap] = useState(false);
+  
   const [editingUser, setEditingUser] = useState(null);
   const [editingMeeting, setEditingMeeting] = useState(null);
   const [editingTask, setEditingTask] = useState(null);
