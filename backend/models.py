@@ -310,6 +310,50 @@ class DreamPriority(DreamPriorityBase):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+# Character Analysis Models
+class RecentEvents(BaseModel):
+    proud_moment: str = ""
+    struggled_moment: str = ""
+    avoided_moment: str = ""
+    last_angry: str = ""
+    last_happy: str = ""
+    recurring_pattern: str = ""
+
+class IdealDay(BaseModel):
+    wake_up: str = ""
+    morning: str = ""
+    work: str = ""
+    afternoon: str = ""
+    evening: str = ""
+    before_sleep: str = ""
+    peoples_say: str = ""
+    feelings: str = ""
+    values: str = ""
+
+class NinetyDayPlan(BaseModel):
+    main_identity: str = ""
+    weekly_action: str = ""
+    obstacles: str = ""
+    plan_b: str = ""
+    weekly_check_in: str = ""
+    first_week: str = ""
+
+class CharacterAnalysisBase(BaseModel):
+    recent_events: RecentEvents = RecentEvents()
+    ideal_day: IdealDay = IdealDay()
+    ninety_day_plan: NinetyDayPlan = NinetyDayPlan()
+    ai_insights: str = ""
+
+class CharacterAnalysisCreate(CharacterAnalysisBase):
+    pass
+
+class CharacterAnalysis(CharacterAnalysisBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
 
 # Prospect Models
 class ProspectBase(BaseModel):
