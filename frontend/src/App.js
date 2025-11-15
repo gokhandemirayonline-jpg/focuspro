@@ -1951,16 +1951,6 @@ const FocusProApp = () => {
           </button>
 
           <button
-            onClick={() => setCurrentPage('hayaller')}
-            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
-              currentPage === 'hayaller' ? 'bg-white/20' : 'hover:bg-white/10'
-            }`}
-          >
-            <MessageSquare size={20} />
-            {sidebarOpen && <span>Hayaller</span>}
-          </button>
-
-          <button
             onClick={() => setCurrentPage('videos')}
             className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
               currentPage === 'videos' ? 'bg-white/20' : 'hover:bg-white/10'
