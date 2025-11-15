@@ -582,6 +582,35 @@ const FocusProApp = () => {
     }
   };
 
+  // Character Analysis Functions
+  const analyzeCharacter = async () => {
+    try {
+      setIsAnalyzing(true);
+      const response = await characterAnalysisAPI.aiAnalyze(characterData);
+      setAiAnalysisResult(response.data.analysis);
+      setCharacterStep(4); // Move to results step
+    } catch (error) {
+      console.error('AI analizi hatası:', error);
+      alert('Analiz yapılırken bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const saveCharacterAnalysis = async () => {
+    try {
+      const dataToSave = {
+        ...characterData,
+        ai_insights: aiAnalysisResult || ''
+      };
+      await characterAnalysisAPI.create(dataToSave);
+      alert('Karakter analiziniz kaydedildi!');
+    } catch (error) {
+      console.error('Kaydetme hatası:', error);
+      alert('Kaydetme sırasında bir hata oluştu.');
+    }
+  };
+
   const loadProspects = async () => {
     try {
       const response = await prospectAPI.getAll();
