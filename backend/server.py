@@ -37,7 +37,8 @@ from models import (
     BlogCreate, Blog,
     MessageCreate, Message, MessageReply,
     DreamPriorityCreate, DreamPriority,
-    CharacterAnalysisCreate, CharacterAnalysis
+    CharacterAnalysisCreate, CharacterAnalysis,
+    FutureCharacterCreate, FutureCharacter
 )
 
 
