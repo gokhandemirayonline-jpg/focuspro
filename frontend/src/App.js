@@ -220,6 +220,38 @@ const FocusProApp = () => {
   const [isAnalyzingFuture, setIsAnalyzingFuture] = useState(false);
   const [isAnalyzingGap, setIsAnalyzingGap] = useState(false);
   
+  // Full Life Profile States (Detaylı Yaşam Tablosu)
+  const [lifeProfileStep, setLifeProfileStep] = useState(0); // 0: current, 1: future, 2: action, 3: gap
+  const [lifeProfileCategory, setLifeProfileCategory] = useState(0);
+  
+  const [currentLifeState, setCurrentLifeState] = useState({
+    physical: '', energy: '', style: '',
+    skills: '', hobbies: '',
+    home: '', car: '', possessions: '', financial: '',
+    places: '', socialCircle: '', dailyRoutine: '',
+    positiveTraits: '', negativeTraits: ''
+  });
+  
+  const [futureLifeState, setFutureLifeState] = useState({
+    physical: '', energy: '', style: '',
+    skills: '', hobbies: '', achievements: '',
+    home: '', car: '', possessions: '', financial: '',
+    places: '', socialCircle: '', dailyRoutine: '', lifestyle: '',
+    transformedTraits: ''
+  });
+  
+  const [actionPlan90, setActionPlan90] = useState({
+    identity90: '', skillsToLearn: '', financialSteps: '',
+    healthSteps: '', socialSteps: '', firstMonth: ''
+  });
+  
+  const [currentAiAnalysis, setCurrentAiAnalysis] = useState(null);
+  const [futureAiAnalysis, setFutureAiAnalysis] = useState(null);
+  const [fullGapAnalysis, setFullGapAnalysis] = useState(null);
+  const [isAnalyzingCurrent, setIsAnalyzingCurrent] = useState(false);
+  const [isAnalyzingFuture, setIsAnalyzingFuture] = useState(false);
+  const [isAnalyzingFullGap, setIsAnalyzingFullGap] = useState(false);
+  
   const [editingUser, setEditingUser] = useState(null);
   const [editingMeeting, setEditingMeeting] = useState(null);
   const [editingTask, setEditingTask] = useState(null);
