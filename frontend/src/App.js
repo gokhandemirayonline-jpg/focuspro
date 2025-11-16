@@ -5362,6 +5362,28 @@ const FocusProApp = () => {
                     )}
                   </div>
                 )}
+
+                {agendaTab === 'lifeprofile' && (
+                  <FullLifeProfileForm
+                    currentUser={currentUser}
+                    currentState={currentLifeState}
+                    setCurrentState={setCurrentLifeState}
+                    futureState={futureLifeState}
+                    setFutureState={setFutureLifeState}
+                    actionPlan={actionPlan90}
+                    setActionPlan={setActionPlan90}
+                    onAnalyzeCurrent={analyzeCurrentLife}
+                    onAnalyzeFuture={analyzeFutureLife}
+                    onAnalyzeGap={analyzeFullGap}
+                    onSave={saveFullLifeProfile}
+                    currentAiAnalysis={currentAiAnalysis}
+                    futureAiAnalysis={futureAiAnalysis}
+                    gapAnalysis={fullGapAnalysis}
+                    isAnalyzingCurrent={isAnalyzingCurrent}
+                    isAnalyzingFuture={isAnalyzingFuture}
+                    isAnalyzingGap={isAnalyzingFullGap}
+                  />
+                )}
               </div>
             </div>
           )}
