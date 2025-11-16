@@ -14,6 +14,9 @@ import bcrypt
 import base64
 import uuid
 
+# Load environment variables
+load_dotenv()
+
 from models import (
     UserCreate, UserLogin, User, UserResponse, UserUpdate, UserAdminUpdate, ChangePassword,
     VideoCategoryCreate, VideoCategory,
