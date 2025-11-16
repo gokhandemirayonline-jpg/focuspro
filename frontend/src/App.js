@@ -724,6 +724,69 @@ const FocusProApp = () => {
     }
   };
 
+  // Full Life Profile Functions
+  const analyzeCurrentLife = async () => {
+    try {
+      setIsAnalyzingCurrent(true);
+      const response = await fullLifeProfileAPI.analyzeCurrent(currentLifeState);
+      setCurrentAiAnalysis(response.data.analysis);
+      alert('✅ Mevcut durum analizi tamamlandı!');
+    } catch (error) {
+      console.error('Mevcut durum analizi hatası:', error);
+      alert('Analiz yapılırken bir hata oluştu.');
+    } finally {
+      setIsAnalyzingCurrent(false);
+    }
+  };
+
+  const analyzeFutureLife = async () => {
+    try {
+      setIsAnalyzingFuture(true);
+      const response = await fullLifeProfileAPI.analyzeFuture(futureLifeState);
+      setFutureAiAnalysis(response.data.analysis);
+      alert('✅ Gelecek hedef analizi tamamlandı!');
+    } catch (error) {
+      console.error('Gelecek analizi hatası:', error);
+      alert('Analiz yapılırken bir hata oluştu.');
+    } finally {
+      setIsAnalyzingFuture(false);
+    }
+  };
+
+  const analyzeFullGap = async () => {
+    try {
+      setIsAnalyzingFullGap(true);
+      const response = await fullLifeProfileAPI.gapAnalysis({
+        current: currentLifeState,
+        future: futureLifeState
+      });
+      setFullGapAnalysis(response.data.gap_analysis);
+    } catch (error) {
+      console.error('Gap analizi hatası:', error);
+      alert('Gap analizi yapılırken bir hata oluştu.');
+    } finally {
+      setIsAnalyzingFullGap(false);
+    }
+  };
+
+  const saveFullLifeProfile = async () => {
+    try {
+      const profileData = {
+        current_state: currentLifeState,
+        future_state: futureLifeState,
+        action_plan: actionPlan90,
+        current_ai_analysis: currentAiAnalysis || '',
+        future_ai_analysis: futureAiAnalysis || '',
+        gap_analysis: fullGapAnalysis || ''
+      };
+      await fullLifeProfileAPI.create(profileData);
+      alert('✅ Tam yaşam profiliniz kaydedildi!');
+    } catch (error) {
+      console.error('Kaydetme hatası:', error);
+      alert('Kaydetme sırasında bir hata oluştu.');
+    }
+  };
+
   const loadProspects = async () => {
     try {
       const response = await prospectAPI.getAll();
