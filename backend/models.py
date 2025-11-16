@@ -396,6 +396,77 @@ class FutureCharacter(FutureCharacterBase):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+# Full Life Profile Models (Detaylı Yaşam Tablosu)
+class CurrentStateProfile(BaseModel):
+    # Fiziksel
+    physical: str = ""
+    energy: str = ""
+    style: str = ""
+    # Yetenekler
+    skills: str = ""
+    hobbies: str = ""
+    # Maddi
+    home: str = ""
+    car: str = ""
+    possessions: str = ""
+    financial: str = ""
+    # Yaşam Tarzı
+    places: str = ""
+    social_circle: str = ""
+    daily_routine: str = ""
+    # Karakter
+    positive_traits: str = ""
+    negative_traits: str = ""
+
+class FutureStateProfile(BaseModel):
+    # Fiziksel
+    physical: str = ""
+    energy: str = ""
+    style: str = ""
+    # Yetenekler
+    skills: str = ""
+    hobbies: str = ""
+    achievements: str = ""
+    # Maddi
+    home: str = ""
+    car: str = ""
+    possessions: str = ""
+    financial: str = ""
+    # Yaşam Tarzı
+    places: str = ""
+    social_circle: str = ""
+    daily_routine: str = ""
+    lifestyle: str = ""
+    # Karakter
+    transformed_traits: str = ""
+
+class ActionPlan90Days(BaseModel):
+    identity_90: str = ""
+    skills_to_learn: str = ""
+    financial_steps: str = ""
+    health_steps: str = ""
+    social_steps: str = ""
+    first_month: str = ""
+
+class FullLifeProfileBase(BaseModel):
+    current_state: CurrentStateProfile = CurrentStateProfile()
+    future_state: FutureStateProfile = FutureStateProfile()
+    action_plan: ActionPlan90Days = ActionPlan90Days()
+    current_ai_analysis: str = ""
+    future_ai_analysis: str = ""
+    gap_analysis: str = ""
+
+class FullLifeProfileCreate(FullLifeProfileBase):
+    pass
+
+class FullLifeProfile(FullLifeProfileBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 # Prospect Models
 class ProspectBase(BaseModel):
     name: str
