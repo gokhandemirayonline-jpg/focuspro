@@ -2995,6 +2995,358 @@ Analizi son derece detaylı, motivasyonel ve uygulanabilir yap."""
 
 # ==================== END FUTURE CHARACTER ====================
 
+# ==================== FULL LIFE PROFILE ====================
+@api_router.post("/full-life-profile", response_model=FullLifeProfile)
+async def create_full_life_profile(
+    profile: FullLifeProfileCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Tam yaşam profili oluşturur"""
+    try:
+        profile_dict = profile.model_dump()
+        profile_dict["user_id"] = current_user["id"]
+        profile_dict["id"] = str(uuid.uuid4())
+        profile_dict["created_at"] = datetime.utcnow()
+        profile_dict["updated_at"] = datetime.utcnow()
+        
+        await db.full_life_profile.insert_one(profile_dict)
+        return profile_dict
+    except Exception as e:
+        logger.error(f"Error creating full life profile: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Profil oluşturulurken hata oluştu: {str(e)}")
+
+@api_router.get("/full-life-profile", response_model=List[FullLifeProfile])
+async def get_user_full_life_profiles(
+    current_user: dict = Depends(get_current_user)
+):
+    """Kullanıcının tüm yaşam profillerini getirir"""
+    try:
+        profiles = await db.full_life_profile.find(
+            {"user_id": current_user["id"]},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(100)
+        return profiles
+    except Exception as e:
+        logger.error(f"Error fetching full life profiles: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Profiller getirilirken hata oluştu: {str(e)}")
+
+@api_router.get("/full-life-profile/{profile_id}", response_model=FullLifeProfile)
+async def get_full_life_profile(
+    profile_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Belirli bir yaşam profilini getirir"""
+    try:
+        profile = await db.full_life_profile.find_one(
+            {"id": profile_id, "user_id": current_user["id"]},
+            {"_id": 0}
+        )
+        if not profile:
+            raise HTTPException(status_code=404, detail="Profil bulunamadı")
+        return profile
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching full life profile: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Profil getirilirken hata oluştu: {str(e)}")
+
+@api_router.put("/full-life-profile/{profile_id}", response_model=FullLifeProfile)
+async def update_full_life_profile(
+    profile_id: str,
+    profile_update: FullLifeProfileCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Mevcut bir yaşam profilini günceller"""
+    try:
+        existing = await db.full_life_profile.find_one(
+            {"id": profile_id, "user_id": current_user["id"]},
+            {"_id": 0}
+        )
+        if not existing:
+            raise HTTPException(status_code=404, detail="Profil bulunamadı")
+        
+        update_dict = profile_update.model_dump()
+        update_dict["updated_at"] = datetime.utcnow()
+        
+        await db.full_life_profile.update_one(
+            {"id": profile_id},
+            {"$set": update_dict}
+        )
+        
+        updated = await db.full_life_profile.find_one({"id": profile_id}, {"_id": 0})
+        return updated
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating full life profile: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Profil güncellenirken hata oluştu: {str(e)}")
+
+@api_router.post("/full-life-profile/analyze-current")
+async def analyze_current_state(
+    current_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Mevcut durumu AI ile analiz eder"""
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        prompt = f"""Sen profesyonel bir yaşam koçu ve kişisel gelişim uzmanısın. Kullanıcının mevcut yaşam durumunu analiz et:
+
+**FİZİKSEL DURUM:**
+- Fiziksel: {current_data.get('physical', '')}
+- Enerji: {current_data.get('energy', '')}
+- Giyim: {current_data.get('style', '')}
+
+**YETENEKLER:**
+- Yetenekler: {current_data.get('skills', '')}
+- Hobiler: {current_data.get('hobbies', '')}
+
+**MADDİ DURUM:**
+- Ev: {current_data.get('home', '')}
+- Araba: {current_data.get('car', '')}
+- Eşyalar: {current_data.get('possessions', '')}
+- Finans: {current_data.get('financial', '')}
+
+**YAŞAM TARZI:**
+- Mekanlar: {current_data.get('places', '')}
+- Sosyal: {current_data.get('socialCircle', '')}
+- Rutin: {current_data.get('dailyRoutine', '')}
+
+**KARAKTER:**
+- Olumlu: {current_data.get('positiveTraits', '')}
+- Olumsuz: {current_data.get('negativeTraits', '')}
+
+Lütfen şu başlıklar altında analiz yap:
+
+1. **GENEL DURUM ÖZETİ**: Kişinin şu anki yaşam durumu nasıl?
+
+2. **GÜÇLÜ YÖNLER**: Olumlu olan ve üzerine inşa edilebilecek alanlar
+
+3. **GELİŞİM ALANLARI**: İyileştirilebilecek alanlar
+
+4. **FİZİKSEL & ENERJİ**: Sağlık, enerji, yaşam tarzı değerlendirmesi
+
+5. **MADDİ & FİNANSAL**: Mevcut durum değerlendirmesi
+
+6. **SOSYAL & DUYGUSAL**: İlişkiler ve sosyal yaşam kalitesi
+
+7. **HEMEN YAPILACAKLAR**: İlk adımlar için öneriler
+
+Analizi empatik, motivasyonel ve yapıcı yap. Her bölüm 2-3 paragraf olsun."""
+
+        emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+        if not emergent_key:
+            raise HTTPException(status_code=500, detail="AI servisi yapılandırılmamış")
+        
+        chat = LlmChat(
+            api_key=emergent_key,
+            session_id=f"current_analysis_{current_user['id']}_{uuid.uuid4()}",
+            system_message="Sen profesyonel bir yaşam koçu ve kişisel gelişim uzmanısın."
+        ).with_model("anthropic", "claude-sonnet-4-20250514")
+        
+        user_message = UserMessage(text=prompt)
+        ai_response = await chat.send_message(user_message)
+        
+        return {
+            "success": True,
+            "analysis": ai_response,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in current state analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Analiz yapılırken hata oluştu: {str(e)}")
+
+@api_router.post("/full-life-profile/analyze-future")
+async def analyze_future_state(
+    future_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Gelecek hedeflerini AI ile analiz eder"""
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        prompt = f"""Sen profesyonel bir yaşam koçu ve kişisel gelişim uzmanısın. Kullanıcının 5 yıl sonrası için belirlediği hedeflerini analiz et:
+
+**FİZİKSEL HEDEFLERİ:**
+- Fiziksel: {future_data.get('physical', '')}
+- Enerji: {future_data.get('energy', '')}
+- Giyim: {future_data.get('style', '')}
+
+**YETENEK HEDEFLERİ:**
+- Yetenekler: {future_data.get('skills', '')}
+- Hobiler: {future_data.get('hobbies', '')}
+- Başarılar: {future_data.get('achievements', '')}
+
+**MADDİ HEDEFLERİ:**
+- Ev: {future_data.get('home', '')}
+- Araba: {future_data.get('car', '')}
+- Eşyalar: {future_data.get('possessions', '')}
+- Finans: {future_data.get('financial', '')}
+
+**YAŞAM TARZI HEDEFLERİ:**
+- Mekanlar: {future_data.get('places', '')}
+- Sosyal: {future_data.get('socialCircle', '')}
+- İdeal Gün: {future_data.get('dailyRoutine', '')}
+- Yaşam Tarzı: {future_data.get('lifestyle', '')}
+
+**KARAKTER DEĞİŞİMİ:**
+- Dönüşüm: {future_data.get('transformedTraits', '')}
+
+Lütfen şu başlıklar altında analiz yap:
+
+1. **VİZYON DEĞERLENDİRMESİ**: Hedefler net ve gerçekçi mi?
+
+2. **GÜÇLÜ HEDEFLENMİŞ ALANLAR**: En güçlü ve net olan hedefler
+
+3. **DAHA NETLEŞTİRİLMESİ GEREKENLER**: Eksik veya belirsiz alanlar
+
+4. **FİNANSAL GERÇEKÇİLİK**: Maddi hedefler ulaşılabilir mi?
+
+5. **YAŞAM TARZI UYUMU**: Hedefler birbirleriyle uyumlu mu?
+
+6. **5 YILLIK YOLCULUK**: Adım adım nasıl gidilir?
+
+7. **MOTİVASYON ÖNERİLERİ**: Motivasyonu nasıl korur?
+
+Analizi motivasyonel ve realistik yap. Her bölüm 2-3 paragraf olsun."""
+
+        emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+        if not emergent_key:
+            raise HTTPException(status_code=500, detail="AI servisi yapılandırılmamış")
+        
+        chat = LlmChat(
+            api_key=emergent_key,
+            session_id=f"future_analysis_{current_user['id']}_{uuid.uuid4()}",
+            system_message="Sen profesyonel bir yaşam koçu ve kişisel gelişim uzmanısın."
+        ).with_model("anthropic", "claude-sonnet-4-20250514")
+        
+        user_message = UserMessage(text=prompt)
+        ai_response = await chat.send_message(user_message)
+        
+        return {
+            "success": True,
+            "analysis": ai_response,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in future state analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Analiz yapılırken hata oluştu: {str(e)}")
+
+@api_router.post("/full-life-profile/gap-analysis")
+async def full_gap_analysis(
+    analysis_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Mevcut durum ve gelecek hedefleri arasında detaylı gap analysis yapar"""
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        current = analysis_data.get("current", {})
+        future = analysis_data.get("future", {})
+        
+        prompt = f"""Sen profesyonel bir yaşam koçu ve kişisel gelişim uzmanısın. Kullanıcının BUGÜN vs. 5 YIL SONRA durumu arasında detaylı GAP ANALİZİ yap:
+
+**BUGÜN:**
+Fiziksel: {current.get('physical', '')}
+Yetenekler: {current.get('skills', '')}
+Ev: {current.get('home', '')}
+Araba: {current.get('car', '')}
+Finans: {current.get('financial', '')}
+Sosyal: {current.get('socialCircle', '')}
+Olumlu: {current.get('positiveTraits', '')}
+Olumsuz: {current.get('negativeTraits', '')}
+
+**5 YIL SONRA:**
+Fiziksel: {future.get('physical', '')}
+Yetenekler: {future.get('skills', '')}
+Ev: {future.get('home', '')}
+Araba: {future.get('car', '')}
+Finans: {future.get('financial', '')}
+Sosyal: {future.get('socialCircle', '')}
+Dönüşmüş Özellikler: {future.get('transformedTraits', '')}
+
+Lütfen şu şekilde detaylı bir analiz yap:
+
+1. **📊 KARŞILAŞTIRMA TABLOSU** (Markdown tablo formatında):
+   - Fiziksel durum karşılaştırması
+   - Yetenek farkı
+   - Maddi durum farkı
+   - Yaşam tarzı farkı
+   - Karakter dönüşümü
+
+2. **🎯 EN BÜYÜK FARKLAR** (3-5 madde):
+   - Hangi alanlarda en büyük dönüşüm var?
+   - Hangi hedefler en zorlayıcı?
+
+3. **🗓️ 5 YILLIK DÖNÜŞÜM ROADMAP'İ**:
+   **YIL 1 (Temel Oluşturma):**
+   - Yapılacaklar
+   - Hedefler
+   
+   **YIL 2 (Momentum Kazanma):**
+   - Yapılacaklar
+   - Hedefler
+   
+   **YIL 3 (Derinleşme):**
+   - Yapılacaklar
+   - Hedefler
+   
+   **YIL 4 (Konsolidasyon):**
+   - Yapılacaklar
+   - Hedefler
+   
+   **YIL 5 (Hedef Karaktere Varış):**
+   - Yapılacaklar
+   - Nihai durum
+
+4. **🚀 İLK 90 GÜN İÇİN HEMEN BAŞLANACAK ADIMLAR**:
+   - İlk hafta
+   - İlk ay
+   - İlk 3 ay
+
+5. **⚠️ POTANSİYEL ENGELLER VE ÇÖZÜMLER**:
+   - Karşılaşılabilecek zorluklar
+   - Nasıl aşılır?
+
+6. **💪 MOTİVASYON STRATEJİSİ**:
+   - Motivasyonu nasıl korursun?
+   - İlerleme nasıl ölçülür?
+
+Analizi çok detaylı, motivasyonel ve uygulanabilir yap."""
+
+        emergent_key = os.environ.get("EMERGENT_LLM_KEY")
+        if not emergent_key:
+            raise HTTPException(status_code=500, detail="AI servisi yapılandırılmamış")
+        
+        chat = LlmChat(
+            api_key=emergent_key,
+            session_id=f"full_gap_{current_user['id']}_{uuid.uuid4()}",
+            system_message="Sen profesyonel bir yaşam koçu ve kişisel gelişim uzmanısın. Detaylı roadmap'ler oluşturursun."
+        ).with_model("anthropic", "claude-sonnet-4-20250514")
+        
+        user_message = UserMessage(text=prompt)
+        ai_response = await chat.send_message(user_message)
+        
+        return {
+            "success": True,
+            "gap_analysis": ai_response,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in full gap analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Gap analizi yapılırken hata oluştu: {str(e)}")
+
+# ==================== END FULL LIFE PROFILE ====================
+
 # Include the router in the main app
 app.include_router(api_router)
 
