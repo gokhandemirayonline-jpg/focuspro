@@ -3919,6 +3919,17 @@ const FocusProApp = () => {
                   <MessageSquare className="inline mr-2" size={20} />
                   Karakter Analizi
                 </button>
+                <button
+                  onClick={() => setAgendaTab('lifeprofile')}
+                  className={`px-6 py-3 font-semibold transition-all ${
+                    agendaTab === 'lifeprofile' 
+                      ? 'text-blue-600 border-b-2 border-blue-600' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <Star className="inline mr-2" size={20} />
+                  Tam Yaşam Tablosu
+                </button>
               </div>
 
               {/* Tab Content */}
