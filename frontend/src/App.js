@@ -728,7 +728,7 @@ const FocusProApp = () => {
   // Full Life Profile Functions
   const analyzeCurrentLife = async () => {
     try {
-      setIsAnalyzingCurrent(true);
+      setIsAnalyzingCurrentLife(true);
       const response = await fullLifeProfileAPI.analyzeCurrent(currentLifeState);
       setCurrentAiAnalysis(response.data.analysis);
       alert('✅ Mevcut durum analizi tamamlandı!');
@@ -736,13 +736,13 @@ const FocusProApp = () => {
       console.error('Mevcut durum analizi hatası:', error);
       alert('Analiz yapılırken bir hata oluştu.');
     } finally {
-      setIsAnalyzingCurrent(false);
+      setIsAnalyzingCurrentLife(false);
     }
   };
 
   const analyzeFutureLife = async () => {
     try {
-      setIsAnalyzingFuture(true);
+      setIsAnalyzingFutureLife(true);
       const response = await fullLifeProfileAPI.analyzeFuture(futureLifeState);
       setFutureAiAnalysis(response.data.analysis);
       alert('✅ Gelecek hedef analizi tamamlandı!');
@@ -750,7 +750,7 @@ const FocusProApp = () => {
       console.error('Gelecek analizi hatası:', error);
       alert('Analiz yapılırken bir hata oluştu.');
     } finally {
-      setIsAnalyzingFuture(false);
+      setIsAnalyzingFutureLife(false);
     }
   };
 
