@@ -5379,8 +5379,8 @@ const FocusProApp = () => {
                     currentAiAnalysis={currentAiAnalysis}
                     futureAiAnalysis={futureAiAnalysis}
                     gapAnalysis={fullGapAnalysis}
-                    isAnalyzingCurrent={isAnalyzingCurrent}
-                    isAnalyzingFuture={isAnalyzingFuture}
+                    isAnalyzingCurrent={isAnalyzingCurrentLife}
+                    isAnalyzingFuture={isAnalyzingFutureLife}
                     isAnalyzingGap={isAnalyzingFullGap}
                   />
                 )}
