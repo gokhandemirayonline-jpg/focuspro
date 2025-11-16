@@ -15,7 +15,7 @@ import base64
 import uuid
 
 # Load environment variables
-load_dotenv()
+load_dotenv("/app/backend/.env")
 
 from models import (
     UserCreate, UserLogin, User, UserResponse, UserUpdate, UserAdminUpdate, ChangePassword,
