@@ -41,7 +41,8 @@ from models import (
     MessageCreate, Message, MessageReply,
     DreamPriorityCreate, DreamPriority,
     CharacterAnalysisCreate, CharacterAnalysis,
-    FutureCharacterCreate, FutureCharacter
+    FutureCharacterCreate, FutureCharacter,
+    FullLifeProfileCreate, FullLifeProfile
 )
 
 
