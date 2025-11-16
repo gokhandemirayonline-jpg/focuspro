@@ -264,4 +264,15 @@ export const futureCharacterAPI = {
   gapAnalysis: (analysisData) => api.post('/character-gap-analysis', analysisData),
 };
 
+// Full Life Profile API
+export const fullLifeProfileAPI = {
+  getAll: () => api.get('/full-life-profile'),
+  getById: (profileId) => api.get(`/full-life-profile/${profileId}`),
+  create: (profileData) => api.post('/full-life-profile', profileData),
+  update: (profileId, profileData) => api.put(`/full-life-profile/${profileId}`, profileData),
+  analyzeCurrent: (currentData) => api.post('/full-life-profile/analyze-current', currentData),
+  analyzeFuture: (futureData) => api.post('/full-life-profile/analyze-future', futureData),
+  gapAnalysis: (analysisData) => api.post('/full-life-profile/gap-analysis', analysisData),
+};
+
 export default api;
