@@ -249,8 +249,8 @@ const FocusProApp = () => {
   const [currentAiAnalysis, setCurrentAiAnalysis] = useState(null);
   const [futureAiAnalysis, setFutureAiAnalysis] = useState(null);
   const [fullGapAnalysis, setFullGapAnalysis] = useState(null);
-  const [isAnalyzingCurrent, setIsAnalyzingCurrent] = useState(false);
-  const [isAnalyzingFuture, setIsAnalyzingFuture] = useState(false);
+  const [isAnalyzingCurrentLife, setIsAnalyzingCurrentLife] = useState(false);
+  const [isAnalyzingFutureLife, setIsAnalyzingFutureLife] = useState(false);
   const [isAnalyzingFullGap, setIsAnalyzingFullGap] = useState(false);
   
   const [editingUser, setEditingUser] = useState(null);
