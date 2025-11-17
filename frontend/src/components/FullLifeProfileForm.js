@@ -562,7 +562,7 @@ ${gapAnalysis ? '\n━━━━ GAP ANALİZİ & ROADMAP ━━━━\n' + gapAna
               </div>
 
               <div className="p-6">
-                <div className="flex items-center gap-2 mb-4 text-slate-700">
+                <div className="flex items-center gap-2 mb-4 text-slate-700 dark:text-gray-200">
                   <CategoryIcon size={24} />
                   <h3 className="text-xl font-bold">{currentCategory.name}</h3>
                 </div>
@@ -570,7 +570,7 @@ ${gapAnalysis ? '\n━━━━ GAP ANALİZİ & ROADMAP ━━━━\n' + gapAna
                 <div className="space-y-5">
                   {currentCategory.questions.map((question, idx) => (
                     <div key={idx}>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-gray-200 mb-2">
                         {question.label}
                       </label>
                       <textarea
@@ -578,7 +578,7 @@ ${gapAnalysis ? '\n━━━━ GAP ANALİZİ & ROADMAP ━━━━\n' + gapAna
                         onChange={(e) => handleInputChange(question.key, e.target.value)}
                         placeholder={question.placeholder}
                         rows={question.rows}
-                        className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-400 focus:outline-none resize-none text-slate-700 placeholder:text-slate-400 text-sm"
+                        className="w-full px-4 py-3 border-2 border-slate-200 dark:border-gray-600 rounded-lg focus:border-blue-400 dark:focus:border-blue-500 focus:outline-none resize-none text-slate-700 dark:text-gray-200 dark:bg-gray-700 placeholder:text-slate-400 dark:placeholder:text-gray-500 text-sm"
                       />
                     </div>
                   ))}
