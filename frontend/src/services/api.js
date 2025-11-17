@@ -104,6 +104,14 @@ export const prospectCategoryAPI = {
   delete: (categoryId) => api.delete(`/prospect-categories/${categoryId}`),
 };
 
+// Prospect Column API (Dynamic Columns)
+export const prospectColumnAPI = {
+  getAll: () => api.get('/prospect-columns'),
+  create: (columnData) => api.post('/prospect-columns', columnData),
+  update: (columnId, columnData) => api.put(`/prospect-columns/${columnId}`, columnData),
+  delete: (columnId) => api.delete(`/prospect-columns/${columnId}`),
+};
+
 // Prospect API
 export const prospectAPI = {
   getAll: () => api.get('/prospects'),
