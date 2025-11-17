@@ -13,6 +13,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import BadgeCollection from './components/BadgeCollection';
 import FullLifeProfileForm from './components/FullLifeProfileForm';
+import ProspectsPage from './components/ProspectsPage';
 import './App.css';
 
 moment.locale('tr');
