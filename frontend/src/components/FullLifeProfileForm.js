@@ -593,8 +593,8 @@ ${gapAnalysis ? '\n━━━━ GAP ANALİZİ & ROADMAP ━━━━\n' + gapAna
               {!gapAnalysis && (
                 <div className="text-center py-12">
                   <div className="text-6xl mb-4">📊</div>
-                  <h3 className="text-2xl font-bold text-slate-800 mb-4">Gap Analizi ve 5 Yıllık Roadmap</h3>
-                  <p className="text-slate-600 mb-6">
+                  <h3 className="text-2xl font-bold text-slate-800 dark:text-gray-100 mb-4">Gap Analizi ve 5 Yıllık Roadmap</h3>
+                  <p className="text-slate-600 dark:text-gray-300 mb-6">
                     Mevcut durumunuz ile 5 yıl sonraki hedefleriniz arasındaki farkları AI ile analiz edin
                   </p>
                   <button
