@@ -467,6 +467,22 @@ class FullLifeProfile(FullLifeProfileBase):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+# Prospect Category Models
+class ProspectCategoryBase(BaseModel):
+    name: str
+    icon: str = "📋"
+    color: str = "gray"
+    order: int = 0
+
+class ProspectCategoryCreate(ProspectCategoryBase):
+    pass
+
+class ProspectCategory(ProspectCategoryBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
 # Prospect Models
 class ProspectBase(BaseModel):
     name: str
@@ -475,6 +491,8 @@ class ProspectBase(BaseModel):
     status: str = "new"  # new, contacted, interested, converted, lost
     notes: str = ""
     source: str = ""
+    category_id: str = ""  # Kategori ID
+    rating: int = 0  # 0-5 yıldız puanlama
 
 class ProspectCreate(ProspectBase):
     pass
