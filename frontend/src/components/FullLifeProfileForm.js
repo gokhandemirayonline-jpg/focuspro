@@ -509,7 +509,7 @@ ${gapAnalysis ? '\n━━━━ GAP ANALİZİ & ROADMAP ━━━━\n' + gapAna
                   onClick={() => setStep(idx)}
                   className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all cursor-pointer ${
                     idx === step ? 'bg-gradient-to-r ' + section.color + ' text-white scale-110 shadow-lg' : 
-                    idx < step ? 'bg-green-400 text-white' : 'bg-slate-200 text-slate-400'
+                    idx < step ? 'bg-green-400 text-white' : 'bg-slate-200 dark:bg-gray-700 text-slate-400 dark:text-gray-400'
                   }`}
                 >
                   {idx + 1}
