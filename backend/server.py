@@ -1048,6 +1048,109 @@ async def delete_prospect_category(
 
 # ==================== END PROSPECT CATEGORIES ====================
 
+# ==================== PROSPECT COLUMNS (Dynamic Columns) ====================
+@api_router.get("/prospect-columns", response_model=List[ProspectColumn])
+async def get_prospect_columns(current_user: dict = Depends(get_current_user)):
+    """Get all dynamic columns for prospects table"""
+    try:
+        columns = await db.prospect_columns.find({}, {"_id": 0}).sort("order", 1).to_list(100)
+        return columns
+    except Exception as e:
+        logger.error(f"Error fetching prospect columns: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Sütunlar getirilirken hata: {str(e)}")
+
+@api_router.post("/prospect-columns", response_model=ProspectColumn)
+async def create_prospect_column(
+    column_data: ProspectColumnCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Create new dynamic column (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin yetkisi gerekli")
+    
+    try:
+        column_dict = column_data.model_dump()
+        column_dict['id'] = str(uuid.uuid4())
+        column_dict['created_by'] = current_user['id']
+        column_dict['created_at'] = datetime.utcnow()
+        
+        await db.prospect_columns.insert_one(column_dict)
+        return column_dict
+    except Exception as e:
+        logger.error(f"Error creating prospect column: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Sütun oluşturulurken hata: {str(e)}")
+
+@api_router.put("/prospect-columns/{column_id}", response_model=ProspectColumn)
+async def update_prospect_column(
+    column_id: str,
+    column_data: ProspectColumnCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update dynamic column (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin yetkisi gerekli")
+    
+    try:
+        existing = await db.prospect_columns.find_one({"id": column_id}, {"_id": 0})
+        if not existing:
+            raise HTTPException(status_code=404, detail="Sütun bulunamadı")
+        
+        update_dict = column_data.model_dump()
+        await db.prospect_columns.update_one(
+            {"id": column_id},
+            {"$set": update_dict}
+        )
+        
+        updated = await db.prospect_columns.find_one({"id": column_id}, {"_id": 0})
+        return updated
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating prospect column: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Sütun güncellenirken hata: {str(e)}")
+
+@api_router.delete("/prospect-columns/{column_id}")
+async def delete_prospect_column(
+    column_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete dynamic column (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin yetkisi gerekli")
+    
+    try:
+        # Get column info before deletion
+        column = await db.prospect_columns.find_one({"id": column_id}, {"_id": 0})
+        if not column:
+            raise HTTPException(status_code=404, detail="Sütun bulunamadı")
+        
+        column_name = column['column_name']
+        
+        # Remove this field from all prospects' custom_fields
+        prospects = await db.prospects.find({}, {"_id": 0}).to_list(1000)
+        for prospect in prospects:
+            if 'custom_fields' in prospect and column_name in prospect['custom_fields']:
+                del prospect['custom_fields'][column_name]
+                await db.prospects.update_one(
+                    {"id": prospect['id']},
+                    {"$set": {"custom_fields": prospect['custom_fields']}}
+                )
+        
+        # Delete the column
+        result = await db.prospect_columns.delete_one({"id": column_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Sütun bulunamadı")
+        
+        return {"success": True, "message": "Sütun silindi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting prospect column: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Sütun silinirken hata: {str(e)}")
+
+# ==================== END PROSPECT COLUMNS ====================
+
 @api_router.get("/prospects", response_model=List[Prospect])
 async def get_prospects(current_user: dict = Depends(get_current_user)):
     prospects = await db.prospects.find({"user_id": current_user['id']}, {"_id": 0}).to_list(1000)
