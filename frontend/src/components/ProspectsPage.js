@@ -18,13 +18,25 @@ import {
 } from 'lucide-react';
 import { prospectAPI, prospectCategoryAPI, prospectColumnAPI } from '../services/api';
 
-const ProspectsPage = ({ user }) => {
+const ProspectsPage = ({ user = null }) => {
   // State management
   const [prospects, setProspects] = useState([]);
   const [categories, setCategories] = useState([]);
   const [customColumns, setCustomColumns] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sorting, setSorting] = useState([]);
+  
+  // Check if user exists
+  if (!user) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Yükleniyor...</h2>
+          <p className="text-gray-600">Lütfen bekleyin</p>
+        </div>
+      </div>
+    );
+  }
   
   // Modals state
   const [showAddProspectModal, setShowAddProspectModal] = useState(false);
