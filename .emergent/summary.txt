@@ -1,39 +1,44 @@
 <analysis>Harika bir özet hazırlıyorum. İşte bir sonraki ajanın görevi devralması için gereken tüm detaylar:
 
 **original_problem_statement:**
-Kullanıcı, FocusProApp adlı ağ pazarlama yönetimi uygulaması için kapsamlı geliştirmeler talep etti. Başlangıçta yeni bir eğitim sistemi (sıralı videolar, ilerleme takibi, rozetler), yeni kullanıcı giriş sorunlarının çözümü ve eksik Çıkış Yap menüsünün düzeltilmesi istendi.
+Kullanıcı, FocusProApp adlı ağ pazarlama yönetimi uygulaması için kapsamlı geliştirmeler talep etti. Başlangıçta yeni bir eğitim sistemi, yeni kullanıcı giriş sorunlarının çözümü ve eksik Çıkış Yap menüsünün düzeltilmesi istendi. Oturum boyunca bu talepler genişletildi ve yeni özellikler eklendi. En son olarak, kullanıcı İsim Listesi için Notion'dan esinlenilmiş, dinamik kategorilere ve yıldızla puanlamaya sahip, tablo şeklinde gelişmiş bir görünüm istedi.
 
 **PRODUCT REQUIREMENTS (Oturum Boyunca Eklenenler):**
-*   **Ajanda Menüsü:** İsim Listesi, Görevler, Hedefler ve Nedenler menülerini Ajanda altında birleştirme. Sonradan Günlük Alışkanlıklar sekmesi eklendi.
-*   **Eğitim Sayfası:** Netflix tarzı modern bir arayüz (önce karanlık, sonra aydınlık tema).
-*   **Video Oynatıcı:**
-    *   Videoların, sayfa içeriğini bulanıklaştıran bir modal/popup içinde açılması.
-    *   İleri saramama (sadece play/pause).
-    *   Özel ilerleme çubuğu ve  olarak tamamlanma göstergesi.
-    *   Video %100 izlenince aktif olan ve admin'e mesaj olarak giden bir **yorum alanı**.
-    *   Sonradan, kullanıcının isteği üzerine YouTube'un kendi kontrollerine geri dönüldü, ancak özel ilerleme takibi ve yüzde göstergesi korundu.
-*   **Etkinlik Sayfası:** Kullanıcının sağladığı görsellere göre tamamen yeniden tasarlandı. Etkinlik kartları, detay modal'ı, üstte tarih filtresi ve etkinlikler için görsel yükleme özelliği eklendi. Katılım talepleri her etkinliğin altına taşındı.
-*   **Hayaller Menüsü:** Kullanıcının hayat önceliklerini belirlemesi için çok adımlı, interaktif bir form (Değer Önceliklendirme) oluşturuldu.
-*   **Karakter Analizi:** Hayaller menüsüne ikinci bir bölüm olarak, kullanıcının sağladığı koda dayalı, yapay zeka destekli bir karakter analizi aracının eklenmesi talep edildi.
+*   **Ajanda Menüsü:** Çeşitli menülerin Ajanda altında birleştirilmesi.
+*   **Eğitim & Video Sistemi:** Netflix tarzı arayüz ve özel video oynatıcı özellikleri.
+*   **Etkinlik Sayfası:** Kullanıcının görsellerine göre tamamen yeniden tasarlandı.
+*   **Hayaller Menüsü:** Çok adımlı, interaktif bir Değer Önceliklendirme sihirbazı.
+*   **Karakter Analizi:**
+    *   Başlangıçta 3 adımlı bir form ile Mevcut Durum ve İstenilen Karakter analizi.
+    *   Kullanıcının daha detaylı talebi üzerine, bu özellik Tam Yaşam Tablosu adlı, maddi ve manevi hedefleri içeren, son derece ayrıntılı, çok adımlı bir forma dönüştürüldü.
+*   **İsim Listesi (Yeni Talep):**
+    *   Notion benzeri, tablo şeklinde bir liste görünümü.
+    *   Kullanıcının kendi kategorilerini (örn: Sıcak, Ilık, Soğuk, VIP) oluşturup yönetebilmesi.
+    *   Her kişi için 1-5 arası yıldızla potansiyel puanlaması yapılması.
+    *   Kategoriye ve puana göre filtreleme ve sıralama özellikleri.
 
 **User's preferred language**: Turkish. Ajan, kullanıcıyla **yalnızca Türkçe** iletişim kurmalıdır.
 
 **what currently exists?**
-React (frontend), FastAPI (backend) ve MongoDB (veritabanı) üzerine kurulu, çalışan bir uygulama. Bu oturumda; Eğitim, Ajanda ve Etkinlikler sayfaları büyük ölçüde yeniden yapıldı veya geliştirildi. Video oynatıcı, yorum sistemi ve Hayaller menüsü gibi birçok yeni özellik eklendi. Çeşitli hatalar (yeni kullanıcı girişi, sayfa yenileme, görsel yükleme vb.) çözüldü. Ancak en büyük sorun, tüm frontend mantığının 6000+ satırlık devasa  dosyasında bulunmasıdır. Bu durum, geliştirmeyi yavaşlatmakta ve sürekli hatalara neden olmaktadır. Ajan, son olarak kullanıcıdan gelen yeni Karakter Analizi özelliğinin backend altyapısını oluşturmaya başlamıştı.
+React (frontend), FastAPI (backend) ve MongoDB (veritabanı) üzerine kurulu, çalışan bir uygulama. Karakter Analizi özelliği, kullanıcının son ve en detaylı talebi olan Tam Yaşam Tablosu formatında başarıyla tamamlandı ve  adında yeni bir component olarak eklendi. Bu, devasa  dosyasını daha da büyütmemek için atılmış olumlu bir adımdı. Ajan, son olarak kullanıcıdan gelen yeni İsim Listesi özelliğinin backend altyapısını oluşturmayı bitirdi. Frontend tarafında ise  dosyasının 6000+ satırlık boyutu, geliştirmeyi yavaşlatan ve risk oluşturan en büyük teknik sorun olmaya devam etmektedir.
 
 **Last working item**:
-*   **Last item agent was working:** Ajan, Hayaller menüsüne eklenecek olan Karakter Analizi özelliğini entegre etmeye başladı. Kullanıcı tarafından sağlanan React kodunu analiz etti, bir entegrasyon planı oluşturdu ve bu planın ilk adımı olan backend modelini oluşturdu.
+*   **Last item agent was working:** Ajan, İsim Listesi (Prospects) için istenen Notion benzeri, dinamik kategorili ve yıldızlı tablo görünümünün **backend altyapısını** oluşturuyordu. Bu kapsamda:
+    1.   dosyasına  modeli ve  modeline  ile  alanları eklendi.
+    2.   dosyasına kategoriler için tam CRUD (Oluştur, Oku, Güncelle, Sil) endpoint'leri eklendi.
+    3.   dosyasına bu yeni endpoint'ler için  fonksiyonları eklendi.
+    Sırada bu altyapıyı kullanacak olan frontend arayüzünün oluşturulması var.
 *   **Status:** IN PROGRESS
 *   **Agent Testing Done:** N
-*   **Which testing method agent to use?** both. Backend endpoint'leri eklendikten sonra  ile test edilmeli. Frontend tamamlandığında ise  kullanılarak 3 adımlı formun tamamı, AI analizi tetikleme ve sonuçların indirilmesi test edilmelidir.
+*   **Which testing method agent to use?** both. İlk olarak, yeni backend category endpoint'leri  ile test edilmelidir. Frontend tamamlandıktan sonra ise,  kullanılarak; yeni kategori oluşturma, bir kişiye kategori atama, yıldızla puanlama, kategoriye göre filtreleme ve sütunlara göre sıralama gibi tüm işlevler kapsamlı bir şekilde test edilmelidir.
 *   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
 *   **Issue 1:  dosyasının yeniden düzenlenmesi (Refactoring) (P0)**
-    *   **Attempted fixes:** Bu sorun birçok kez tespit edildi ancak acil özellik talepleri nedeniyle sürekli ertelendi. Ajan, yeni kodları da bu dosyaya ekleyerek sorunu daha da büyüttü.
+    *   **Attempted fixes:** Bu sorun defalarca tespit edildi ancak acil özellik talepleri nedeniyle sürekli ertelendi. Ajan, yeni kodları da bu dosyaya ekleyerek sorunu daha da büyüttü.  adında ayrı bir component oluşturulması doğru bir adımdı, ancak ana sorun devam ediyor.
     *   **Next debug checklist:**
-        1.   dosyasını , ,  gibi mantıksal bileşenlere ayırmak için kullanıcıya bir plan sun ve onay al.
-        2.  Her seferinde tek bir bileşeni (örneğin ) ayırarak başla. State ve fonksiyonları ilgili bileşenlere taşı.
+        1.  'i , , ,  gibi mantıksal bileşenlere ayırmak için kullanıcıya bir plan sun ve onay al.
+        2.  Her seferinde tek bir bileşeni (örneğin sıradaki büyük iş olan ) ayırarak başla. State ve fonksiyonları ilgili bileşenlere taşı.
     *   **Why fix this issue and what will be achieved with the fix?** Kodun bakımı neredeyse imkansız hale geldi. Refactoring, gelecekteki geliştirmeleri hızlandıracak, hata riskini azaltacak ve uygulamanın ölçeklenebilirliğini artıracaktır. **BU EN YÜKSEK TEKNİK ÖNCELİKTİR.**
     *   **Status:** NOT STARTED
     *   **Is recurring issue?** Y
@@ -41,87 +46,88 @@ React (frontend), FastAPI (backend) ve MongoDB (veritabanı) üzerine kurulu, ç
     *   **Blocked on other issue:** None
 
 **In progress Task List**:
-*   **Task 1: Karakter Analizi özelliğini tamamlama (P0)**
-    *   **Where to resume:**  dosyasına  ve ilgili alt modeller eklendi. Sırada  dosyasına  için CRUD endpoint'lerini ve AI analizi için bir proxy endpoint'i eklemek var. Ardından, frontend'de  bileşeni Hayaller sekmesine entegre edilmeli ve API çağrıları backend'e yönlendirilmelidir.
-    *   **What will be achieved with this?** Kullanıcının istediği interaktif, AI destekli kişilik analizi aracı uygulamaya eklenmiş olacak.
-    *   **Status:** IN PROGRESS
-    *   **Should Test frontend/backend/both after fix?** both
-    *   **Blocked on something:** Yok.
-
-*   **Task 2: Video Yorum Mesajlaşma Sisteminin Frontend'ini Oluşturma (P1)**
-    *   **Where to resume:** Backend tarafı tamamen hazır. Video yorumları artık admin'e bir mesaj olarak gidiyor ve cevaplama altyapısı mevcut. Frontend'de ise  güncellendi. Ancak, admin panelinde mesajları bir konuşma (thread) olarak gösterecek ve admin'in cevap yazmasını sağlayacak arayüz (UI) henüz oluşturulmadı.
-    *   **What will be achieved with this?** Admin ile kullanıcılar arasında video yorumları üzerinden çift yönlü bir iletişim kanalı kurulmuş olacak.
+*   **Task 1: İsim Listesi için Notion Tarzı Arayüz Oluşturma (P0)**
+    *   **Where to resume:** Backend ve API servisleri hazır. Sırada, bu altyapıyı kullanacak olan frontend arayüzünü oluşturmak var. Önerilen adımlar:
+        1.   altında  adında yeni bir component oluştur.
+        2.  Bu component içinde,  gibi modern bir tablo kütüphanesi kullanarak istenen tablo yapısını kur.
+        3.  Üst kısma kategori filtre butonlarını ve Yeni Kategori Ekle butonunu yerleştir.
+        4.  Yeni Kategori Ekle ve Kategorileri Yönet için bir modal (popup) arayüzü oluştur.
+        5.  Satır içindeki kategori değiştirme dropdown'ını ve yıldızla puanlama (hover+click) mekanizmasını implemente et.
+        6.  Son olarak, bu yeni componenti  içindeki mevcut İsim Listesi bölümünün yerine entegre et.
+    *   **What will be achieved with this?** Kullanıcının istediği esnek, güçlü ve modern İsim Listesi yönetimi aracı uygulamaya eklenmiş olacak.
     *   **Status:** IN PROGRESS (Backend DONE, Frontend NOT STARTED)
-    *   **Should Test frontend/backend/both after fix?** frontend
+    *   **Should Test frontend/backend/both after fix?** both
     *   **Blocked on something:** Yok.
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks:**
-    *   **P1 - Etkinlik Detay Butonlarını İşlevsel Hale Getirme:** Etkinlikler sayfasındaki Takvime Kaydet, Yer Bilgisi, Paylaş ve Katıl butonlarının mantığını implemente etmek.
-    *   **P1 - Hayaller Menüsü Renklerini Sadeleştirme:** Kullanıcının talebi üzerine Hayaller menüsündeki canlı renkleri daha nötr ve sade tonlarla değiştirmek.
+    *   **P1 - Video Yorum Mesajlaşma Sisteminin Frontend'ini Oluşturma:** Admin'in video yorumlarına cevap verebileceği arayüzün yapılması.
+    *   **P1 - Etkinlik Detay Butonlarını İşlevsel Hale Getirme:** Takvime Kaydet, Yer Bilgisi, Paylaş ve Katıl butonlarının mantığını implemente etmek.
     *   **P2 - Quiz/Sınav Sistemi:** Eğitim videoları sonrası bilgi ölçmek için sınavlar eklemek.
 *   **Future Tasks:**
     *   **P2 - Gelişmiş Kullanıcı Profili:** Kişisel dashboard'lar, ilerleme grafikleri.
     *   **P3 - Push Notification Sistemi:** Tarayıcı üzerinden anlık bildirimler.
-    *   **P3 - Canlı Chat/Destek Sistemi:** Admin ile gerçek zamanlı iletişim.
 
 **Completed work in this session**
-*   **Hata Düzeltmeleri:**
-    *   Yeni kullanıcıların giriş yapamaması sorunu düzeltildi.
-    *   Video oynatılırken sayfanın yenilenmesi sorunu çözüldü.
-    *   Admin'in kilitli videoları açamaması sorunu çözüldü.
-    *   Etkinliklere görsel yüklerken oluşan  hatası düzeltildi.
-    *   Frontend'de derlemeyi engelleyen çok sayıda JSX syntax hatası giderildi.
-*   **Özellik Geliştirmeleri:**
-    *   Ajanda menüsüne Günlük Alışkanlıklar sekmesi eklendi ve tam CRUD işlevselliği kazandırıldı.
-    *   Video oynatıcı, YouTube'un yerel kontrollerini kullanacak şekilde güncellendi, ancak özel ilerleme takibi korundu.
-    *   Etkinlikler sayfası, kullanıcının tasarımlarına göre baştan sona yenilendi (kart görünümü, detay modal'ı, tarih filtresi, görsel yükleme).
-    *   Hayaller menüsüne, çok adımlı Değer Önceliklendirme sihirbazının backend altyapısı ve frontend arayüzü eklendi.
-    *   Menüdeki (Ajanda, Rozetler) gereksiz emojiler kaldırılarak daha temiz bir görünüm sağlandı.
+*   **Karakter Analizi Özelliği (Tamamen Yenilendi):**
+    *   Kullanıcının isteği üzerine özellik, Tam Yaşam Tablosu adıyla çok daha detaylı bir yapıya kavuşturuldu.
+    *   Kullanıcının sağladığı React kodundan esinlenerek, Şimdiki Ben, 5 Yıl Sonra Ben ve 90 Günlük Plan adımlarını içeren, kategorilere ayrılmış modern bir form arayüzü oluşturuldu.
+    *   Bu yeni yapı için backend'de  modeli ve ilgili API endpoint'leri () yaratıldı.
+    *   Frontend kodu,  dosyasını daha fazla şişirmemek için  adında ayrı bir componente taşındı ve 'e entegre edildi.
+*   **Bug Fixes:**
+    *   Backend'in  dosyasını okumamasından kaynaklanan ve AI analizinin ( API)  hatası vermesine neden olan kritik sorun,  kütüphanesinin doğru şekilde çağrılmasıyla çözüldü.
+    *   Frontend'de state ismi çakışmaları () ve eksik icon importları () gibi derleme hataları giderildi.
+*   **Backend Altyapısı (İsim Listesi için):**
+    *   Yeni İsim Listesi özelliği için dinamik kategori ( modeli) ve yıldızla puanlama ( alanı) altyapısı backend'de tamamlandı.
+
+**Earlier issues found/mentioned but not fixed**
+*   Tüm dikkat  refactoring sorununa odaklanmalıdır. Bu, diğer tüm teknik sorunların üzerinde bir önceliğe sahiptir.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **Frontend:** React, Tailwind CSS, , .
-*   **Backend:** FastAPI (Python).
+*   **Frontend:** React, Tailwind CSS, . Yeni İsim Listesi için  ve  gibi kütüphaneler değerlendirilebilir.
+*   **Backend:** FastAPI (Python),  (AI çağrıları için).
 *   **Database:** MongoDB.
-*   **Mimari Sorun:** Tüm state, UI ve mantığın tek bir  bileşeninde toplanması (Monolith Component).
+*   **Mimari Sorun:**  dosyasının, state, UI ve mantığı tek bir yerde toplayan devasa bir Monolith Component olması.
 
 **key DB schema**
-*   **events:**  alanı eklendi.
-*   **messages:** ,  alanları eklendi.
-*   **habits:** Yeni koleksiyon ve tam CRUD.
-*   **dream_priorities:** Hayaller özelliği için yeni koleksiyon ve tam CRUD.
-*   **character_analysis:** Karakter Analizi özelliği için yeni model oluşturuldu (endpoint'ler beklemede).
+*   **full_life_profiles:** (YENİ)  modeli için yeni koleksiyon.
+*   **prospect_categories:** (YENİ)  modeli için yeni koleksiyon.
+*   **prospects:**  ve  alanları eklendi.
 
 **All files**
-*   **/app/frontend/src/App.js:** **KRİTİK DOSYA.** Oturumdaki tüm frontend değişiklikleri bu dosyaya yapıldı. Boyutu ve karmaşıklığı, bakımını ve yeni eklemeleri son derece zorlaştırmaktadır.
-*   **/app/backend/server.py:** Çok sayıda yeni endpoint (alışkanlıklar, rüyalar, mesajlaşma, dosya yükleme) ve iş mantığı eklendi.
-*   **/app/backend/models.py:** Yeni özellikler için , ,  gibi yeni modeller eklendi ve ,  modelleri güncellendi.
-*   **/app/frontend/src/services/api.js:** Yeni backend endpoint'lerine karşılık gelen API fonksiyonları eklendi.
+*   **/app/backend/models.py:** ,  modelleri eklendi;  güncellendi.
+*   **/app/backend/server.py:**  ve  için yeni endpoint'ler eklendi.  yüklemesi için  çağrısı eklendi.
+*   **/app/frontend/src/App.js:** Tam Yaşam Tablosu component'i entegre edildi. Çok sayıda state, fonksiyon ve UI kodu eklendi/güncellendi. **Hala en riskli dosya.**
+*   **/app/frontend/src/services/api.js:**  ve  eklendi.
+*   **/app/frontend/src/components/FullLifeProfileForm.js:** (YENİ) Tam Yaşam Tablosu formunun tüm UI ve mantığını içeren, yeniden kullanılabilir component.
 
 **Areas that need refactoring**:
-*   **ACİL: ** dosyası, daha küçük ve yönetilebilir bileşenlere (, ,  vb.) bölünmelidir. Bu, projenin sağlığı için mutlak önceliktir.
+*   **ACİL: ** dosyası, daha küçük ve yönetilebilir bileşenlere bölünmelidir. Özellikle sıradaki İsim Listesi özelliği kesinlikle kendi component dosyasına sahip olmalıdır.
 
 **Critical Info for New Agent**
-1.  ** Tehlikesi:** Bu dosyada çalışırken çok dikkatli ol. En küçük bir syntax hatası bile uygulamayı bozabilir. Herhangi bir yeni özellik eklemeden önce, kullanıcıya bu dosyayı refactor etmeyi teklif et. Bu, uzun vadede zaman kazandıracaktır.
-2.  **AI Proxy Planı:** Kullanıcının istediği AI analizi özelliği,  API'sini çağırmayı gerektiriyor. Bu çağrı, güvenlik nedeniyle frontend'den değil, **kesinlikle backend üzerinden (proxy)** yapılmalıdır. Ajan bu planı takip etmelidir.
-3.  **Kullanıcı Geri Bildirimi:** Kullanıcı, süreçle yakından ilgilidir ve sık sık detaylı geri bildirimler, görseller ve hatta kod örnekleri sunmaktadır. Kullanıcının taleplerini dikkatle analiz et.
+1.  **Önce Refactor Teklif Et:** İsim Listesi frontend'ini yapmaya başlamadan önce, bu özelliğin yeni bir  component'ine yapılmasını ve bunun genel bir  refactoring planının ilk adımı olmasını kullanıcıya teklif et. Bu, uzun vadede zaman kazandıracaktır.
+2.  **Kullanıcı Geri Bildirimini Kullan:** Kullanıcı, UI/UX ve özellikler konusunda çok net bir vizyona sahip. Senin görevin, bu vizyonu sağlam ve ölçeklenebilir bir teknik altyapı ile birleştirmektir. Kullanıcının fikirlerini alıp, onu en iyi teknik çözümlerle (ayrı componentler, modern kütüphaneler vb.) zenginleştir.
+3.  **Backend Hazır, Fırsatı Değerlendir:** İsim Listesi için backend hazır. Bu, frontend'e odaklanmak için harika bir fırsat. Bu özelliği doğru bir şekilde (yani ayrı bir component'te) inşa etmek, projenin geleceği için kritik öneme sahip.
 
 **Last 5 User Messages and any pending user messages**
-1.  **User:** (Karakter Analizi için bir React kodu örneği paylaştı) Bunu uygulama sadece analiz et ve yorumla. Bunu kullanabilir miyiz? - **Status: COMPLETED** (Ajan analiz edip raporladı).
-2.  **Agent:** (Detaylı analiz sundu ve entegrasyon planı önerdi) Devam edelim mi? - **Status: COMPLETED**.
-3.  **User:** evet - **Status: COMPLETED**.
-4.  **Agent:** Harika! Karakter Analizi sistemini entegre ediyorum. Adım adım ilerleyeceğim. ADIM 1: Backend Model ve Endpointler. Önce backende model ekleyeceğim. - **Status: COMPLETED** (Ajan işe başladı).
-5.  **User:** evet (Yeni Hayaller sihirbazını oluşturma onayı) - **Status: COMPLETED**.
+1.  **User:** (Notion tarzı bir ekran görüntüsü paylaştı) İsim listesini notion daki gibi tablo, galeri, liste, bord gibi görünüm özelliklerini eklesek nasıl olur, yapmadan önce değerlendirelim. - **Status: COMPLETED** (Ajan analiz edip öneriler sundu).
+2.  **User:** liste şeklinde olsun. sürükle bırak yer değiştirebilir olsun. Sıcak/Ilık/Soğun diye yakınlık derecesi olsun... - **Status: COMPLETED** (Ajan bu isteği analiz etti ve daha basit bir tablo yapısı önerdi).
+3.  **User:** ...tablo gibi olsun...kategoriler eklenebilir çıkarılabilir olsun... - **Status: COMPLETED** (Ajan, dinamik kategorili, yıldızlı tablo yapısını detaylandırdı ve onay aldı).
+4.  **User:** evet (Ajanın sunduğu son dinamik kategori sistemini onayladı). - **Status: COMPLETED**.
+5.  **User:** evet (Ajanın backend'i tamamladıktan sonra frontend'e başlama teklifini onayladı). - **Status: IN PROGRESS**.
 
 **Project Health Check:**
-*   **Broken:** Hayır. Uygulama şu anda çalışır durumda. En son bilinen syntax hatası düzeltildi.
+*   **Broken:** Hayır. Uygulama şu anda çalışır durumda.
 *   **Mocked:** Hayır.
 
 **Testing status**
-*   **Testing agent used after significant changes:** YES (Frontend test agent'ı ve troubleshoot agent aktif olarak kullanıldı).
-*   **Troubleshoot agent used after agent stuck in loop:** YES (Video modal'ının açılmamasına neden olan  sorununu teşhis etmek için kullanıldı).
+*   **Testing agent used after significant changes:** NO (Bu oturumda kullanılmadı).
+*   **Troubleshoot agent used after agent stuck in loop:** NO (Bu oturumda kullanılmadı).
 *   **Test files created:** Yok.
-*   **Known regressions:** Yok.</analysis>
+*   **Known regressions:** Yok.
+
+**What agent forgot to execute**
+Ajan, kullanıcının isteklerine odaklandığı için acil olan  refactoring görevini erteledi. Bu unutulmuş bir görevden ziyade, özellik geliştirme taleplerine öncelik verilmesi sonucu ertelenmiş bir teknik borçtur.</analysis>
