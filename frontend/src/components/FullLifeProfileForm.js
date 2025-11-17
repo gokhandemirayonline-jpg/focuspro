@@ -520,7 +520,7 @@ ${gapAnalysis ? '\n━━━━ GAP ANALİZİ & ROADMAP ━━━━\n' + gapAna
               </div>
             ))}
           </div>
-          <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+          <div className="h-2 bg-slate-200 dark:bg-gray-700 rounded-full overflow-hidden">
             <div 
               className="h-full bg-gradient-to-r from-slate-600 via-amber-500 to-green-500 transition-all duration-500"
               style={{ width: `${progress}%` }}
@@ -528,7 +528,7 @@ ${gapAnalysis ? '\n━━━━ GAP ANALİZİ & ROADMAP ━━━━\n' + gapAna
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
           <div className={`bg-gradient-to-r ${currentSection.color} p-6 text-white`}>
             <div className="flex items-center gap-3 mb-2">
               <Icon size={36} />
