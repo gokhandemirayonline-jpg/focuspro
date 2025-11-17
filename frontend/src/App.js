@@ -2139,16 +2139,6 @@ const FocusProApp = () => {
           </button>
 
           <button
-            onClick={() => setCurrentPage('prospects')}
-            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
-              currentPage === 'prospects' ? 'bg-white/20' : 'hover:bg-white/10'
-            }`}
-          >
-            <UserPlus size={20} />
-            {sidebarOpen && <span>İsim Listesi</span>}
-          </button>
-
-          <button
             onClick={() => setCurrentPage('partners')}
             className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
               currentPage === 'partners' ? 'bg-white/20' : 'hover:bg-white/10'
