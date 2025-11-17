@@ -96,6 +96,14 @@ export const reasonAPI = {
   delete: (reasonId) => api.delete(`/reasons/${reasonId}`),
 };
 
+// Prospect Category API
+export const prospectCategoryAPI = {
+  getAll: () => api.get('/prospect-categories'),
+  create: (categoryData) => api.post('/prospect-categories', categoryData),
+  update: (categoryId, categoryData) => api.put(`/prospect-categories/${categoryId}`, categoryData),
+  delete: (categoryId) => api.delete(`/prospect-categories/${categoryId}`),
+};
+
 // Prospect API
 export const prospectAPI = {
   getAll: () => api.get('/prospects'),
