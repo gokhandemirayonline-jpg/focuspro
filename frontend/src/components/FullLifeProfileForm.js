@@ -677,9 +677,9 @@ ${gapAnalysis ? '\n━━━━ GAP ANALİZİ & ROADMAP ━━━━\n' + gapAna
           </div>
         </div>
 
-        <div className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4">
-          <p className="text-sm text-slate-700">
-            <span className="font-bold text-blue-900">💡 Sistem:</span> Her kategoriyi doldur. Madde madde yaz. 
+        <div className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-2 border-blue-200 dark:border-blue-700 rounded-xl p-4">
+          <p className="text-sm text-slate-700 dark:text-gray-200">
+            <span className="font-bold text-blue-900 dark:text-blue-300">💡 Sistem:</span> Her kategoriyi doldur. Madde madde yaz. 
             Ne kadar detaylı olursan, karşılaştırma o kadar güçlü olur!
           </p>
         </div>
