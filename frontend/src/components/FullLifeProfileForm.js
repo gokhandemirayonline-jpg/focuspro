@@ -541,7 +541,7 @@ ${gapAnalysis ? '\n━━━━ GAP ANALİZİ & ROADMAP ━━━━\n' + gapAna
 
           {currentSection.id !== 'gap' && (
             <>
-              <div className="flex border-b border-slate-200 overflow-x-auto">
+              <div className="flex border-b border-slate-200 dark:border-gray-700 overflow-x-auto">
                 {currentSection.categories.map((cat, idx) => {
                   const CatIcon = cat.icon;
                   return (
@@ -550,8 +550,8 @@ ${gapAnalysis ? '\n━━━━ GAP ANALİZİ & ROADMAP ━━━━\n' + gapAna
                       onClick={() => setActiveCategory(idx)}
                       className={`flex items-center gap-2 px-4 py-3 font-medium transition-all whitespace-nowrap ${
                         activeCategory === idx
-                          ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600'
-                          : 'text-slate-600 hover:bg-slate-50'
+                          ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                          : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700'
                       }`}
                     >
                       <CatIcon size={18} />
