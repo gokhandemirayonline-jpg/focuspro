@@ -614,9 +614,9 @@ ${gapAnalysis ? '\n━━━━ GAP ANALİZİ & ROADMAP ━━━━\n' + gapAna
 
               {gapAnalysis && (
                 <div>
-                  <h3 className="text-2xl font-bold text-blue-700 mb-4">📊 Gap Analizi Sonuçları</h3>
+                  <h3 className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-4">📊 Gap Analizi Sonuçları</h3>
                   <div className="prose max-w-none">
-                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg whitespace-pre-wrap">
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 p-6 rounded-lg whitespace-pre-wrap text-slate-700 dark:text-gray-200">
                       {gapAnalysis}
                     </div>
                   </div>
