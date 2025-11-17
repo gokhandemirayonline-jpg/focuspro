@@ -945,6 +945,108 @@ async def create_or_update_dream_priority(
 
 
 # ============= PROSPECT ENDPOINTS =============
+# ==================== PROSPECT CATEGORIES ====================
+@api_router.post("/prospect-categories", response_model=ProspectCategory)
+async def create_prospect_category(
+    category_data: ProspectCategoryCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Yeni prospect kategorisi oluşturur"""
+    try:
+        category_dict = category_data.model_dump()
+        category_dict['user_id'] = current_user['id']
+        category_dict['id'] = str(uuid.uuid4())
+        category_dict['created_at'] = datetime.utcnow()
+        
+        await db.prospect_categories.insert_one(category_dict)
+        return category_dict
+    except Exception as e:
+        logger.error(f"Error creating prospect category: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Kategori oluşturulurken hata: {str(e)}")
+
+@api_router.get("/prospect-categories", response_model=List[ProspectCategory])
+async def get_prospect_categories(current_user: dict = Depends(get_current_user)):
+    """Kullanıcının tüm kategorilerini getirir"""
+    try:
+        categories = await db.prospect_categories.find(
+            {"user_id": current_user['id']},
+            {"_id": 0}
+        ).sort("order", 1).to_list(100)
+        
+        # Eğer kategori yoksa varsayılanları oluştur
+        if not categories:
+            default_categories = [
+                {"id": str(uuid.uuid4()), "name": "Sıcak", "icon": "🔥", "color": "red", "order": 0, "user_id": current_user['id'], "created_at": datetime.utcnow()},
+                {"id": str(uuid.uuid4()), "name": "Ilık", "icon": "🟡", "color": "yellow", "order": 1, "user_id": current_user['id'], "created_at": datetime.utcnow()},
+                {"id": str(uuid.uuid4()), "name": "Soğuk", "icon": "❄️", "color": "blue", "order": 2, "user_id": current_user['id'], "created_at": datetime.utcnow()}
+            ]
+            await db.prospect_categories.insert_many(default_categories)
+            categories = default_categories
+        
+        return categories
+    except Exception as e:
+        logger.error(f"Error fetching categories: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Kategoriler getirilirken hata: {str(e)}")
+
+@api_router.put("/prospect-categories/{category_id}", response_model=ProspectCategory)
+async def update_prospect_category(
+    category_id: str,
+    category_data: ProspectCategoryCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Kategoriyi günceller"""
+    try:
+        existing = await db.prospect_categories.find_one(
+            {"id": category_id, "user_id": current_user['id']},
+            {"_id": 0}
+        )
+        if not existing:
+            raise HTTPException(status_code=404, detail="Kategori bulunamadı")
+        
+        update_dict = category_data.model_dump()
+        await db.prospect_categories.update_one(
+            {"id": category_id},
+            {"$set": update_dict}
+        )
+        
+        updated = await db.prospect_categories.find_one({"id": category_id}, {"_id": 0})
+        return updated
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating category: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Kategori güncellenirken hata: {str(e)}")
+
+@api_router.delete("/prospect-categories/{category_id}")
+async def delete_prospect_category(
+    category_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Kategoriyi siler (prospect'ler category_id = "" olur)"""
+    try:
+        # Önce bu kategorideki prospect'lerin category_id'sini temizle
+        await db.prospects.update_many(
+            {"category_id": category_id, "user_id": current_user['id']},
+            {"$set": {"category_id": ""}}
+        )
+        
+        # Kategoriyi sil
+        result = await db.prospect_categories.delete_one(
+            {"id": category_id, "user_id": current_user['id']}
+        )
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Kategori bulunamadı")
+        
+        return {"success": True, "message": "Kategori silindi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting category: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Kategori silinirken hata: {str(e)}")
+
+# ==================== END PROSPECT CATEGORIES ====================
+
 @api_router.get("/prospects", response_model=List[Prospect])
 async def get_prospects(current_user: dict = Depends(get_current_user)):
     prospects = await db.prospects.find({"user_id": current_user['id']}, {"_id": 0}).to_list(1000)
