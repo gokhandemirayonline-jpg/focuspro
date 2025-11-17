@@ -2998,11 +2998,6 @@ const FocusProApp = () => {
             </div>
           )}
 
-          {/* PROSPECTS PAGE */}
-          {currentPage === 'prospects' && (
-            <ProspectsPage user={currentUser} />
-          )}
-
           {/* PARTNERS PAGE */}
           {currentPage === 'partners' && (
             <div>
