@@ -378,6 +378,18 @@ frontend:
         agent: "main"
         comment: "DnD Calendar entegre edildi, onEventDrop ve onEventResize fonksiyonları eklendi. Manuel test gerekiyor."
   
+  - task: "İsim Listesi sayfası kapsamlı test"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/ProspectsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "İsim Listesi sayfası için kapsamlı test başlatılıyor. Test edilecek özellikler: Login ve navigasyon, kategori yönetimi (VIP kategorisi ekleme), dinamik sütun ekleme (Pozisyon sütunu), yeni kişi ekleme, yıldız puanlama, kategori filtreleme, satır içi kategori değiştirme, kişi düzenleme. ProspectsPage komponenti kullanılıyor."
+  
   - task: "Profil sayfası (Profilim)"
     implemented: true
     working: true
