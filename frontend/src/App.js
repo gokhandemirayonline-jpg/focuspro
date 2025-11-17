@@ -3911,69 +3911,7 @@ const FocusProApp = () => {
                 )}
 
                 {agendaTab === 'prospects' && (
-                  <div>
-                    {/* PROSPECTS CONTENT */}
-                    <div className="mb-6 flex items-center justify-between">
-                      <h2 className="text-2xl font-bold text-gray-800">İsim Listesi</h2>
-                      <button
-                        onClick={() => {
-                          setShowProspectModal(true);
-                          setEditingProspect(null);
-                          setNewProspect({ name: '', phone: '', email: '', notes: '', status: 'new' });
-                        }}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
-                      >
-                        <Plus size={20} />
-                        Yeni İsim
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {prospects.map(prospect => (
-                        <div key={prospect.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <h3 className="font-bold text-gray-800">{prospect.name}</h3>
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                              prospect.status === 'new' ? 'bg-blue-100 text-blue-700' :
-                              prospect.status === 'contacted' ? 'bg-yellow-100 text-yellow-700' :
-                              prospect.status === 'interested' ? 'bg-green-100 text-green-700' :
-                              'bg-red-100 text-red-700'
-                            }`}>
-                              {prospect.status === 'new' ? 'Yeni' :
-                               prospect.status === 'contacted' ? 'İletişimde' :
-                               prospect.status === 'interested' ? 'İlgili' : 'Reddetti'}
-                            </span>
-                          </div>
-                          {prospect.phone && (
-                            <p className="text-sm text-gray-600 mb-1">📞 {prospect.phone}</p>
-                          )}
-                          {prospect.email && (
-                            <p className="text-sm text-gray-600 mb-2">✉️ {prospect.email}</p>
-                          )}
-                          {prospect.notes && (
-                            <p className="text-sm text-gray-500 mt-2 border-t pt-2">{prospect.notes}</p>
-                          )}
-                          <div className="flex gap-2 mt-3 pt-3 border-t">
-                            <button
-                              onClick={() => {
-                                setEditingProspect(prospect);
-                                setNewProspect(prospect);
-                                setShowProspectModal(true);
-                              }}
-                              className="text-blue-600 hover:text-blue-800"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button
-                              onClick={() => deleteProspect(prospect.id)}
-                              className="text-red-600 hover:text-red-800"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <ProspectsPage user={currentUser} />
                 )}
 
                 {agendaTab === 'goals' && (
