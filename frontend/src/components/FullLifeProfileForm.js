@@ -625,7 +625,7 @@ ${gapAnalysis ? '\n━━━━ GAP ANALİZİ & ROADMAP ━━━━\n' + gapAna
             </div>
           )}
 
-          <div className="p-4 bg-slate-50 flex flex-wrap justify-between items-center gap-3">
+          <div className="p-4 bg-slate-50 dark:bg-gray-900 flex flex-wrap justify-between items-center gap-3">
             <button
               onClick={() => {
                 if (activeCategory > 0) {
@@ -636,7 +636,7 @@ ${gapAnalysis ? '\n━━━━ GAP ANALİZİ & ROADMAP ━━━━\n' + gapAna
                 }
               }}
               disabled={step === 0 && activeCategory === 0}
-              className="flex items-center gap-2 px-5 py-2 bg-white text-slate-600 rounded-lg font-medium hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
+              className="flex items-center gap-2 px-5 py-2 bg-white dark:bg-gray-700 text-slate-600 dark:text-gray-200 rounded-lg font-medium hover:bg-slate-100 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
             >
               <ChevronLeft size={18} />
               Geri
