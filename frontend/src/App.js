@@ -3828,7 +3828,7 @@ const FocusProApp = () => {
                 </button>
                 <button
                   onClick={() => setAgendaTab('character')}
-                  className={`px-6 py-3 font-semibold transition-all ${
+                  className={`px-4 py-2 font-semibold transition-all ${
                     agendaTab === 'character' 
                       ? 'text-purple-600 border-b-2 border-purple-600' 
                       : 'text-gray-600 hover:text-gray-800'
@@ -3839,7 +3839,7 @@ const FocusProApp = () => {
                 </button>
                 <button
                   onClick={() => setAgendaTab('lifeprofile')}
-                  className={`px-6 py-3 font-semibold transition-all ${
+                  className={`px-4 py-2 font-semibold transition-all ${
                     agendaTab === 'lifeprofile' 
                       ? 'text-blue-600 border-b-2 border-blue-600' 
                       : 'text-gray-600 hover:text-gray-800'
