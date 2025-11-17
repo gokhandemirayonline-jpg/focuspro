@@ -380,12 +380,8 @@ const ProspectsPage = ({ user = null }) => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">İsim Listesi</h1>
-        <p className="text-gray-600">Potansiyel müşterilerinizi yönetin</p>
-      </div>
+    <div className="mt-4">
+      {/* Header - Removed since we're inside Ajanda tab */}
 
       {/* Top Bar - Categories and Actions */}
       <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
