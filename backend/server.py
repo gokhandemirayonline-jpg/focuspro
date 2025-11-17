@@ -30,6 +30,7 @@ from models import (
     GoalCreate, Goal, GoalUpdate,
     ReasonCreate, Reason,
     ProspectCategoryCreate, ProspectCategory,
+    ProspectColumnCreate, ProspectColumn,
     ProspectCreate, Prospect,
     PartnerCreate, Partner,
     HabitCreate, Habit,
