@@ -483,6 +483,24 @@ class ProspectCategory(ProspectCategoryBase):
     user_id: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+
+# Prospect Column Models (Dynamic columns for prospects table)
+class ProspectColumnBase(BaseModel):
+    column_name: str
+    column_type: str  # "text", "number", "date", "checkbox"
+    order: int = 0
+    is_required: bool = False
+
+class ProspectColumnCreate(ProspectColumnBase):
+    pass
+
+class ProspectColumn(ProspectColumnBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_by: str  # Admin ID who created this column
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 # Prospect Models
 class ProspectBase(BaseModel):
     name: str
@@ -493,6 +511,7 @@ class ProspectBase(BaseModel):
     source: str = ""
     category_id: str = ""  # Kategori ID
     rating: int = 0  # 0-5 yıldız puanlama
+    custom_fields: dict = {}  # Dynamic custom fields data
 
 class ProspectCreate(ProspectBase):
     pass
