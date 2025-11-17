@@ -3010,7 +3010,7 @@ const FocusProApp = () => {
 
           {/* PROSPECTS PAGE */}
           {currentPage === 'prospects' && (
-            <ProspectsPage user={user} />
+            <ProspectsPage user={currentUser} />
           )}
 
           {/* PARTNERS PAGE */}
