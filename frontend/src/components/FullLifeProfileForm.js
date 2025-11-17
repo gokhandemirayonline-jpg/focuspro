@@ -494,11 +494,11 @@ ${gapAnalysis ? '\n━━━━ GAP ANALİZİ & ROADMAP ━━━━\n' + gapAna
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8 rounded-xl">
+    <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-900 p-4 md:p-8 rounded-xl">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-6">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-800 mb-2">Tam Yaşam Tablosu</h1>
-          <p className="text-slate-600">Şimdiki Ben → 5 Yıl Sonra Hayallerimi Gerçekleştirmiş Ben</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-800 dark:text-gray-100 mb-2">Tam Yaşam Tablosu</h1>
+          <p className="text-slate-600 dark:text-gray-300">Şimdiki Ben → 5 Yıl Sonra Hayallerimi Gerçekleştirmiş Ben</p>
         </div>
 
         <div className="mb-6">
