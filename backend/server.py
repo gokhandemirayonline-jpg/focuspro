@@ -29,6 +29,7 @@ from models import (
     TaskCreate, Task,
     GoalCreate, Goal, GoalUpdate,
     ReasonCreate, Reason,
+    ProspectCategoryCreate, ProspectCategory,
     ProspectCreate, Prospect,
     PartnerCreate, Partner,
     HabitCreate, Habit,
