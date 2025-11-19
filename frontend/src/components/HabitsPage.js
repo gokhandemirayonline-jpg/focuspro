@@ -509,7 +509,7 @@ const HabitsPage = ({ user }) => {
                   </div>
                 </div>
                 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">
                       Tamamlanan Alışkanlıklar:
@@ -531,6 +531,46 @@ const HabitsPage = ({ user }) => {
                     <div className="flex items-center gap-2 text-green-600 dark:text-green-400 font-medium text-sm mt-2">
                       <CheckCircle2 size={16} />
                       <span>Tüm alışkanlıklar tamamlandı! 🎉</span>
+                    </div>
+                  )}
+
+                  {/* Completed Habits List */}
+                  {selectedDateDetails.completedHabits && selectedDateDetails.completedHabits.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-purple-200 dark:border-purple-700">
+                      <div className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2">
+                        ✅ Tamamlanan ({selectedDateDetails.completedHabits.length}):
+                      </div>
+                      <div className="space-y-1">
+                        {selectedDateDetails.completedHabits.map((habit) => (
+                          <div
+                            key={habit.id}
+                            className="text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2"
+                          >
+                            <CheckCircle2 size={14} className="text-green-600 dark:text-green-400" />
+                            <span>{habit.title}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Not Completed Habits List */}
+                  {selectedDateDetails.notCompletedHabits && selectedDateDetails.notCompletedHabits.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-purple-200 dark:border-purple-700">
+                      <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                        ⭕ Tamamlanmayan ({selectedDateDetails.notCompletedHabits.length}):
+                      </div>
+                      <div className="space-y-1">
+                        {selectedDateDetails.notCompletedHabits.map((habit) => (
+                          <div
+                            key={habit.id}
+                            className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2"
+                          >
+                            <Circle size={14} className="text-gray-400 dark:text-gray-500" />
+                            <span>{habit.title}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
