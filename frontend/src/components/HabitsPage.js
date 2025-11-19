@@ -88,7 +88,26 @@ const HabitsPage = ({ user }) => {
       }
     }, 60000); // Check every minute
 
-    return () => clearInterval(dateCheckInterval);
+    // Also check when window gets focus (user comes back to tab)
+    const handleFocus = () => {
+      const currentDate = getLocalDateString();
+      if (currentDate !== selectedDate) {
+        console.log('Window focused - date changed! Updating to:', currentDate);
+        setSelectedDate(currentDate);
+        setCurrentMonth(new Date());
+        loadCalendar(new Date());
+        loadDateDetails(currentDate);
+        loadTodayCompletions();
+        loadStats();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(dateCheckInterval);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, [selectedDate]);
 
   const loadHabits = async () => {
