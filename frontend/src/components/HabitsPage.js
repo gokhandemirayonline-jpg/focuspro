@@ -21,6 +21,9 @@ const HabitsPage = ({ user }) => {
     today_completed: 0,
   });
   const [calendar, setCalendar] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDateDetails, setSelectedDateDetails] = useState(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   
   // Modal states
   const [showHabitModal, setShowHabitModal] = useState(false);
