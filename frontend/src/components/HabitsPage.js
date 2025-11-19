@@ -552,7 +552,7 @@ const HabitsPage = ({ user }) => {
               </div>
             )}
 
-            {/* Selected Date Details */}
+            {/* Selected Date Details - Below Calendar */}
             {selectedDateDetails && (
               <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border-2 border-purple-200 dark:border-purple-700">
                 <div className="flex items-center justify-between mb-3">
