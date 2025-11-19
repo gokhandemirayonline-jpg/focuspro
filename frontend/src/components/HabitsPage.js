@@ -314,9 +314,18 @@ const HabitsPage = ({ user }) => {
         {/* Left Column - Habits List (40%) */}
         <div className="lg:col-span-2">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
-              Bugünkü Alışkanlıklar
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                {selectedDate === new Date().toISOString().split('T')[0]
+                  ? '📋 Bugünkü Alışkanlıklar'
+                  : `📅 ${formatDateDetail(selectedDate)}`}
+              </h3>
+              {selectedDate !== new Date().toISOString().split('T')[0] && (
+                <span className="text-xs px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                  Geçmiş Gün
+                </span>
+              )}
+            </div>
             
             {habits.length === 0 ? (
               <div className="text-center py-12 text-gray-500 dark:text-gray-400">
@@ -325,7 +334,10 @@ const HabitsPage = ({ user }) => {
             ) : (
               <div className="space-y-3">
                 {habits.map((habit) => {
-                  const isCompleted = completedToday.includes(habit.id);
+                  const isToday = selectedDate === new Date().toISOString().split('T')[0];
+                  const isCompleted = selectedDateDetails?.completedHabits?.some(h => h.id === habit.id) || false;
+                  const isPastDay = new Date(selectedDate) < new Date(new Date().toISOString().split('T')[0]);
+                  const isDisabled = !isToday; // Disable for non-today dates
                   
                   return (
                     <div
@@ -334,23 +346,26 @@ const HabitsPage = ({ user }) => {
                         isCompleted
                           ? 'bg-green-50 dark:bg-green-900/20 border-green-500'
                           : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600'
-                      }`}
+                      } ${isDisabled ? 'opacity-75' : ''}`}
                     >
                       <div className="flex items-start gap-3">
                         {/* Checkbox */}
                         <button
-                          onClick={() => handleToggleCompletion(habit.id)}
-                          className="flex-shrink-0 mt-1"
+                          onClick={() => isToday && handleToggleCompletion(habit.id)}
+                          disabled={isDisabled}
+                          className={`flex-shrink-0 mt-1 ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                         >
                           {isCompleted ? (
                             <CheckCircle2
                               size={24}
-                              className="text-green-600 dark:text-green-400"
+                              className={`text-green-600 dark:text-green-400 ${isDisabled ? 'opacity-60' : ''}`}
                             />
                           ) : (
                             <Circle
                               size={24}
-                              className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
+                              className={`text-gray-400 dark:text-gray-500 ${
+                                !isDisabled && 'hover:text-gray-600 dark:hover:text-gray-400'
+                              }`}
                             />
                           )}
                         </button>
@@ -371,8 +386,8 @@ const HabitsPage = ({ user }) => {
                           </p>
                         </div>
 
-                        {/* Admin Actions */}
-                        {isAdmin && (
+                        {/* Admin Actions - Only show for today */}
+                        {isAdmin && isToday && (
                           <div className="flex items-center gap-1 flex-shrink-0">
                             <button
                               onClick={() => handleEditClick(habit)}
