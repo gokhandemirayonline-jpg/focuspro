@@ -546,9 +546,8 @@ class Partner(PartnerBase):
 # Habit Models
 class HabitBase(BaseModel):
     title: str
-    target: int
-    completed: int = 0
-    done: bool = False
+    description: str = ""
+    frequency: str = "daily"  # daily, weekly, monthly
 
 class HabitCreate(HabitBase):
     pass
@@ -556,8 +555,24 @@ class HabitCreate(HabitBase):
 class Habit(HabitBase):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_by: str  # Admin user ID
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# Habit Completion Models (User-specific daily completions)
+class HabitCompletionBase(BaseModel):
+    habit_id: str
+    completion_date: str  # YYYY-MM-DD format
+    notes: str = ""
+
+class HabitCompletionCreate(HabitCompletionBase):
+    pass
+
+class HabitCompletion(HabitCompletionBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
-    date: str = Field(default_factory=lambda: datetime.utcnow().strftime("%Y-%m-%d"))
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 # Event Models
