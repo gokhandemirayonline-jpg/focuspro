@@ -7,6 +7,8 @@ import {
   CheckCircle2,
   Circle,
   TrendingUp,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { habitAPI } from '../services/api';
 
