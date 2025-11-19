@@ -49,6 +49,10 @@ const HabitsPage = ({ user }) => {
     loadTodayCompletions();
     loadStats();
     loadCalendar();
+    
+    // Auto-select today and load its details
+    const today = new Date().toISOString().split('T')[0];
+    setSelectedDate(today);
   }, []);
 
   const loadHabits = async () => {
