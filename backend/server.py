@@ -1247,77 +1247,257 @@ async def delete_partner(partner_id: str, current_user: dict = Depends(get_curre
     return {"message": "Partner deleted successfully"}
 
 
-# ============= HABIT ENDPOINTS =============
+# ============= HABIT ENDPOINTS (Admin manages habits, Users track completions) =============
 @api_router.get("/habits", response_model=List[Habit])
 async def get_habits(current_user: dict = Depends(get_current_user)):
-    today = datetime.utcnow().strftime("%Y-%m-%d")
-    habits = await db.habits.find({"user_id": current_user['id'], "date": today}, {"_id": 0}).to_list(1000)
-    
-    # If no habits for today, create default ones
-    if not habits:
-        default_habits = [
-            {"title": "Yeni kişilerle konuş", "target": 5, "completed": 0, "done": False},
-            {"title": "Follow-up yap", "target": 3, "completed": 0, "done": False},
-            {"title": "Sosyal medya paylaşımı", "target": 2, "completed": 0, "done": False},
-            {"title": "Eğitim izle", "target": 1, "completed": 0, "done": False}
-        ]
-        
-        habits = []
-        for habit_data in default_habits:
-            habit_data['user_id'] = current_user['id']
-            habit_obj = Habit(**habit_data)
-            doc = habit_obj.model_dump()
-            await db.habits.insert_one(doc)
-            habits.append(habit_obj)
-    
+    """Get all habits (created by admin)"""
+    habits = await db.habits.find({}, {"_id": 0}).to_list(1000)
     return habits
 
 @api_router.post("/habits", response_model=Habit)
-async def create_habit(habit_data: dict, current_user: dict = Depends(get_current_user)):
-    habit = Habit(
-        user_id=current_user['id'],
-        title=habit_data.get('title'),
-        target=habit_data.get('target', 1),
-        completed=0,
-        done=False
-    )
-    doc = habit.model_dump()
-    await db.habits.insert_one(doc)
-    return habit
+async def create_habit(habit_data: HabitCreate, current_user: dict = Depends(get_current_user)):
+    """Create new habit (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin yetkisi gerekli")
+    
+    try:
+        habit_dict = habit_data.model_dump()
+        habit_dict['id'] = str(uuid.uuid4())
+        habit_dict['created_by'] = current_user['id']
+        habit_dict['created_at'] = datetime.utcnow()
+        
+        await db.habits.insert_one(habit_dict)
+        return habit_dict
+    except Exception as e:
+        logger.error(f"Error creating habit: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Alışkanlık oluşturulurken hata: {str(e)}")
 
-@api_router.put("/habits/{habit_id}")
-async def update_habit_full(habit_id: str, habit_data: dict, current_user: dict = Depends(get_current_user)):
-    habit = await db.habits.find_one({"id": habit_id, "user_id": current_user['id']}, {"_id": 0})
-    if not habit:
-        raise HTTPException(status_code=404, detail="Habit not found")
+@api_router.put("/habits/{habit_id}", response_model=Habit)
+async def update_habit(habit_id: str, habit_data: HabitCreate, current_user: dict = Depends(get_current_user)):
+    """Update habit (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin yetkisi gerekli")
     
-    update_fields = {}
-    if 'title' in habit_data:
-        update_fields['title'] = habit_data['title']
-    if 'target' in habit_data:
-        update_fields['target'] = habit_data['target']
-    if 'completed' in habit_data:
-        new_completed = min(habit_data['completed'], habit_data.get('target', habit['target']))
-        update_fields['completed'] = new_completed
-        update_fields['done'] = new_completed >= habit_data.get('target', habit['target'])
-    
-    if update_fields:
+    try:
+        existing = await db.habits.find_one({"id": habit_id}, {"_id": 0})
+        if not existing:
+            raise HTTPException(status_code=404, detail="Alışkanlık bulunamadı")
+        
+        update_dict = habit_data.model_dump()
         await db.habits.update_one(
             {"id": habit_id},
-            {"$set": update_fields}
+            {"$set": update_dict}
         )
-    
-    return {"message": "Habit updated successfully"}
+        
+        updated = await db.habits.find_one({"id": habit_id}, {"_id": 0})
+        return updated
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating habit: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Alışkanlık güncellenirken hata: {str(e)}")
 
-@api_router.patch("/habits/{habit_id}")
-async def update_habit(habit_id: str, completed: int, current_user: dict = Depends(get_current_user)):
-    habit = await db.habits.find_one({"id": habit_id, "user_id": current_user['id']}, {"_id": 0})
-    if not habit:
-        raise HTTPException(status_code=404, detail="Habit not found")
+@api_router.delete("/habits/{habit_id}")
+async def delete_habit(habit_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete habit (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin yetkisi gerekli")
     
-    new_completed = min(completed, habit['target'])
-    done = new_completed >= habit['target']
-    
+    try:
+        result = await db.habits.delete_one({"id": habit_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Alışkanlık bulunamadı")
+        
+        # Also delete all completions for this habit
+        await db.habit_completions.delete_many({"habit_id": habit_id})
+        
+        return {"success": True, "message": "Alışkanlık silindi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting habit: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Alışkanlık silinirken hata: {str(e)}")
+
+
+# ============= HABIT COMPLETION ENDPOINTS =============
+@api_router.post("/habits/{habit_id}/complete")
+async def complete_habit(habit_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark habit as completed for today"""
+    try:
+        # Check if habit exists
+        habit = await db.habits.find_one({"id": habit_id}, {"_id": 0})
+        if not habit:
+            raise HTTPException(status_code=404, detail="Alışkanlık bulunamadı")
+        
+        today = datetime.utcnow().strftime("%Y-%m-%d")
+        
+        # Check if already completed today
+        existing = await db.habit_completions.find_one({
+            "habit_id": habit_id,
+            "user_id": current_user['id'],
+            "completion_date": today
+        }, {"_id": 0})
+        
+        if existing:
+            return {"message": "Bu alışkanlık bugün zaten tamamlanmış", "already_completed": True}
+        
+        # Create completion record
+        completion_dict = {
+            "id": str(uuid.uuid4()),
+            "habit_id": habit_id,
+            "user_id": current_user['id'],
+            "completion_date": today,
+            "notes": "",
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.habit_completions.insert_one(completion_dict)
+        return {"message": "Alışkanlık tamamlandı!", "success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error completing habit: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Alışkanlık tamamlanırken hata: {str(e)}")
+
+@api_router.delete("/habits/{habit_id}/complete")
+async def uncomplete_habit(habit_id: str, current_user: dict = Depends(get_current_user)):
+    """Remove today's completion for habit"""
+    try:
+        today = datetime.utcnow().strftime("%Y-%m-%d")
+        
+        result = await db.habit_completions.delete_one({
+            "habit_id": habit_id,
+            "user_id": current_user['id'],
+            "completion_date": today
+        })
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Bugün için tamamlanma kaydı bulunamadı")
+        
+        return {"success": True, "message": "Tamamlanma işareti kaldırıldı"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error uncompleting habit: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"İşaret kaldırılırken hata: {str(e)}")
+
+@api_router.get("/habits/completions/today")
+async def get_today_completions(current_user: dict = Depends(get_current_user)):
+    """Get user's habit completions for today"""
+    try:
+        today = datetime.utcnow().strftime("%Y-%m-%d")
+        completions = await db.habit_completions.find({
+            "user_id": current_user['id'],
+            "completion_date": today
+        }, {"_id": 0}).to_list(1000)
+        
+        # Return just habit IDs for easier checking
+        completed_habit_ids = [c['habit_id'] for c in completions]
+        return {"completed_habit_ids": completed_habit_ids, "completions": completions}
+    except Exception as e:
+        logger.error(f"Error getting today completions: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Tamamlamalar getirilirken hata: {str(e)}")
+
+@api_router.get("/habits/stats")
+async def get_habit_stats(current_user: dict = Depends(get_current_user)):
+    """Get habit statistics for current user"""
+    try:
+        # Get all habits
+        habits = await db.habits.find({}, {"_id": 0}).to_list(1000)
+        total_habits = len(habits)
+        
+        if total_habits == 0:
+            return {
+                "daily_rate": 0,
+                "monthly_rate": 0,
+                "total_habits": 0,
+                "today_completed": 0,
+                "month_completed": 0,
+                "month_total": 0
+            }
+        
+        today = datetime.utcnow().strftime("%Y-%m-%d")
+        current_month = datetime.utcnow().strftime("%Y-%m")
+        
+        # Today's completions
+        today_completions = await db.habit_completions.count_documents({
+            "user_id": current_user['id'],
+            "completion_date": today
+        })
+        
+        # This month's completions
+        month_completions = await db.habit_completions.find({
+            "user_id": current_user['id'],
+            "completion_date": {"$regex": f"^{current_month}"}
+        }, {"_id": 0}).to_list(10000)
+        
+        # Calculate unique days in month
+        unique_days = len(set([c['completion_date'] for c in month_completions]))
+        days_in_month = datetime.utcnow().day  # Current day of month
+        
+        # Calculate rates
+        daily_rate = round((today_completions / total_habits) * 100, 1) if total_habits > 0 else 0
+        month_total_possible = total_habits * days_in_month
+        monthly_rate = round((len(month_completions) / month_total_possible) * 100, 1) if month_total_possible > 0 else 0
+        
+        return {
+            "daily_rate": daily_rate,
+            "monthly_rate": monthly_rate,
+            "total_habits": total_habits,
+            "today_completed": today_completions,
+            "month_completed": len(month_completions),
+            "month_total": month_total_possible,
+            "days_tracked": unique_days
+        }
+    except Exception as e:
+        logger.error(f"Error getting habit stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"İstatistikler getirilirken hata: {str(e)}")
+
+@api_router.get("/habits/calendar/{year}/{month}")
+async def get_habit_calendar(year: int, month: int, current_user: dict = Depends(get_current_user)):
+    """Get habit completion calendar for a specific month"""
+    try:
+        # Get all habits count
+        total_habits = await db.habits.count_documents({})
+        
+        if total_habits == 0:
+            return {"days": [], "total_habits": 0}
+        
+        # Get month's completions
+        month_str = f"{year}-{month:02d}"
+        completions = await db.habit_completions.find({
+            "user_id": current_user['id'],
+            "completion_date": {"$regex": f"^{month_str}"}
+        }, {"_id": 0}).to_list(10000)
+        
+        # Group by day
+        from collections import defaultdict
+        daily_counts = defaultdict(int)
+        for completion in completions:
+            daily_counts[completion['completion_date']] += 1
+        
+        # Build calendar data
+        import calendar as cal
+        days_in_month = cal.monthrange(year, month)[1]
+        calendar_data = []
+        
+        for day in range(1, days_in_month + 1):
+            date_str = f"{year}-{month:02d}-{day:02d}"
+            completed_count = daily_counts.get(date_str, 0)
+            completion_rate = round((completed_count / total_habits) * 100, 1) if total_habits > 0 else 0
+            
+            calendar_data.append({
+                "date": date_str,
+                "completed": completed_count,
+                "total": total_habits,
+                "rate": completion_rate
+            })
+        
+        return {"days": calendar_data, "total_habits": total_habits}
+    except Exception as e:
+        logger.error(f"Error getting habit calendar: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Takvim getirilirken hata: {str(e)}")
+
     await db.habits.update_one(
         {"id": habit_id},
         {"$set": {"completed": new_completed, "done": done}}
