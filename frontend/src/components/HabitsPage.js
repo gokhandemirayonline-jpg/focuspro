@@ -45,14 +45,22 @@ const HabitsPage = ({ user }) => {
 
   // Load data
   useEffect(() => {
-    loadHabits();
-    loadTodayCompletions();
-    loadStats();
-    loadCalendar();
+    const initializeData = async () => {
+      const today = new Date().toISOString().split('T')[0];
+      setSelectedDate(today);
+      
+      await loadHabits();
+      await loadTodayCompletions();
+      await loadStats();
+      await loadCalendar();
+      
+      // Load today's details after calendar is loaded
+      setTimeout(() => {
+        loadDateDetails(today);
+      }, 500);
+    };
     
-    // Auto-select today and load its details
-    const today = new Date().toISOString().split('T')[0];
-    setSelectedDate(today);
+    initializeData();
   }, []);
 
   const loadHabits = async () => {
