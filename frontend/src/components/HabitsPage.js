@@ -397,36 +397,57 @@ const HabitsPage = ({ user }) => {
           </div>
         </div>
 
-        {/* Right Column - Stats & Calendar (60%) */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* Stats Card */}
-          <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl shadow-lg p-6 text-white">
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingUp size={24} />
-              <h3 className="text-xl font-bold">Başarı İstatistikleri</h3>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/20 backdrop-blur rounded-lg p-4">
-                <div className="text-3xl font-bold">{stats.daily_rate}%</div>
-                <div className="text-sm opacity-90">Günlük Başarı Oranı</div>
-                <div className="text-xs opacity-75 mt-1">
-                  {stats.today_completed}/{stats.total_habits} tamamlandı
+        {/* Right Column - Unified Stats & Calendar (60%) */}
+        <div className="lg:col-span-3">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            {/* Stats Header */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <TrendingUp size={24} className="text-blue-600 dark:text-blue-400" />
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
+                    Başarı İstatistikleri
+                  </h3>
                 </div>
+                <button
+                  onClick={goToToday}
+                  className="text-sm px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                >
+                  Bugüne Git
+                </button>
               </div>
               
-              <div className="bg-white/20 backdrop-blur rounded-lg p-4">
-                <div className="text-3xl font-bold">{stats.monthly_rate}%</div>
-                <div className="text-sm opacity-90">Aylık Başarı Oranı</div>
-                <div className="text-xs opacity-75 mt-1">
-                  {stats.month_completed}/{stats.month_total} tamamlandı
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/30 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+                  <div className="text-3xl font-bold text-blue-700 dark:text-blue-400">
+                    {selectedDateDetails?.rate || 0}%
+                  </div>
+                  <div className="text-sm font-medium text-blue-600 dark:text-blue-300 mt-1">
+                    Seçili Gün Başarısı
+                  </div>
+                  <div className="text-xs text-blue-500 dark:text-blue-400 mt-1">
+                    {selectedDateDetails ? 
+                      `${selectedDateDetails.completed}/${selectedDateDetails.total} tamamlandı` :
+                      'Bir gün seçin'
+                    }
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/30 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
+                  <div className="text-3xl font-bold text-purple-700 dark:text-purple-400">
+                    {monthlyStats.monthly_rate}%
+                  </div>
+                  <div className="text-sm font-medium text-purple-600 dark:text-purple-300 mt-1">
+                    {formatMonthYear(currentMonth)} Başarısı
+                  </div>
+                  <div className="text-xs text-purple-500 dark:text-purple-400 mt-1">
+                    {monthlyStats.month_completed}/{monthlyStats.month_total} tamamlandı
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Calendar */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            {/* Calendar */}
             {/* Month Navigation */}
             <div className="flex items-center justify-between mb-4">
               <button
