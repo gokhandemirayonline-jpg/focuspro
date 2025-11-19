@@ -86,25 +86,29 @@ const HabitsPage = ({ user }) => {
 
   const loadDateDetails = async (date) => {
     try {
-      // Get completions for specific date
-      const response = await habitAPI.getCalendar(
+      // Get calendar data for the day
+      const calendarResponse = await habitAPI.getCalendar(
         new Date(date).getFullYear(),
         new Date(date).getMonth() + 1
       );
-      const dayData = response.data.days.find(d => d.date === date);
+      const dayData = calendarResponse.data.days.find(d => d.date === date);
       
       if (dayData) {
-        // Get habits completed on this date
-        const allHabits = habits;
-        const completionsResponse = await habitAPI.getTodayCompletions();
+        // Get which habits were completed on this specific date
+        const completionsResponse = await habitAPI.getDateCompletions(date);
+        const completedHabitIds = completionsResponse.data.completed_habit_ids || [];
         
-        // For selected date, we need to check which habits were completed
-        // This is a simplified version - you might want to add a specific endpoint
+        // Build detailed view with habit names
+        const completedHabits = habits.filter(h => completedHabitIds.includes(h.id));
+        const notCompletedHabits = habits.filter(h => !completedHabitIds.includes(h.id));
+        
         setSelectedDateDetails({
           date: date,
           total: dayData.total,
           completed: dayData.completed,
           rate: dayData.rate,
+          completedHabits: completedHabits,
+          notCompletedHabits: notCompletedHabits,
         });
       }
     } catch (error) {
