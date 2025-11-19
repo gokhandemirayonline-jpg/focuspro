@@ -128,13 +128,17 @@ export const partnerAPI = {
   delete: (partnerId) => api.delete(`/partners/${partnerId}`),
 };
 
-// Habit API
+// Habit API (New structure)
 export const habitAPI = {
   getAll: () => api.get('/habits'),
   create: (habitData) => api.post('/habits', habitData),
-  updateFull: (habitId, habitData) => api.put(`/habits/${habitId}`, habitData),
-  update: (habitId, completed) => api.patch(`/habits/${habitId}`, null, { params: { completed } }),
+  update: (habitId, habitData) => api.put(`/habits/${habitId}`, habitData),
   delete: (habitId) => api.delete(`/habits/${habitId}`),
+  complete: (habitId) => api.post(`/habits/${habitId}/complete`),
+  uncomplete: (habitId) => api.delete(`/habits/${habitId}/complete`),
+  getTodayCompletions: () => api.get('/habits/completions/today'),
+  getStats: () => api.get('/habits/stats'),
+  getCalendar: (year, month) => api.get(`/habits/calendar/${year}/${month}`),
 };
 
 // Dream Priority API
