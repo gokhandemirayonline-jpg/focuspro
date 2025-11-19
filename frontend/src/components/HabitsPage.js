@@ -183,9 +183,19 @@ const HabitsPage = ({ user }) => {
       } else {
         await habitAPI.complete(habitId);
       }
-      loadTodayCompletions();
-      loadStats();
-      loadCalendar();
+      
+      // Reload all data for real-time updates
+      await Promise.all([
+        loadTodayCompletions(),
+        loadStats(),
+        loadCalendar(),
+      ]);
+      
+      // If viewing today, refresh the detail card too
+      const today = new Date().toISOString().split('T')[0];
+      if (selectedDate === today) {
+        await loadDateDetails(today);
+      }
     } catch (error) {
       console.error('Error toggling completion:', error);
     }
