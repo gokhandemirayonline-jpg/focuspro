@@ -26,6 +26,11 @@ const HabitsPage = ({ user }) => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedDateDetails, setSelectedDateDetails] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [monthlyStats, setMonthlyStats] = useState({
+    monthly_rate: 0,
+    month_completed: 0,
+    month_total: 0,
+  });
   
   // Modal states
   const [showHabitModal, setShowHabitModal] = useState(false);
