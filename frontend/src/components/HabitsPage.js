@@ -522,8 +522,7 @@ const HabitsPage = ({ user }) => {
                   {calendar.map((day) => {
                     const date = new Date(day.date);
                     const dayOfMonth = date.getDate();
-                    const today = new Date();
-                    const todayStr = today.toISOString().split('T')[0];
+                    const todayStr = getLocalDateString();
                     const isToday = day.date === todayStr;
                     const isSelected = day.date === selectedDate;
                     const isFuture = new Date(day.date) > new Date(todayStr);
