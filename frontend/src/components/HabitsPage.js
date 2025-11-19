@@ -194,6 +194,44 @@ const HabitsPage = ({ user }) => {
     return 'bg-green-500 dark:bg-green-600';
   };
 
+  // Month navigation
+  const goToPreviousMonth = () => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(newMonth.getMonth() - 1);
+    setCurrentMonth(newMonth);
+    loadCalendar(newMonth);
+  };
+
+  const goToNextMonth = () => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(newMonth.getMonth() + 1);
+    setCurrentMonth(newMonth);
+    loadCalendar(newMonth);
+  };
+
+  const handleDayClick = (date) => {
+    setSelectedDate(date);
+    loadDateDetails(date);
+  };
+
+  const formatMonthYear = (date) => {
+    const months = [
+      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+    ];
+    return `${months[date.getMonth()]} ${date.getFullYear()}`;
+  };
+
+  const formatDateDetail = (dateStr) => {
+    const date = new Date(dateStr);
+    const days = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+    const months = [
+      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+    ];
+    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()} - ${days[date.getDay()]}`;
+  };
+
   return (
     <div className="mt-4">
       {/* Header with Add Button (Admin only) */}
