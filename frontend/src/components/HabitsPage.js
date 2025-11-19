@@ -275,7 +275,7 @@ const HabitsPage = ({ user }) => {
   const goToToday = () => {
     const now = new Date();
     setCurrentMonth(now);
-    const today = now.toISOString().split('T')[0];
+    const today = getLocalDateString();
     setSelectedDate(today);
     loadCalendar(now);
     loadDateDetails(today);
