@@ -137,6 +137,7 @@ export const habitAPI = {
   complete: (habitId) => api.post(`/habits/${habitId}/complete`),
   uncomplete: (habitId) => api.delete(`/habits/${habitId}/complete`),
   getTodayCompletions: () => api.get('/habits/completions/today'),
+  getDateCompletions: (date) => api.get(`/habits/completions/date/${date}`),
   getStats: () => api.get('/habits/stats'),
   getCalendar: (year, month) => api.get(`/habits/calendar/${year}/${month}`),
 };
