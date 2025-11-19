@@ -121,7 +121,8 @@ const HabitsPage = ({ user }) => {
 
   const loadTodayCompletions = async () => {
     try {
-      const response = await habitAPI.getTodayCompletions();
+      const today = getLocalDateString();
+      const response = await habitAPI.getDateCompletions(today);
       setCompletedToday(response.data.completed_habit_ids || []);
     } catch (error) {
       console.error('Error loading completions:', error);
