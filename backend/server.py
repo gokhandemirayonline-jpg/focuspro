@@ -1398,6 +1398,21 @@ async def get_today_completions(current_user: dict = Depends(get_current_user)):
         logger.error(f"Error getting today completions: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Tamamlamalar getirilirken hata: {str(e)}")
 
+@api_router.get("/habits/completions/date/{date}")
+async def get_date_completions(date: str, current_user: dict = Depends(get_current_user)):
+    """Get user's habit completions for a specific date"""
+    try:
+        completions = await db.habit_completions.find({
+            "user_id": current_user['id'],
+            "completion_date": date
+        }, {"_id": 0}).to_list(1000)
+        
+        completed_habit_ids = [c['habit_id'] for c in completions]
+        return {"completed_habit_ids": completed_habit_ids, "completions": completions, "date": date}
+    except Exception as e:
+        logger.error(f"Error getting date completions: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Tarih için tamamlamalar getirilirken hata: {str(e)}")
+
 @api_router.get("/habits/stats")
 async def get_habit_stats(current_user: dict = Depends(get_current_user)):
     """Get habit statistics for current user"""
