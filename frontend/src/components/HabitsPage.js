@@ -71,13 +71,42 @@ const HabitsPage = ({ user }) => {
     }
   };
 
-  const loadCalendar = async () => {
+  const loadCalendar = async (month = currentMonth) => {
     try {
-      const now = new Date();
-      const response = await habitAPI.getCalendar(now.getFullYear(), now.getMonth() + 1);
+      const response = await habitAPI.getCalendar(month.getFullYear(), month.getMonth() + 1);
       setCalendar(response.data.days || []);
+      // Load details for selected date if in this month
+      loadDateDetails(selectedDate);
     } catch (error) {
       console.error('Error loading calendar:', error);
+    }
+  };
+
+  const loadDateDetails = async (date) => {
+    try {
+      // Get completions for specific date
+      const response = await habitAPI.getCalendar(
+        new Date(date).getFullYear(),
+        new Date(date).getMonth() + 1
+      );
+      const dayData = response.data.days.find(d => d.date === date);
+      
+      if (dayData) {
+        // Get habits completed on this date
+        const allHabits = habits;
+        const completionsResponse = await habitAPI.getTodayCompletions();
+        
+        // For selected date, we need to check which habits were completed
+        // This is a simplified version - you might want to add a specific endpoint
+        setSelectedDateDetails({
+          date: date,
+          total: dayData.total,
+          completed: dayData.completed,
+          rate: dayData.rate,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading date details:', error);
     }
   };
 
