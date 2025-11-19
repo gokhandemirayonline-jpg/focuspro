@@ -392,18 +392,20 @@ const HabitsPage = ({ user }) => {
                 {habits.map((habit) => {
                   const todayStr = getLocalDateString();
                   const isToday = selectedDate === todayStr;
-                  const isCompleted = selectedDateDetails?.completedHabits?.some(h => h.id === habit.id) || false;
+                  const isCompleted = isToday 
+                    ? completedToday.includes(habit.id)
+                    : selectedDateDetails?.completedHabits?.some(h => h.id === habit.id) || false;
                   const isPastDay = new Date(selectedDate) < new Date(todayStr);
                   const isDisabled = !isToday; // Disable for non-today dates
                   
                   return (
                     <div
                       key={habit.id}
-                      className={`p-4 rounded-lg border-2 transition-all ${
+                      className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
                         isCompleted
                           ? 'bg-green-50 dark:bg-green-900/20 border-green-500'
                           : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600'
-                      } ${isDisabled ? 'opacity-75' : ''}`}
+                      } ${isDisabled ? 'opacity-75' : 'hover:bg-gray-100 dark:hover:bg-gray-600 hover:shadow-md'}`}
                     >
                       <div className="flex items-start gap-3">
                         {/* Checkbox */}
