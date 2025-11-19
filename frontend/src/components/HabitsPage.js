@@ -70,7 +70,26 @@ const HabitsPage = ({ user }) => {
     };
     
     initializeData();
-  }, []);
+
+    // Check for date change every minute
+    const dateCheckInterval = setInterval(() => {
+      const currentDate = getLocalDateString();
+      const currentSelectedDate = selectedDate;
+      
+      // If date changed and we're viewing an old date, update to today
+      if (currentDate !== currentSelectedDate) {
+        console.log('Date changed! Updating to new day:', currentDate);
+        setSelectedDate(currentDate);
+        setCurrentMonth(new Date());
+        loadCalendar(new Date());
+        loadDateDetails(currentDate);
+        loadTodayCompletions();
+        loadStats();
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(dateCheckInterval);
+  }, [selectedDate]);
 
   const loadHabits = async () => {
     try {
