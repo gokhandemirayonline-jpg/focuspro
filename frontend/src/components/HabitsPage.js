@@ -255,6 +255,15 @@ const HabitsPage = ({ user }) => {
     loadDateDetails(date);
   };
 
+  const goToToday = () => {
+    const now = new Date();
+    setCurrentMonth(now);
+    const today = now.toISOString().split('T')[0];
+    setSelectedDate(today);
+    loadCalendar(now);
+    loadDateDetails(today);
+  };
+
   const formatMonthYear = (date) => {
     const months = [
       'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
