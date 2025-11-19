@@ -34,6 +34,7 @@ from models import (
     ProspectCreate, Prospect,
     PartnerCreate, Partner,
     HabitCreate, Habit,
+    HabitCompletionCreate, HabitCompletion,
     EventCreate, Event,
     EventRegistrationCreate, EventRegistration,
     NotificationCreate, Notification,
