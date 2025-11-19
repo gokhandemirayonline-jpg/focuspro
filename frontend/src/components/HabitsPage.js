@@ -85,9 +85,25 @@ const HabitsPage = ({ user }) => {
   const loadCalendar = async (month = currentMonth) => {
     try {
       const response = await habitAPI.getCalendar(month.getFullYear(), month.getMonth() + 1);
-      setCalendar(response.data.days || []);
+      const calendarDays = response.data.days || [];
+      setCalendar(calendarDays);
+      
+      // Calculate monthly stats from calendar data
+      const totalPossible = calendarDays.reduce((sum, day) => sum + day.total, 0);
+      const totalCompleted = calendarDays.reduce((sum, day) => sum + day.completed, 0);
+      const monthRate = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
+      
+      setMonthlyStats({
+        monthly_rate: monthRate,
+        month_completed: totalCompleted,
+        month_total: totalPossible,
+      });
+      
       // Load details for selected date if in this month
-      loadDateDetails(selectedDate);
+      const selectedDateInMonth = calendarDays.find(d => d.date === selectedDate);
+      if (selectedDateInMonth) {
+        loadDateDetails(selectedDate);
+      }
     } catch (error) {
       console.error('Error loading calendar:', error);
     }
