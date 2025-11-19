@@ -43,10 +43,19 @@ const HabitsPage = ({ user }) => {
 
   const isAdmin = user?.role === 'admin';
 
+  // Get local date (not UTC)
+  const getLocalDateString = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Load data
   useEffect(() => {
     const initializeData = async () => {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalDateString();
       setSelectedDate(today);
       
       await loadHabits();
