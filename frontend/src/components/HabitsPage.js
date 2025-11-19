@@ -351,9 +351,10 @@ const HabitsPage = ({ user }) => {
             ) : (
               <div className="space-y-3">
                 {habits.map((habit) => {
-                  const isToday = selectedDate === new Date().toISOString().split('T')[0];
+                  const todayStr = getLocalDateString();
+                  const isToday = selectedDate === todayStr;
                   const isCompleted = selectedDateDetails?.completedHabits?.some(h => h.id === habit.id) || false;
-                  const isPastDay = new Date(selectedDate) < new Date(new Date().toISOString().split('T')[0]);
+                  const isPastDay = new Date(selectedDate) < new Date(todayStr);
                   const isDisabled = !isToday; // Disable for non-today dates
                   
                   return (
