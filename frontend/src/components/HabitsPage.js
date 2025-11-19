@@ -377,9 +377,24 @@ const HabitsPage = ({ user }) => {
 
           {/* Calendar */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
-              Aylık Takvim
-            </h3>
+            {/* Month Navigation */}
+            <div className="flex items-center justify-between mb-4">
+              <button
+                onClick={goToPreviousMonth}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <span className="text-xl">◀</span>
+              </button>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                {formatMonthYear(currentMonth)}
+              </h3>
+              <button
+                onClick={goToNextMonth}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <span className="text-xl">▶</span>
+              </button>
+            </div>
             
             {calendar.length === 0 ? (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
@@ -403,22 +418,24 @@ const HabitsPage = ({ user }) => {
                 <div className="grid grid-cols-7 gap-2">
                   {calendar.map((day) => {
                     const date = new Date(day.date);
-                    const dayOfWeek = date.getDay();
                     const dayOfMonth = date.getDate();
-                    const isToday =
-                      day.date === new Date().toISOString().split('T')[0];
+                    const isToday = day.date === new Date().toISOString().split('T')[0];
+                    const isSelected = day.date === selectedDate;
+                    const isFuture = new Date(day.date) > new Date();
 
                     return (
                       <div
                         key={day.date}
-                        className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-all hover:scale-110 cursor-pointer ${getColorForRate(
+                        onClick={() => handleDayClick(day.date)}
+                        className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-all hover:scale-110 cursor-pointer relative group ${getColorForRate(
                           day.rate
                         )} ${
-                          isToday
-                            ? 'ring-2 ring-blue-500 dark:ring-blue-400'
-                            : ''
+                          isToday ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''
+                        } ${
+                          isSelected ? 'ring-2 ring-purple-500 dark:ring-purple-400 ring-offset-2' : ''
+                        } ${
+                          isFuture ? 'opacity-50' : ''
                         }`}
-                        title={`${day.date}: ${day.completed}/${day.total} (${day.rate}%)`}
                       >
                         <span
                           className={`${
@@ -429,6 +446,21 @@ const HabitsPage = ({ user }) => {
                         >
                           {dayOfMonth}
                         </span>
+
+                        {/* Hover Tooltip */}
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
+                          <div className="font-semibold">{day.date}</div>
+                          <div className="mt-1">
+                            {day.completed}/{day.total} tamamlandı
+                          </div>
+                          <div className="font-bold text-green-400">
+                            {day.rate}%
+                          </div>
+                          {/* Arrow */}
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                            <div className="border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                          </div>
+                        </div>
                       </div>
                     );
                   })}
@@ -445,6 +477,46 @@ const HabitsPage = ({ user }) => {
                     <div className="w-4 h-4 bg-green-500 dark:bg-green-600 rounded"></div>
                   </div>
                   <span>Çok</span>
+                </div>
+              </div>
+            )}
+
+            {/* Selected Date Details */}
+            {selectedDateDetails && (
+              <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border-2 border-purple-200 dark:border-purple-700">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold text-gray-800 dark:text-gray-100">
+                    📅 {formatDateDetail(selectedDate)}
+                  </h4>
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                    {selectedDateDetails.rate}%
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Tamamlanan Alışkanlıklar:
+                    </span>
+                    <span className="font-semibold text-gray-800 dark:text-gray-100">
+                      {selectedDateDetails.completed}/{selectedDateDetails.total}
+                    </span>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all"
+                      style={{ width: `${selectedDateDetails.rate}%` }}
+                    ></div>
+                  </div>
+
+                  {selectedDateDetails.rate === 100 && (
+                    <div className="flex items-center gap-2 text-green-600 dark:text-green-400 font-medium text-sm mt-2">
+                      <CheckCircle2 size={16} />
+                      <span>Tüm alışkanlıklar tamamlandı! 🎉</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
