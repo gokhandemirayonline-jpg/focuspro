@@ -15,6 +15,7 @@ import BadgeCollection from './components/BadgeCollection';
 import FullLifeProfileForm from './components/FullLifeProfileForm';
 import ProspectsPage from './components/ProspectsPage';
 import HabitsPage from './components/HabitsPage';
+import DreamsPage from './components/DreamsPage';
 import './App.css';
 
 moment.locale('tr');
