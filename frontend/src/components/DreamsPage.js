@@ -454,11 +454,33 @@ const DreamsPage = ({ user }) => {
                 </div>
               )}
 
+              {/* Progress Indicator */}
+              <div className="flex items-center justify-center gap-2 mb-4">
+                {[1, 2, 3].map((step) => (
+                  <div key={step} className="flex items-center">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                      wizardStep >= step 
+                        ? 'bg-purple-600 text-white' 
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                    }`}>
+                      {step}
+                    </div>
+                    {step < 3 && (
+                      <div className={`w-12 h-1 ${
+                        wizardStep > step 
+                          ? 'bg-purple-600' 
+                          : 'bg-gray-200 dark:bg-gray-700'
+                      }`} />
+                    )}
+                  </div>
+                ))}
+              </div>
+
               {/* Buttons */}
               <div className="flex justify-between mt-6">
                 <button
                   onClick={() => setShowWizard(false)}
-                  className="px-6 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="px-6 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-600"
                 >
                   İptal
                 </button>
@@ -466,14 +488,14 @@ const DreamsPage = ({ user }) => {
                   {wizardStep > 1 && (
                     <button
                       onClick={() => setWizardStep(wizardStep - 1)}
-                      className="px-6 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                      className="px-6 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-600"
                     >
                       Geri
                     </button>
                   )}
-                  {wizardStep < 2 ? (
+                  {wizardStep < 3 ? (
                     <button
-                      onClick={() => setWizardStep(2)}
+                      onClick={() => setWizardStep(wizardStep + 1)}
                       className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
                     >
                       İleri
