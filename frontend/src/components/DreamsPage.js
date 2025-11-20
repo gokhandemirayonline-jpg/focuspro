@@ -351,8 +351,69 @@ const DreamsPage = ({ user }) => {
                 </div>
               )}
 
-              {/* Step 2: Additional info */}
+              {/* Step 2: Dream Details (Açıklama ve Görsel) */}
               {wizardStep === 2 && (
+                <div>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Her hayaliniz için detay açıklaması ve görsel URL'i ekleyin (opsiyonel):
+                  </p>
+                  <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                    {wizardData.initial_dreams.filter(d => d.trim()).map((dream, index) => (
+                      <div key={index} className="p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg">
+                        <h4 className="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
+                          <span className="bg-purple-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm">
+                            {index + 1}
+                          </span>
+                          {dream}
+                        </h4>
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={wizardData.descriptions[dream] || ''}
+                            onChange={(e) => {
+                              const newDescriptions = { ...wizardData.descriptions };
+                              newDescriptions[dream] = e.target.value;
+                              setWizardData({ ...wizardData, descriptions: newDescriptions });
+                            }}
+                            placeholder="Açıklama (Örn: Nasıl bir araba? Hangi model?)"
+                            className="w-full px-3 py-2 border rounded-lg text-sm dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                          />
+                          <input
+                            type="text"
+                            value={wizardData.images[dream] || ''}
+                            onChange={(e) => {
+                              const newImages = { ...wizardData.images };
+                              newImages[dream] = e.target.value;
+                              setWizardData({ ...wizardData, images: newImages });
+                            }}
+                            placeholder="Görsel URL (Örn: https://example.com/image.jpg)"
+                            className="w-full px-3 py-2 border rounded-lg text-sm dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                          />
+                          {wizardData.images[dream] && (
+                            <div className="mt-2">
+                              <img 
+                                src={wizardData.images[dream]} 
+                                alt={dream}
+                                className="w-full h-32 object-cover rounded-lg"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextSibling.style.display = 'block';
+                                }}
+                              />
+                              <div className="hidden text-xs text-red-500 mt-1">
+                                Görsel yüklenemedi. URL'i kontrol edin.
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Additional info */}
+              {wizardStep === 3 && (
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
