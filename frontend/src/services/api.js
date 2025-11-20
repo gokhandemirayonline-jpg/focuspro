@@ -142,10 +142,13 @@ export const habitAPI = {
   getCalendar: (year, month) => api.get(`/habits/calendar/${year}/${month}`),
 };
 
-// Dream Priority API
+// Dream Priority API (Multiple analyses support)
 export const dreamPriorityAPI = {
-  get: () => api.get('/dream-priorities'),
-  createOrUpdate: (dreamData) => api.post('/dream-priorities', dreamData),
+  getAll: () => api.get('/dream-priorities'),
+  getOne: (id) => api.get(`/dream-priorities/${id}`),
+  create: (dreamData) => api.post('/dream-priorities', dreamData),
+  update: (id, dreamData) => api.put(`/dream-priorities/${id}`, dreamData),
+  delete: (id) => api.delete(`/dream-priorities/${id}`),
 };
 
 // Event API
