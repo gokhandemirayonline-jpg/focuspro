@@ -180,6 +180,9 @@ const HabitsPage = ({ user }) => {
         const completionsResponse = await habitAPI.getDateCompletions(date);
         const completedHabitIds = completionsResponse.data.completed_habit_ids || [];
         
+        // Seçilen günün tamamlanmalarını state'e kaydet
+        setCompletedSelectedDate(completedHabitIds);
+        
         // Build detailed view with habit names
         const completedHabits = habits.filter(h => completedHabitIds.includes(h.id));
         const notCompletedHabits = habits.filter(h => !completedHabitIds.includes(h.id));
