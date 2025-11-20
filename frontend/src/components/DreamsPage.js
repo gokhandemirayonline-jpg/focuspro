@@ -8,6 +8,18 @@ const DreamsPage = ({ user }) => {
   const [showWizard, setShowWizard] = useState(false);
   const [editingAnalysis, setEditingAnalysis] = useState(null);
 
+  // Wizard state
+  const [wizardStep, setWizardStep] = useState(1);
+  const [wizardData, setWizardData] = useState({
+    title: '',
+    initial_dreams: Array(10).fill(''),
+    final_priorities: [],
+    descriptions: {},
+    target_income: '',
+    target_months: '',
+    daily_hours: '',
+  });
+
   useEffect(() => {
     loadAnalyses();
   }, []);
