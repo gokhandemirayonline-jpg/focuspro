@@ -3992,6 +3992,10 @@ const FocusProApp = () => {
                 )}
 
                 {agendaTab === 'dreams' && (
+                  <DreamsPage user={currentUser} />
+                )}
+
+                {agendaTab === 'dreams_old_wizard' && (
                   <div>
                     {/* DREAM PRIORITY WIZARD */}
                     <div className="mb-6">
