@@ -313,6 +313,7 @@ class DreamPriorityUpdate(BaseModel):
     final_priorities: List[str] = None
     top_priority: str = None
     descriptions: dict = None
+    images: dict = None
     target_income: str = None
     target_months: str = None
     daily_hours: str = None
