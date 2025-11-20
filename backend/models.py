@@ -294,14 +294,27 @@ class Reason(ReasonBase):
 
 # Dream Priority Models
 class DreamPriorityBase(BaseModel):
+    title: str = ""  # Analiz başlığı (opsiyonel)
     initial_dreams: List[str] = []  # 10 hayalin ilk listesi
-    final_priorities: List[str] = []  # 10'dan 1'e elendikten sonraki öncelik sırası
+    final_priorities: List[str] = []  # 10'dan 1'e elendikten sonraki öncelik sırası (sıralı)
+    top_priority: str = ""  # En önemli hayal (final_priorities[0])
+    descriptions: dict = {}  # Her hayal için açıklamalar {dream: description}
     target_income: str = ""  # Hedef gelir
     target_months: str = ""  # Hedef süre (ay)
     daily_hours: str = ""  # Günlük ayırabileceği saat
 
 class DreamPriorityCreate(DreamPriorityBase):
     pass
+
+class DreamPriorityUpdate(BaseModel):
+    title: str = None
+    initial_dreams: List[str] = None
+    final_priorities: List[str] = None
+    top_priority: str = None
+    descriptions: dict = None
+    target_income: str = None
+    target_months: str = None
+    daily_hours: str = None
 
 class DreamPriority(DreamPriorityBase):
     model_config = ConfigDict(extra="ignore")
