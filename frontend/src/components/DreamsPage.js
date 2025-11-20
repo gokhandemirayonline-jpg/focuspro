@@ -50,18 +50,35 @@ const DreamsPage = ({ user }) => {
     }
   };
 
-  const handleStartWizard = () => {
-    setWizardData({
-      title: '',
-      initial_dreams: Array(10).fill(''),
-      final_priorities: [],
-      descriptions: {},
-      target_income: '',
-      target_months: '',
-      daily_hours: '',
-    });
+  const handleStartWizard = (editMode = false) => {
+    if (editMode && editingAnalysis) {
+      // Düzenleme modunda mevcut verileri yükle
+      setWizardData({
+        title: editingAnalysis.title || '',
+        initial_dreams: editingAnalysis.initial_dreams?.length >= 10 
+          ? editingAnalysis.initial_dreams 
+          : [...(editingAnalysis.initial_dreams || []), ...Array(10 - (editingAnalysis.initial_dreams?.length || 0)).fill('')],
+        final_priorities: editingAnalysis.final_priorities || [],
+        descriptions: editingAnalysis.descriptions || {},
+        images: editingAnalysis.images || {},
+        target_income: editingAnalysis.target_income || '',
+        target_months: editingAnalysis.target_months || '',
+        daily_hours: editingAnalysis.daily_hours || '',
+      });
+    } else {
+      setWizardData({
+        title: '',
+        initial_dreams: Array(10).fill(''),
+        final_priorities: [],
+        descriptions: {},
+        images: {},
+        target_income: '',
+        target_months: '',
+        daily_hours: '',
+      });
+      setEditingAnalysis(null);
+    }
     setWizardStep(1);
-    setEditingAnalysis(null);
     setShowWizard(true);
   };
 
