@@ -16,6 +16,7 @@ const HabitsPage = ({ user }) => {
   // State
   const [habits, setHabits] = useState([]);
   const [completedToday, setCompletedToday] = useState([]);
+  const [completedSelectedDate, setCompletedSelectedDate] = useState([]); // Seçilen günün tamamlanmaları
   const [stats, setStats] = useState({
     daily_rate: 0,
     monthly_rate: 0,
