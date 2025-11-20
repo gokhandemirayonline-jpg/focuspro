@@ -42,7 +42,7 @@ from models import (
     RecommendationCreate, Recommendation,
     BlogCreate, Blog,
     MessageCreate, Message, MessageReply,
-    DreamPriorityCreate, DreamPriority,
+    DreamPriorityCreate, DreamPriorityUpdate, DreamPriority,
     CharacterAnalysisCreate, CharacterAnalysis,
     FutureCharacterCreate, FutureCharacter,
     FullLifeProfileCreate, FullLifeProfile
