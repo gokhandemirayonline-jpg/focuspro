@@ -281,7 +281,118 @@ const DreamsPage = ({ user }) => {
         </div>
       </div>
 
-      {/* Note: Wizard and Edit modal will be added by updating the existing wizard in App.js */}
+      {/* Wizard Modal */}
+      {showWizard && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                {editingAnalysis ? 'Analizi Düzenle' : 'Yeni Değer Analizi'}
+              </h2>
+
+              {/* Step 1: Enter 10 dreams */}
+              {wizardStep === 1 && (
+                <div>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    10 hayalinizi yazın:
+                  </p>
+                  {wizardData.initial_dreams.map((dream, index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      value={dream}
+                      onChange={(e) => {
+                        const newDreams = [...wizardData.initial_dreams];
+                        newDreams[index] = e.target.value;
+                        setWizardData({ ...wizardData, initial_dreams: newDreams });
+                      }}
+                      placeholder={`${index + 1}. Hayal`}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg mb-2 dark:bg-gray-700 dark:text-gray-100"
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Step 2: Additional info */}
+              {wizardStep === 2 && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                      Analiz Başlığı
+                    </label>
+                    <input
+                      type="text"
+                      value={wizardData.title}
+                      onChange={(e) => setWizardData({ ...wizardData, title: e.target.value })}
+                      placeholder="Örn: 2025 Hedeflerim"
+                      className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:text-gray-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                      Hedef Gelir
+                    </label>
+                    <input
+                      type="text"
+                      value={wizardData.target_income}
+                      onChange={(e) => setWizardData({ ...wizardData, target_income: e.target.value })}
+                      placeholder="Örn: 50.000 TL"
+                      className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:text-gray-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                      Hedef Süre (Ay)
+                    </label>
+                    <input
+                      type="text"
+                      value={wizardData.target_months}
+                      onChange={(e) => setWizardData({ ...wizardData, target_months: e.target.value })}
+                      placeholder="Örn: 12"
+                      className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:text-gray-100"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Buttons */}
+              <div className="flex justify-between mt-6">
+                <button
+                  onClick={() => setShowWizard(false)}
+                  className="px-6 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  İptal
+                </button>
+                <div className="flex gap-2">
+                  {wizardStep > 1 && (
+                    <button
+                      onClick={() => setWizardStep(wizardStep - 1)}
+                      className="px-6 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                    >
+                      Geri
+                    </button>
+                  )}
+                  {wizardStep < 2 ? (
+                    <button
+                      onClick={() => setWizardStep(2)}
+                      className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                    >
+                      İleri
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleSaveWizard}
+                      className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    >
+                      Kaydet
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
