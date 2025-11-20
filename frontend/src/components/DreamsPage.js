@@ -49,6 +49,45 @@ const DreamsPage = ({ user }) => {
     }
   };
 
+  const handleStartWizard = () => {
+    setWizardData({
+      title: '',
+      initial_dreams: Array(10).fill(''),
+      final_priorities: [],
+      descriptions: {},
+      target_income: '',
+      target_months: '',
+      daily_hours: '',
+    });
+    setWizardStep(1);
+    setEditingAnalysis(null);
+    setShowWizard(true);
+  };
+
+  const handleSaveWizard = async () => {
+    try {
+      const dataToSave = {
+        ...wizardData,
+        final_priorities: wizardData.final_priorities.length > 0 
+          ? wizardData.final_priorities 
+          : wizardData.initial_dreams.filter(d => d.trim()),
+      };
+
+      if (editingAnalysis) {
+        await dreamPriorityAPI.update(editingAnalysis.id, dataToSave);
+      } else {
+        await dreamPriorityAPI.create(dataToSave);
+      }
+      
+      await loadAnalyses();
+      setShowWizard(false);
+      setWizardStep(1);
+    } catch (error) {
+      console.error('Error saving analysis:', error);
+      alert('Analiz kaydedilirken hata oluştu');
+    }
+  };
+
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
