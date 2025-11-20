@@ -294,22 +294,39 @@ const DreamsPage = ({ user }) => {
               {wizardStep === 1 && (
                 <div>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    10 hayalinizi yazın:
+                    Hayallerinizi yazın. Örnek metinleri değiştirerek kendi hayallerinizi ekleyin:
                   </p>
-                  {wizardData.initial_dreams.map((dream, index) => (
-                    <input
-                      key={index}
-                      type="text"
-                      value={dream}
-                      onChange={(e) => {
-                        const newDreams = [...wizardData.initial_dreams];
-                        newDreams[index] = e.target.value;
-                        setWizardData({ ...wizardData, initial_dreams: newDreams });
-                      }}
-                      placeholder={`${index + 1}. Hayal`}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg mb-2 dark:bg-gray-700 dark:text-gray-100"
-                    />
-                  ))}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {[
+                      'Hayalimdeki arabayı almak',
+                      'Dünya turu yapmak',
+                      'Kendi evimi almak',
+                      'Kendi işimi kurmak',
+                      'Finansal özgürlüğe ulaşmak',
+                      'Sağlıklı ve fit olmak',
+                      'Ailemle kaliteli zaman geçirmek',
+                      'Yeni bir dil öğrenmek',
+                      'Hayırsever projeler yapmak',
+                      'İdeal ilişkiye sahip olmak'
+                    ].map((placeholder, index) => (
+                      <div key={index} className="relative">
+                        <div className="absolute top-2 left-3 text-purple-600 dark:text-purple-400 font-bold text-sm">
+                          {index + 1}.
+                        </div>
+                        <input
+                          type="text"
+                          value={wizardData.initial_dreams[index]}
+                          onChange={(e) => {
+                            const newDreams = [...wizardData.initial_dreams];
+                            newDreams[index] = e.target.value;
+                            setWizardData({ ...wizardData, initial_dreams: newDreams });
+                          }}
+                          placeholder={placeholder}
+                          className="w-full pl-8 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-purple-500 dark:focus:border-purple-400 focus:outline-none dark:bg-gray-700 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
