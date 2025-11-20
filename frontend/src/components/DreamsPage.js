@@ -253,6 +253,47 @@ const DreamsPage = ({ user }) => {
                 </div>
               )}
 
+              {/* Hayal Panosu (Dream Board) */}
+              {selectedAnalysis.images && Object.keys(selectedAnalysis.images).length > 0 && (
+                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+                    <Star className="text-yellow-500 fill-yellow-500" size={20} />
+                    Hayal Panosu
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {Object.entries(selectedAnalysis.images)
+                      .filter(([_, url]) => url && url.trim())
+                      .map(([dream, imageUrl], index) => (
+                        <div 
+                          key={index}
+                          className="relative group overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all cursor-pointer"
+                        >
+                          <img 
+                            src={imageUrl}
+                            alt={dream}
+                            className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+                            onError={(e) => {
+                              e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23ddd" width="200" height="200"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EGörsel Yok%3C/text%3E%3C/svg%3E';
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute bottom-0 left-0 right-0 p-3">
+                              <p className="text-white font-semibold text-sm line-clamp-2">
+                                {dream}
+                              </p>
+                              {selectedAnalysis.descriptions?.[dream] && (
+                                <p className="text-white/80 text-xs mt-1 line-clamp-1">
+                                  {selectedAnalysis.descriptions[dream]}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
               {/* Additional Info */}
               {(selectedAnalysis.target_income || selectedAnalysis.target_months || selectedAnalysis.daily_hours) && (
                 <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
