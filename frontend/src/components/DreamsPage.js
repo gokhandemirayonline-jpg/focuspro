@@ -15,6 +15,7 @@ const DreamsPage = ({ user }) => {
     initial_dreams: Array(10).fill(''),
     final_priorities: [],
     descriptions: {},
+    images: {},
     target_income: '',
     target_months: '',
     daily_hours: '',
