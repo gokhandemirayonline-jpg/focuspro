@@ -298,7 +298,8 @@ class DreamPriorityBase(BaseModel):
     initial_dreams: List[str] = []  # 10 hayalin ilk listesi
     final_priorities: List[str] = []  # 10'dan 1'e elendikten sonraki öncelik sırası (sıralı)
     top_priority: str = ""  # En önemli hayal (final_priorities[0])
-    descriptions: dict = {}  # Her hayal için açıklamalar {dream: description}
+    descriptions: dict = {}  # Her hayal için detay açıklamalar {dream: description}
+    images: dict = {}  # Her hayal için görsel URL'leri {dream: image_url}
     target_income: str = ""  # Hedef gelir
     target_months: str = ""  # Hedef süre (ay)
     daily_hours: str = ""  # Günlük ayırabileceği saat
