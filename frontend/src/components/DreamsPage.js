@@ -190,7 +190,10 @@ const DreamsPage = ({ user }) => {
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setEditingAnalysis(selectedAnalysis)}
+                    onClick={() => {
+                      setEditingAnalysis(selectedAnalysis);
+                      handleStartWizard(true);
+                    }}
                     className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg"
                   >
                     <Edit size={20} />
