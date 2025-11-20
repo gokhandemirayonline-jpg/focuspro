@@ -893,57 +893,121 @@ async def delete_reason(reason_id: str, current_user: dict = Depends(get_current
     return {"message": "Reason deleted successfully"}
 
 
-# ============= DREAM PRIORITY ENDPOINTS =============
-@api_router.get("/dream-priorities", response_model=DreamPriority)
-async def get_dream_priority(current_user: dict = Depends(get_current_user)):
-    """Get user's dream priority data"""
-    dream_priority = await db.dream_priorities.find_one(
-        {"user_id": current_user['id']},
-        {"_id": 0}
-    )
-    
-    if not dream_priority:
-        # Return empty structure if not exists
-        return DreamPriority(
-            user_id=current_user['id'],
-            initial_dreams=[],
-            final_priorities=[],
-            target_income="",
-            target_months="",
-            daily_hours=""
+# ============= DREAM PRIORITY ENDPOINTS (Multiple analyses support) =============
+@api_router.get("/dream-priorities", response_model=List[DreamPriority])
+async def get_all_dream_priorities(current_user: dict = Depends(get_current_user)):
+    """Get all user's dream priority analyses"""
+    try:
+        priorities = await db.dream_priorities.find(
+            {"user_id": current_user['id']},
+            {"_id": 0}
+        ).sort("created_at", -1).to_list(100)
+        
+        return priorities
+    except Exception as e:
+        logger.error(f"Error fetching dream priorities: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Analizler getirilirken hata: {str(e)}")
+
+@api_router.get("/dream-priorities/{priority_id}", response_model=DreamPriority)
+async def get_dream_priority(priority_id: str, current_user: dict = Depends(get_current_user)):
+    """Get specific dream priority analysis"""
+    try:
+        priority = await db.dream_priorities.find_one(
+            {"id": priority_id, "user_id": current_user['id']},
+            {"_id": 0}
         )
-    
-    return DreamPriority(**dream_priority)
+        
+        if not priority:
+            raise HTTPException(status_code=404, detail="Analiz bulunamadı")
+        
+        return priority
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching dream priority: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Analiz getirilirken hata: {str(e)}")
 
 @api_router.post("/dream-priorities", response_model=DreamPriority)
-async def create_or_update_dream_priority(
+async def create_dream_priority(
     dream_data: DreamPriorityCreate,
     current_user: dict = Depends(get_current_user)
 ):
-    """Create or update user's dream priority"""
-    # Check if exists
-    existing = await db.dream_priorities.find_one({"user_id": current_user['id']}, {"_id": 0})
-    
-    dream_priority = DreamPriority(
-        user_id=current_user['id'],
-        **dream_data.model_dump()
-    )
-    
-    dream_doc = dream_priority.model_dump()
-    dream_doc['created_at'] = dream_doc['created_at'].isoformat()
-    dream_doc['updated_at'] = datetime.utcnow().isoformat()
-    
-    if existing:
-        # Update existing
-        await db.dream_priorities.update_one(
-            {"user_id": current_user['id']},
-            {"$set": dream_doc}
+    """Create new dream priority analysis"""
+    try:
+        dream_dict = dream_data.model_dump()
+        dream_dict['id'] = str(uuid.uuid4())
+        dream_dict['user_id'] = current_user['id']
+        dream_dict['created_at'] = datetime.utcnow()
+        dream_dict['updated_at'] = datetime.utcnow()
+        
+        # Auto-set top_priority if not provided
+        if not dream_dict.get('top_priority') and dream_dict.get('final_priorities'):
+            dream_dict['top_priority'] = dream_dict['final_priorities'][0] if dream_dict['final_priorities'] else ""
+        
+        # Auto-generate title if not provided
+        if not dream_dict.get('title'):
+            dream_dict['title'] = f"Analiz - {dream_dict['created_at'].strftime('%d.%m.%Y')}"
+        
+        await db.dream_priorities.insert_one(dream_dict)
+        return dream_dict
+    except Exception as e:
+        logger.error(f"Error creating dream priority: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Analiz oluşturulurken hata: {str(e)}")
+
+@api_router.put("/dream-priorities/{priority_id}", response_model=DreamPriority)
+async def update_dream_priority(
+    priority_id: str,
+    dream_data: DreamPriorityUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update existing dream priority analysis"""
+    try:
+        existing = await db.dream_priorities.find_one(
+            {"id": priority_id, "user_id": current_user['id']},
+            {"_id": 0}
         )
-    else:
-        # Create new
-        await db.dream_priorities.insert_one(dream_doc)
-    
-    return dream_priority
+        
+        if not existing:
+            raise HTTPException(status_code=404, detail="Analiz bulunamadı")
+        
+        # Update only provided fields
+        update_dict = {k: v for k, v in dream_data.model_dump().items() if v is not None}
+        update_dict['updated_at'] = datetime.utcnow()
+        
+        # Auto-update top_priority if final_priorities changed
+        if 'final_priorities' in update_dict and update_dict['final_priorities']:
+            update_dict['top_priority'] = update_dict['final_priorities'][0]
+        
+        await db.dream_priorities.update_one(
+            {"id": priority_id},
+            {"$set": update_dict}
+        )
+        
+        updated = await db.dream_priorities.find_one({"id": priority_id}, {"_id": 0})
+        return updated
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating dream priority: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Analiz güncellenirken hata: {str(e)}")
+
+@api_router.delete("/dream-priorities/{priority_id}")
+async def delete_dream_priority(priority_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete dream priority analysis"""
+    try:
+        result = await db.dream_priorities.delete_one(
+            {"id": priority_id, "user_id": current_user['id']}
+        )
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Analiz bulunamadı")
+        
+        return {"success": True, "message": "Analiz silindi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting dream priority: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Analiz silinirken hata: {str(e)}")
 
 
 # ============= PROSPECT ENDPOINTS =============
