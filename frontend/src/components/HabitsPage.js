@@ -399,9 +399,7 @@ const HabitsPage = ({ user }) => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                {selectedDate === getLocalDateString()
-                  ? '📋 Bugünkü Alışkanlıklar'
-                  : `📅 ${formatDateDetail(selectedDate)}`}
+                📋 {selectedDate === getLocalDateString() ? 'Bugünkü Alışkanlıklar' : `${formatDateDetail(selectedDate)} - Alışkanlıklar`}
               </h3>
               {new Date(selectedDate) < new Date(getLocalDateString()) && (
                 <span className="text-xs px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
