@@ -432,6 +432,19 @@ const HabitsPage = ({ user }) => {
                   const isCompleted = isToday 
                     ? completedToday.includes(habit.id)
                     : completedSelectedDate.includes(habit.id);
+                    
+                  // Debug log (ilk alışkanlık için)
+                  if (habit.id === habits[0]?.id) {
+                    console.log('RENDER DEBUG:', {
+                      selectedDate,
+                      todayStr,
+                      isToday,
+                      completedToday,
+                      completedSelectedDate,
+                      isCompleted
+                    });
+                  }
+                  
                   const isPastDay = new Date(selectedDate) < new Date(todayStr);
                   const isDisabled = !isToday; // Disable for non-today dates
                   
