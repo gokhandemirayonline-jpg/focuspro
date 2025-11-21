@@ -311,6 +311,7 @@ const HabitsPage = ({ user }) => {
   };
 
   const handleDayClick = (date) => {
+    console.log('Day clicked:', date);
     setSelectedDate(date);
     loadDateDetails(date);
   };
