@@ -168,6 +168,7 @@ const HabitsPage = ({ user }) => {
 
   const loadDateDetails = async (date) => {
     try {
+      console.log('Loading details for date:', date);
       // Get calendar data for the day
       const calendarResponse = await habitAPI.getCalendar(
         new Date(date).getFullYear(),
@@ -179,6 +180,8 @@ const HabitsPage = ({ user }) => {
         // Get which habits were completed on this specific date
         const completionsResponse = await habitAPI.getDateCompletions(date);
         const completedHabitIds = completionsResponse.data.completed_habit_ids || [];
+        
+        console.log('Completed habit IDs for', date, ':', completedHabitIds);
         
         // Seçilen günün tamamlanmalarını state'e kaydet
         setCompletedSelectedDate(completedHabitIds);
