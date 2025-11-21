@@ -332,9 +332,20 @@ const HabitsPage = ({ user }) => {
     loadCalendar(newMonth);
   };
 
-  const handleDayClick = (date) => {
+  const handleDayClick = async (date) => {
     console.log('Day clicked:', date);
     setSelectedDate(date);
+    
+    // Seçilen günün tamamlanmalarını hemen yükle
+    try {
+      const response = await habitAPI.getDateCompletions(date);
+      const completedIds = response.data.completed_habit_ids || [];
+      console.log('handleDayClick: Completed IDs for', date, ':', completedIds);
+      setCompletedSelectedDate(completedIds);
+    } catch (error) {
+      console.error('Error loading completions in handleDayClick:', error);
+    }
+    
     loadDateDetails(date);
   };
 
