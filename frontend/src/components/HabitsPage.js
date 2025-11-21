@@ -335,14 +335,21 @@ const HabitsPage = ({ user }) => {
 
   const handleDayClick = async (date) => {
     console.log('Day clicked:', date);
-    setSelectedDate(date);
+    
+    // State'i senkron olarak güncelle
+    flushSync(() => {
+      setSelectedDate(date);
+    });
     
     // Seçilen günün tamamlanmalarını hemen yükle
     try {
       const response = await habitAPI.getDateCompletions(date);
       const completedIds = response.data.completed_habit_ids || [];
       console.log('handleDayClick: Completed IDs for', date, ':', completedIds);
-      setCompletedSelectedDate(completedIds);
+      
+      flushSync(() => {
+        setCompletedSelectedDate(completedIds);
+      });
     } catch (error) {
       console.error('Error loading completions in handleDayClick:', error);
     }
