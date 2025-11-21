@@ -74,13 +74,15 @@ const HabitsPage = ({ user }) => {
     initializeData();
 
     // Check for date change every minute
+    let lastCheckDateForInterval = getLocalDateString();
+    
     const dateCheckInterval = setInterval(() => {
       const currentDate = getLocalDateString();
-      const currentSelectedDate = selectedDate;
       
-      // If date changed and we're viewing an old date, update to today
-      if (currentDate !== currentSelectedDate) {
+      // Sadece gerçek tarih değişikliğinde (gece yarısı geçti) ve kullanıcı eskiden bugünü seçmişse güncelle
+      if (currentDate !== lastCheckDateForInterval && selectedDate === lastCheckDateForInterval) {
         console.log('Date changed! Updating to new day:', currentDate);
+        lastCheckDateForInterval = currentDate;
         setSelectedDate(currentDate);
         setCurrentMonth(new Date());
         loadCalendar(new Date());
