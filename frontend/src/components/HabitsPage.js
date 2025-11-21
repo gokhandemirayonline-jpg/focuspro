@@ -34,6 +34,9 @@ const HabitsPage = ({ user }) => {
     month_total: 0,
   });
   
+  // Refs for date tracking (to avoid closure issues)
+  const initialLoadDateRef = useRef(new Date().toISOString().split('T')[0]);
+  
   // Modal states
   const [showHabitModal, setShowHabitModal] = useState(false);
   const [editingHabit, setEditingHabit] = useState(null);
