@@ -631,7 +631,11 @@ const HabitsPage = ({ user }) => {
                       <button
                         type="button"
                         key={day.date}
-                        onClick={() => handleDayClick(day.date)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDayClick(day.date);
+                        }}
+                        onMouseDown={(e) => e.stopPropagation()}
                         className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-all hover:scale-110 cursor-pointer relative group ${getColorForRate(
                           day.rate
                         )} ${
