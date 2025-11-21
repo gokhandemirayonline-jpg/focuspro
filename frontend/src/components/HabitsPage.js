@@ -396,9 +396,10 @@ const HabitsPage = ({ user }) => {
                 {habits.map((habit) => {
                   const todayStr = getLocalDateString();
                   const isToday = selectedDate === todayStr;
+                  // Seçilen gün bugünse completedToday, değilse completedSelectedDate kullan
                   const isCompleted = isToday 
                     ? completedToday.includes(habit.id)
-                    : selectedDateDetails?.completedHabits?.some(h => h.id === habit.id) || false;
+                    : completedSelectedDate.includes(habit.id);
                   const isPastDay = new Date(selectedDate) < new Date(todayStr);
                   const isDisabled = !isToday; // Disable for non-today dates
                   
