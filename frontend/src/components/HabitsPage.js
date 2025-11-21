@@ -666,7 +666,7 @@ const HabitsPage = ({ user }) => {
                             <div className="border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
                           </div>
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
