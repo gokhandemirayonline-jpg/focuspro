@@ -444,12 +444,14 @@ const HabitsPage = ({ user }) => {
                   // Debug log (ilk alışkanlık için)
                   if (habit.id === habits[0]?.id) {
                     console.log('RENDER DEBUG:', {
+                      habitId: habit.id,
                       selectedDate,
                       todayStr,
                       isToday,
-                      completedToday,
-                      completedSelectedDate,
-                      isCompleted
+                      completedTodayLength: completedToday.length,
+                      completedSelectedDateLength: completedSelectedDate.length,
+                      isCompleted,
+                      checkingIn: isToday ? 'completedToday' : 'completedSelectedDate'
                     });
                   }
                   
