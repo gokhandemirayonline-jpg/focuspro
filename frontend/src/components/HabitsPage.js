@@ -628,7 +628,8 @@ const HabitsPage = ({ user }) => {
                     const isFuture = new Date(day.date) > new Date(todayStr);
 
                     return (
-                      <div
+                      <button
+                        type="button"
                         key={day.date}
                         onClick={() => handleDayClick(day.date)}
                         className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-all hover:scale-110 cursor-pointer relative group ${getColorForRate(
