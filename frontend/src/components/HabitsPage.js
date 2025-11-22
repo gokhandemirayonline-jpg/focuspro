@@ -76,16 +76,15 @@ const HabitsPage = ({ user }) => {
     
     initializeData();
 
-    // Check for date change every minute
-    let lastCheckDateForInterval = getLocalDateString();
-    
+    // Check for date change every minute  
     const dateCheckInterval = setInterval(() => {
       const currentDate = getLocalDateString();
+      const initialDate = initialLoadDateRef.current;
       
-      // Sadece gerçek tarih değişikliğinde (gece yarısı geçti) ve kullanıcı eskiden bugünü seçmişse güncelle
-      if (currentDate !== lastCheckDateForInterval && selectedDate === lastCheckDateForInterval) {
+      // Sadece gerçek tarih değişikliğinde (gece yarısı geçti) güncelle
+      if (currentDate !== initialDate) {
         console.log('Date changed! Updating to new day:', currentDate);
-        lastCheckDateForInterval = currentDate;
+        initialLoadDateRef.current = currentDate;
         setSelectedDate(currentDate);
         setCurrentMonth(new Date());
         loadCalendar(new Date());
@@ -96,14 +95,14 @@ const HabitsPage = ({ user }) => {
     }, 60000); // Check every minute
 
     // Also check when window gets focus (user comes back to tab)
-    // SADECE gerçekten tarih değiştiyse (gece yarısı geçti) bugüne dön
-    const lastCheckDate = getLocalDateString(); // İlk yüklemede bugünü kaydet
-    
     const handleFocus = () => {
       const currentDate = getLocalDateString();
-      // Sadece gerçek tarih değişikliğinde (gece yarısı geçti) ve kullanıcı eskiden bugünü seçmişse güncelle
-      if (currentDate !== lastCheckDate && selectedDate === lastCheckDate) {
+      const initialDate = initialLoadDateRef.current;
+      
+      // Sadece gerçek tarih değişikliğinde (gece yarısı geçti) güncelle
+      if (currentDate !== initialDate) {
         console.log('Window focused - actual date changed! Updating to:', currentDate);
+        initialLoadDateRef.current = currentDate;
         setSelectedDate(currentDate);
         setCurrentMonth(new Date());
         loadCalendar(new Date());
