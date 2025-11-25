@@ -445,14 +445,18 @@ const HabitsPage = ({ user }) => {
               <div className="space-y-3">
                 {habits.map((habit) => {
                   const todayStr = getLocalDateString();
+                  const yesterdayStr = getYesterdayString();
                   const isToday = selectedDate === todayStr;
+                  const isYesterday = selectedDate === yesterdayStr;
+                  
                   // Seçilen gün bugünse completedToday, değilse completedSelectedDate kullan
                   const isCompleted = isToday 
                     ? completedToday.includes(habit.id)
                     : completedSelectedDate.includes(habit.id);
                     
                   const isPastDay = new Date(selectedDate) < new Date(todayStr);
-                  const isDisabled = !isToday; // Disable for non-today dates
+                  // Bugün veya dün düzenlenebilir, diğer günler sadece görüntüleme
+                  const isDisabled = !(isToday || isYesterday);
                   
                   return (
                     <div
