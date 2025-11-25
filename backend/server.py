@@ -1385,32 +1385,39 @@ async def delete_habit(habit_id: str, current_user: dict = Depends(get_current_u
 
 # ============= HABIT COMPLETION ENDPOINTS =============
 @api_router.post("/habits/{habit_id}/complete")
-async def complete_habit(habit_id: str, current_user: dict = Depends(get_current_user)):
-    """Mark habit as completed for today"""
+async def complete_habit(
+    habit_id: str, 
+    request: dict = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Mark habit as completed for a specific date (default: today)"""
     try:
         # Check if habit exists
         habit = await db.habits.find_one({"id": habit_id}, {"_id": 0})
         if not habit:
             raise HTTPException(status_code=404, detail="Alışkanlık bulunamadı")
         
-        today = datetime.utcnow().strftime("%Y-%m-%d")
+        # Get completion date from request body, default to today
+        completion_date = datetime.utcnow().strftime("%Y-%m-%d")
+        if request and "completion_date" in request:
+            completion_date = request["completion_date"]
         
-        # Check if already completed today
+        # Check if already completed on this date
         existing = await db.habit_completions.find_one({
             "habit_id": habit_id,
             "user_id": current_user['id'],
-            "completion_date": today
+            "completion_date": completion_date
         }, {"_id": 0})
         
         if existing:
-            return {"message": "Bu alışkanlık bugün zaten tamamlanmış", "already_completed": True}
+            return {"message": f"Bu alışkanlık {completion_date} tarihinde zaten tamamlanmış", "already_completed": True}
         
         # Create completion record
         completion_dict = {
             "id": str(uuid.uuid4()),
             "habit_id": habit_id,
             "user_id": current_user['id'],
-            "completion_date": today,
+            "completion_date": completion_date,
             "notes": "",
             "created_at": datetime.utcnow()
         }
