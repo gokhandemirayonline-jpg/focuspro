@@ -470,7 +470,7 @@ const HabitsPage = ({ user }) => {
                       <div className="flex items-start gap-3">
                         {/* Checkbox */}
                         <button
-                          onClick={() => isToday && handleToggleCompletion(habit.id)}
+                          onClick={() => !isDisabled && handleToggleCompletion(habit.id)}
                           disabled={isDisabled}
                           className={`flex-shrink-0 mt-1 ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                         >
