@@ -658,15 +658,36 @@ const HabitsPage = ({ user }) => {
                           isFuture ? 'opacity-50' : ''
                         }`}
                       >
-                        <span
-                          className={`${
-                            day.rate > 0
-                              ? 'text-gray-800 dark:text-gray-100'
-                              : 'text-gray-400 dark:text-gray-500'
-                          }`}
-                        >
-                          {dayOfMonth}
-                        </span>
+                        <div className="flex flex-col items-center justify-center gap-0.5">
+                          <span
+                            className={`text-base font-semibold ${
+                              day.rate > 0
+                                ? 'text-gray-800 dark:text-gray-100'
+                                : 'text-gray-400 dark:text-gray-500'
+                            }`}
+                          >
+                            {dayOfMonth}
+                          </span>
+                          
+                          {/* Yüzde Badge - Sadece geçmiş günler için */}
+                          {!isFuture && isPastDay && (
+                            <span className={`text-[10px] font-bold px-1 py-0.5 rounded ${
+                              day.rate === 100 
+                                ? 'bg-green-600 text-white' 
+                                : day.rate >= 75 
+                                ? 'bg-green-500 text-white'
+                                : day.rate >= 50 
+                                ? 'bg-yellow-500 text-white'
+                                : day.rate >= 25
+                                ? 'bg-orange-500 text-white'
+                                : day.rate > 0
+                                ? 'bg-red-500 text-white'
+                                : 'bg-gray-400 text-white'
+                            }`}>
+                              {day.rate}%
+                            </span>
+                          )}
+                        </div>
 
                         {/* Hover Tooltip */}
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
