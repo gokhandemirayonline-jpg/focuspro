@@ -638,6 +638,7 @@ const HabitsPage = ({ user }) => {
                     const isToday = day.date === todayStr;
                     const isSelected = day.date === selectedDate;
                     const isFuture = new Date(day.date) > new Date(todayStr);
+                    const isPastDay = new Date(day.date) < new Date(todayStr);
 
                     return (
                       <button
