@@ -342,8 +342,6 @@ const HabitsPage = ({ user }) => {
   };
 
   const handleDayClick = async (date) => {
-    console.log('Day clicked:', date);
-    
     // State'i senkron olarak güncelle
     flushSync(() => {
       setSelectedDate(date);
@@ -353,7 +351,6 @@ const HabitsPage = ({ user }) => {
     try {
       const response = await habitAPI.getDateCompletions(date);
       const completedIds = response.data.completed_habit_ids || [];
-      console.log('handleDayClick: Completed IDs for', date, ':', completedIds);
       
       flushSync(() => {
         setCompletedSelectedDate(completedIds);
