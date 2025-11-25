@@ -675,15 +675,9 @@ const HabitsPage = ({ user }) => {
                             <span className={`text-[10px] font-bold px-1 py-0.5 rounded ${
                               day.rate === 100 
                                 ? 'bg-green-600 text-white' 
-                                : day.rate >= 75 
-                                ? 'bg-green-500 text-white'
-                                : day.rate >= 50 
-                                ? 'bg-yellow-500 text-white'
-                                : day.rate >= 25
-                                ? 'bg-orange-500 text-white'
                                 : day.rate > 0
-                                ? 'bg-red-500 text-white'
-                                : 'bg-gray-400 text-white'
+                                ? 'text-red-600 dark:text-red-400'
+                                : 'text-gray-400 dark:text-gray-500'
                             }`}>
                               {day.rate}%
                             </span>
