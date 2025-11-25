@@ -57,6 +57,16 @@ const HabitsPage = ({ user }) => {
     return `${year}-${month}-${day}`;
   };
 
+  // Get yesterday's date
+  const getYesterdayString = () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const year = yesterday.getFullYear();
+    const month = String(yesterday.getMonth() + 1).padStart(2, '0');
+    const day = String(yesterday.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Load data
   useEffect(() => {
     const initializeData = async () => {
