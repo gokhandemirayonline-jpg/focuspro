@@ -296,13 +296,21 @@ const HabitsPage = ({ user }) => {
 
   // Completion toggle
   const handleToggleCompletion = async (habitId) => {
-    const isCompleted = completedToday.includes(habitId);
+    const todayStr = getLocalDateString();
+    const isToday = selectedDate === todayStr;
+    
+    // Bugün için completedToday, dün için completedSelectedDate kullan
+    const isCompleted = isToday 
+      ? completedToday.includes(habitId)
+      : completedSelectedDate.includes(habitId);
     
     try {
       if (isCompleted) {
-        await habitAPI.uncomplete(habitId);
+        // Tamamlanmayı iptal et (belirli bir tarih için)
+        await habitAPI.uncompleteForDate(habitId, selectedDate);
       } else {
-        await habitAPI.complete(habitId);
+        // Tamamla (belirli bir tarih için)
+        await habitAPI.completeForDate(habitId, selectedDate);
       }
       
       // Reload all data for real-time updates
@@ -310,15 +318,17 @@ const HabitsPage = ({ user }) => {
         loadTodayCompletions(),
         loadStats(),
         loadCalendar(),
+        loadDateDetails(selectedDate), // Seçilen günü yeniden yükle
       ]);
       
-      // If viewing today, refresh the detail card too
-      const today = new Date().toISOString().split('T')[0];
-      if (selectedDate === today) {
-        await loadDateDetails(today);
-      }
+      // Seçilen günün tamamlanmalarını tekrar yükle
+      const response = await habitAPI.getDateCompletions(selectedDate);
+      const completedIds = response.data.completed_habit_ids || [];
+      setCompletedSelectedDate(completedIds);
+      
     } catch (error) {
       console.error('Error toggling completion:', error);
+      alert('Alışkanlık güncellenirken hata oluştu');
     }
   };
 
