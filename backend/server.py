@@ -1431,19 +1431,26 @@ async def complete_habit(
         raise HTTPException(status_code=500, detail=f"Alışkanlık tamamlanırken hata: {str(e)}")
 
 @api_router.delete("/habits/{habit_id}/complete")
-async def uncomplete_habit(habit_id: str, current_user: dict = Depends(get_current_user)):
-    """Remove today's completion for habit"""
+async def uncomplete_habit(
+    habit_id: str, 
+    request: dict = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Remove completion for habit on a specific date (default: today)"""
     try:
-        today = datetime.utcnow().strftime("%Y-%m-%d")
+        # Get completion date from request body, default to today
+        completion_date = datetime.utcnow().strftime("%Y-%m-%d")
+        if request and "completion_date" in request:
+            completion_date = request["completion_date"]
         
         result = await db.habit_completions.delete_one({
             "habit_id": habit_id,
             "user_id": current_user['id'],
-            "completion_date": today
+            "completion_date": completion_date
         })
         
         if result.deleted_count == 0:
-            raise HTTPException(status_code=404, detail="Bugün için tamamlanma kaydı bulunamadı")
+            raise HTTPException(status_code=404, detail=f"{completion_date} için tamamlanma kaydı bulunamadı")
         
         return {"success": True, "message": "Tamamlanma işareti kaldırıldı"}
     except HTTPException:
