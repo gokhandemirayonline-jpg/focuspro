@@ -124,11 +124,9 @@ const HabitsPage = ({ user }) => {
   useEffect(() => {
     const loadSelectedDateCompletions = async () => {
       if (selectedDate && habits.length > 0) {
-        console.log('useEffect: Loading completions for selected date:', selectedDate);
         try {
           const response = await habitAPI.getDateCompletions(selectedDate);
           const completedIds = response.data.completed_habit_ids || [];
-          console.log('useEffect: Completed IDs for', selectedDate, ':', completedIds);
           setCompletedSelectedDate(completedIds);
         } catch (error) {
           console.error('Error loading selected date completions:', error);
