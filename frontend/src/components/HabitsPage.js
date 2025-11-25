@@ -118,7 +118,7 @@ const HabitsPage = ({ user }) => {
       clearInterval(dateCheckInterval);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [selectedDate]);
+  }, []); // Boş array - sadece component mount'ta çalışsın
 
   // Seçilen güne göre tamamlanmaları yükle
   useEffect(() => {
