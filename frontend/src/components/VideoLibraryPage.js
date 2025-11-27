@@ -562,7 +562,7 @@ const VideoLibraryPage = ({ user }) => {
                     )}
                   </div>
                 </div>
-              {/* Progress Bar */}
+              </div>
               
               {/* Progress Bar */}
               <div className="relative">
