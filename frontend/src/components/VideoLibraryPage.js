@@ -121,31 +121,88 @@ const VideoLibraryPage = ({ user }) => {
 
   // YouTube Player API callback
   useEffect(() => {
-    if (!selectedVideo) return;
+    if (!selectedVideo) {
+      if (player) {
+        player.destroy();
+        setPlayer(null);
+      }
+      return;
+    }
 
-    // YouTube IFrame API'yi yükle
-    const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    // YouTube IFrame API'yi yükle (zaten yüklüyse tekrar yükleme)
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
 
-    // Player hazır olduğunda
-    window.onYouTubeIframeAPIReady = () => {
-      const player = new window.YT.Player(`youtube-player-${selectedVideo.id}`, {
-        events: {
-          onStateChange: (event) => {
-            // Video bittiğinde (0 = YT.PlayerState.ENDED)
-            if (event.data === 0) {
-              setVideoCompleted(true);
-              setShowCommentSection(true);
+    // Player'ı oluştur
+    const initPlayer = () => {
+      if (window.YT && window.YT.Player) {
+        const newPlayer = new window.YT.Player(`youtube-player-${selectedVideo.id}`, {
+          videoId: selectedVideo.youtube_id,
+          playerVars: {
+            autoplay: 1,
+            controls: 1,
+            disablekb: 0, // Klavye kontrollerini aç (space için)
+            modestbranding: 1,
+            rel: 0,
+            fs: 1, // Tam ekran izin ver
+            playsinline: 1,
+            iv_load_policy: 3, // Annotations kapat
+          },
+          events: {
+            onReady: (event) => {
+              setPlayer(event.target);
+              setLastValidTime(0);
+              
+              // Her saniye kontrol et - ileri sarma engelle
+              const interval = setInterval(() => {
+                if (event.target && event.target.getCurrentTime) {
+                  const currentTime = event.target.getCurrentTime();
+                  
+                  // Eğer kullanıcı ileri sardıysa (1 saniyeden fazla atlama)
+                  if (currentTime > lastValidTime + 1.5) {
+                    console.log('İleri sarma algılandı, geri alınıyor...');
+                    event.target.seekTo(lastValidTime, true);
+                  } else {
+                    setLastValidTime(currentTime);
+                  }
+                }
+              }, 500);
+
+              // Temizleme
+              event.target._seekCheckInterval = interval;
+            },
+            onStateChange: (event) => {
+              // Video bittiğinde (0 = YT.PlayerState.ENDED)
+              if (event.data === 0) {
+                setVideoCompleted(true);
+                setShowCommentSection(true);
+                
+                // Interval'i temizle
+                if (event.target._seekCheckInterval) {
+                  clearInterval(event.target._seekCheckInterval);
+                }
+              }
             }
           }
-        }
-      });
+        });
+      }
     };
 
+    // API hazırsa hemen başlat, değilse bekle
+    if (window.YT && window.YT.Player) {
+      initPlayer();
+    } else {
+      window.onYouTubeIframeAPIReady = initPlayer;
+    }
+
     return () => {
-      window.onYouTubeIframeAPIReady = null;
+      if (player && player._seekCheckInterval) {
+        clearInterval(player._seekCheckInterval);
+      }
     };
   }, [selectedVideo]);
 
