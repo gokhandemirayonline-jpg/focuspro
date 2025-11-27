@@ -377,18 +377,15 @@ const VideoLibraryPage = ({ user }) => {
               <div className="absolute top-4 right-4 flex gap-2 z-10">
                 <button
                   onClick={() => {
-                    if (player) {
-                      const currentRate = player.getPlaybackRate();
-                      if (currentRate === 1) {
-                        player.setPlaybackRate(2);
-                      } else {
-                        player.setPlaybackRate(1);
-                      }
+                    if (player && player.setPlaybackRate) {
+                      const newSpeed = playbackSpeed === 1 ? 2 : 1;
+                      player.setPlaybackRate(newSpeed);
+                      setPlaybackSpeed(newSpeed);
                     }
                   }}
-                  className="bg-black/80 hover:bg-black text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors backdrop-blur-sm"
+                  className="bg-black/80 hover:bg-black text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors backdrop-blur-sm border-2 border-white/20"
                 >
-                  {player && player.getPlaybackRate && player.getPlaybackRate() === 2 ? '1x' : '2x'} Hız
+                  {playbackSpeed === 2 ? '⚡ 2x Hız' : '▶ Normal Hız'}
                 </button>
               </div>
 
