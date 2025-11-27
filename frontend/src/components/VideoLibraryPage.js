@@ -361,24 +361,31 @@ const VideoLibraryPage = ({ user }) => {
           <div className="bg-white dark:bg-gray-900 rounded-xl max-w-6xl w-full max-h-[95vh] overflow-y-auto">
             {/* Video */}
             <div className="aspect-video bg-black relative">
-              <iframe
-                id={`youtube-player-${selectedVideo.id}`}
-                src={`https://www.youtube.com/embed/${selectedVideo.youtube_id}?autoplay=1&controls=1&disablekb=1&modestbranding=1&rel=0&fs=1&playsinline=1`}
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              <div id={`youtube-player-${selectedVideo.id}`} className="w-full h-full"></div>
               
-              {/* Seekbar'ı gizleyen overlay (CSS ile) */}
-              <style>{`
-                /* YouTube player kontrollerini özelleştir */
-                .ytp-progress-bar-container {
-                  display: none !important;
-                }
-                .ytp-chrome-bottom {
-                  height: 36px !important;
-                }
-              `}</style>
+              {/* Custom Speed Control */}
+              <div className="absolute top-4 right-4 flex gap-2 z-10">
+                <button
+                  onClick={() => {
+                    if (player) {
+                      const currentRate = player.getPlaybackRate();
+                      if (currentRate === 1) {
+                        player.setPlaybackRate(2);
+                      } else {
+                        player.setPlaybackRate(1);
+                      }
+                    }
+                  }}
+                  className="bg-black/80 hover:bg-black text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors backdrop-blur-sm"
+                >
+                  {player && player.getPlaybackRate && player.getPlaybackRate() === 2 ? '1x' : '2x'} Hız
+                </button>
+              </div>
+
+              {/* İleri Sarma Uyarısı */}
+              <div className="absolute top-4 left-4 bg-red-600/90 text-white px-4 py-2 rounded-lg text-sm font-medium backdrop-blur-sm opacity-0" id="seek-warning">
+                ⚠️ İleri sarılamaz!
+              </div>
             </div>
 
             {/* Video Details */}
