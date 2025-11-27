@@ -149,11 +149,11 @@ const VideoLibraryPage = ({ user }) => {
           videoId: selectedVideo.youtube_id,
           playerVars: {
             autoplay: 1,
-            controls: 1,
-            disablekb: 0, // Klavye kontrollerini aç (space için)
+            controls: 0, // YouTube kontrollerini tamamen kapat
+            disablekb: 1, // Klavye kontrollerini kapat
             modestbranding: 1, // YouTube logosunu minimize et
             rel: 0, // İlgili videoları gösterme
-            fs: 1, // Tam ekran izin ver
+            fs: 0, // Tam ekran kapat (custom buton kullanacağız)
             playsinline: 1,
             iv_load_policy: 3, // Annotations kapat
             cc_load_policy: 0, // Altyazıları otomatik açma
