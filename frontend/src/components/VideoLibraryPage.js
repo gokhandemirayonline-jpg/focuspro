@@ -83,6 +83,7 @@ const VideoLibraryPage = ({ user }) => {
     setVideoCompleted(false);
     setComment('');
     setShowCommentSection(false);
+    setPlaybackSpeed(1);
   };
 
   const handleVideoComplete = async () => {
