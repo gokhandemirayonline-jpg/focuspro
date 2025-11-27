@@ -164,13 +164,18 @@ const VideoLibraryPage = ({ user }) => {
             onReady: (event) => {
               setPlayer(event.target);
               setLastValidTime(0);
+              setDuration(event.target.getDuration());
               
-              // Her saniye kontrol et - ileri sarma engelle
+              // Her saniye kontrol et - ileri sarma engelle + progress güncelle
               let previousTime = 0;
               const interval = setInterval(() => {
                 if (event.target && event.target.getCurrentTime && event.target.getPlayerState) {
                   const currentTime = event.target.getCurrentTime();
                   const playerState = event.target.getPlayerState();
+                  
+                  // Progress bar'ı güncelle
+                  setCurrentTime(currentTime);
+                  setIsPlaying(playerState === 1);
                   
                   // Video oynatılıyorsa (1 = playing)
                   if (playerState === 1) {
