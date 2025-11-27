@@ -9,6 +9,9 @@ const VideoLibraryPage = ({ user }) => {
   const [videoProgress, setVideoProgress] = useState({});
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [videoCompleted, setVideoCompleted] = useState(false);
+  const [comment, setComment] = useState('');
+  const [showCommentSection, setShowCommentSection] = useState(false);
 
   useEffect(() => {
     loadData();
