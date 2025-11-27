@@ -409,13 +409,42 @@ const VideoLibraryPage = ({ user }) => {
                   display: none !important;
                 }
                 
-                /* YouTube logosunu gizle */
+                /* YouTube logosunu tamamen gizle - tüm versiyonlar */
                 #youtube-player-${selectedVideo.id} .ytp-youtube-button {
+                  display: none !important;
+                  opacity: 0 !important;
+                  visibility: hidden !important;
+                }
+                
+                #youtube-player-${selectedVideo.id} .ytp-watermark {
+                  display: none !important;
+                  opacity: 0 !important;
+                  visibility: hidden !important;
+                }
+                
+                #youtube-player-${selectedVideo.id} .ytp-chrome-top-buttons {
                   display: none !important;
                 }
                 
-                /* YouTube'da izle butonunu gizle */
-                #youtube-player-${selectedVideo.id} .ytp-watermark {
+                #youtube-player-${selectedVideo.id} .ytp-show-cards-title {
+                  display: none !important;
+                }
+                
+                #youtube-player-${selectedVideo.id} .ytp-title {
+                  display: none !important;
+                }
+                
+                #youtube-player-${selectedVideo.id} .ytp-title-channel {
+                  display: none !important;
+                }
+                
+                /* Tüm YouTube branding elementlerini gizle */
+                #youtube-player-${selectedVideo.id} .branding-img {
+                  display: none !important;
+                  opacity: 0 !important;
+                }
+                
+                #youtube-player-${selectedVideo.id} .annotation {
                   display: none !important;
                 }
                 
@@ -434,6 +463,7 @@ const VideoLibraryPage = ({ user }) => {
                 #youtube-player-${selectedVideo.id} a[href*="youtube.com"] {
                   pointer-events: none !important;
                   cursor: default !important;
+                  display: none !important;
                 }
                 
                 /* Video tıklamasını izin ver (pause/play için) */
