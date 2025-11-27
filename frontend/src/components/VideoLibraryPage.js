@@ -77,6 +77,9 @@ const VideoLibraryPage = ({ user }) => {
       return;
     }
     setSelectedVideo(video);
+    setVideoCompleted(false);
+    setComment('');
+    setShowCommentSection(false);
   };
 
   const handleVideoComplete = async () => {
