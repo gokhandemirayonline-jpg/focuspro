@@ -444,8 +444,22 @@ const VideoLibraryPage = ({ user }) => {
                   opacity: 0 !important;
                 }
                 
+                #youtube-player-${selectedVideo.id} .ytp-watermark img {
+                  display: none !important;
+                  opacity: 0 !important;
+                }
+                
                 #youtube-player-${selectedVideo.id} .annotation {
                   display: none !important;
+                }
+                
+                /* Sağ alt köşedeki YouTube branding'i gizle */
+                #youtube-player-${selectedVideo.id} iframe {
+                  pointer-events: none !important;
+                }
+                
+                #youtube-player-${selectedVideo.id} .html5-video-player {
+                  pointer-events: auto !important;
                 }
                 
                 /* Video başlığındaki linkleri engelle */
