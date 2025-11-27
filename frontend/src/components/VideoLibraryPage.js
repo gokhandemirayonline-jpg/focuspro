@@ -12,6 +12,8 @@ const VideoLibraryPage = ({ user }) => {
   const [videoCompleted, setVideoCompleted] = useState(false);
   const [comment, setComment] = useState('');
   const [showCommentSection, setShowCommentSection] = useState(false);
+  const [player, setPlayer] = useState(null);
+  const [lastValidTime, setLastValidTime] = useState(0);
 
   useEffect(() => {
     loadData();
