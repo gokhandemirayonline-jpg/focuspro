@@ -390,14 +390,18 @@ const VideoLibraryPage = ({ user }) => {
             {/* Video */}
             <div className="aspect-video bg-black relative">
               <style>{`
-                /* Seekbar'ı gizle */
-                #youtube-player-${selectedVideo.id} .ytp-progress-bar-container {
+                /* Tüm YouTube kontrollerini gizle - sadece video göster */
+                #youtube-player-${selectedVideo.id} .ytp-chrome-bottom {
                   display: none !important;
                 }
                 
-                /* Player kontrollerini küçült */
-                #youtube-player-${selectedVideo.id} .ytp-chrome-bottom {
-                  height: 36px !important;
+                #youtube-player-${selectedVideo.id} .ytp-chrome-top {
+                  display: none !important;
+                }
+                
+                /* Seekbar'ı gizle */
+                #youtube-player-${selectedVideo.id} .ytp-progress-bar-container {
+                  display: none !important;
                 }
                 
                 /* Time display'i gizle */
@@ -430,6 +434,11 @@ const VideoLibraryPage = ({ user }) => {
                 #youtube-player-${selectedVideo.id} a[href*="youtube.com"] {
                   pointer-events: none !important;
                   cursor: default !important;
+                }
+                
+                /* Video tıklamasını izin ver (pause/play için) */
+                #youtube-player-${selectedVideo.id} .html5-video-player {
+                  cursor: pointer !important;
                 }
               `}</style>
               
