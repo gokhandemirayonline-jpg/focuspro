@@ -299,15 +299,27 @@ const VideoLibraryPage = ({ user }) => {
       {/* Video Player Modal */}
       {selectedVideo && (
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-xl max-w-5xl w-full overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-xl max-w-6xl w-full max-h-[95vh] overflow-y-auto">
             {/* Video */}
-            <div className="aspect-video bg-black">
+            <div className="aspect-video bg-black relative">
               <iframe
-                src={`https://www.youtube.com/embed/${selectedVideo.youtube_id}?autoplay=1`}
+                id={`youtube-player-${selectedVideo.id}`}
+                src={`https://www.youtube.com/embed/${selectedVideo.youtube_id}?autoplay=1&controls=1&disablekb=1&modestbranding=1&rel=0&fs=1&playsinline=1`}
                 className="w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
+              
+              {/* Seekbar'ı gizleyen overlay (CSS ile) */}
+              <style>{`
+                /* YouTube player kontrollerini özelleştir */
+                .ytp-progress-bar-container {
+                  display: none !important;
+                }
+                .ytp-chrome-bottom {
+                  height: 36px !important;
+                }
+              `}</style>
             </div>
 
             {/* Video Details */}
@@ -319,17 +331,68 @@ const VideoLibraryPage = ({ user }) => {
                 {selectedVideo.description}
               </p>
 
+              {/* Video Tamamlanma Uyarısı */}
+              {!showCommentSection && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                  <div className="flex items-start gap-3">
+                    <Clock className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" size={20} />
+                    <div className="text-sm text-blue-800 dark:text-blue-300">
+                      <p className="font-semibold mb-1">Video izleniyor...</p>
+                      <p>Videoyu sonuna kadar izledikten sonra yorum yazabilir ve tamamlayabilirsiniz.</p>
+                      <p className="mt-1 text-xs">💡 İpucu: 2x hızlandırma yapabilirsiniz (video ayarlarından)</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Yorum/Not Alanı - Video bittiğinde göster */}
+              {showCommentSection && (
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
+                  <div className="flex items-start gap-3 mb-3">
+                    <CheckCircle className="text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" size={20} />
+                    <div className="text-sm text-green-800 dark:text-green-300">
+                      <p className="font-semibold">✅ Video tamamlandı!</p>
+                      <p>Öğrendikleriniz hakkında notlarınızı ve yorumlarınızı paylaşın.</p>
+                    </div>
+                  </div>
+
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="Bu videodan ne öğrendiniz? Notlarınızı yazın..."
+                    className="w-full h-32 px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg resize-none focus:ring-2 focus:ring-green-500 dark:bg-gray-800 dark:text-gray-100"
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    {comment.length} karakter {comment.trim().length < 10 && '(En az 10 karakter yazmalısınız)'}
+                  </p>
+                </div>
+              )}
+
               {/* Actions */}
               <div className="flex gap-3">
                 <button
                   onClick={handleVideoComplete}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                  disabled={!videoCompleted || comment.trim().length < 10}
+                  className={`flex-1 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                    videoCompleted && comment.trim().length >= 10
+                      ? 'bg-green-600 hover:bg-green-700 text-white cursor-pointer'
+                      : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed'
+                  }`}
                 >
-                  <CheckCircle className="inline mr-2" size={20} />
-                  Videoyu Tamamla
+                  <CheckCircle size={20} />
+                  {videoCompleted 
+                    ? (comment.trim().length >= 10 ? 'Gönder ve Tamamla' : 'Yorumunuzu Yazın') 
+                    : 'Videoyu Sonuna Kadar İzleyin'}
                 </button>
                 <button
-                  onClick={() => setSelectedVideo(null)}
+                  onClick={() => {
+                    if (videoCompleted && comment.trim().length > 0) {
+                      if (!window.confirm('Video tamamlanmadı. Çıkmak istediğinizden emin misiniz?')) {
+                        return;
+                      }
+                    }
+                    setSelectedVideo(null);
+                  }}
                   className="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   Kapat
