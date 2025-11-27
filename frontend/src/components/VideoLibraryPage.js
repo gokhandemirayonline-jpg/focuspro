@@ -83,7 +83,10 @@ const VideoLibraryPage = ({ user }) => {
   };
 
   const handleVideoComplete = async () => {
-    if (!selectedVideo) return;
+    if (!selectedVideo || !comment.trim()) {
+      alert('Lütfen video hakkında yorumunuzu yazın!');
+      return;
+    }
 
     try {
       await progressAPI.updateProgress(selectedVideo.id, {
@@ -91,22 +94,58 @@ const VideoLibraryPage = ({ user }) => {
         watched: true
       });
       
+      // Yorumu kaydet
+      await progressAPI.complete(selectedVideo.id, comment);
+      
       // Progress'i güncelle
       setVideoProgress(prev => ({
         ...prev,
         [selectedVideo.id]: {
           ...prev[selectedVideo.id],
           watched: true,
-          watch_percentage: 100
+          watch_percentage: 100,
+          comment: comment
         }
       }));
 
+      alert('✅ Video başarıyla tamamlandı! Sonraki video açıldı.');
       setSelectedVideo(null);
       loadData(); // Kilit durumlarını güncelle
     } catch (error) {
       console.error('Video tamamlama hatası:', error);
+      alert('Video tamamlanırken bir hata oluştu.');
     }
   };
+
+  // YouTube Player API callback
+  useEffect(() => {
+    if (!selectedVideo) return;
+
+    // YouTube IFrame API'yi yükle
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    // Player hazır olduğunda
+    window.onYouTubeIframeAPIReady = () => {
+      const player = new window.YT.Player(`youtube-player-${selectedVideo.id}`, {
+        events: {
+          onStateChange: (event) => {
+            // Video bittiğinde (0 = YT.PlayerState.ENDED)
+            if (event.data === 0) {
+              setVideoCompleted(true);
+              setShowCommentSection(true);
+            }
+          }
+        }
+      });
+    };
+
+    return () => {
+      window.onYouTubeIframeAPIReady = null;
+    };
+  }, [selectedVideo]);
 
   if (loading) {
     return (
