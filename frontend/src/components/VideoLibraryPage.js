@@ -452,8 +452,79 @@ const VideoLibraryPage = ({ user }) => {
 
             {/* Custom Progress Bar */}
             <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-              {/* Süre Bilgisi */}
-              <div className="flex items-center justify-between mb-2 text-sm">
+              {/* Kontrol Butonları ve Süre Bilgisi */}
+              <div className="flex items-center gap-4 mb-2">
+                {/* Custom Controls - Sol taraf */}
+                <div className="flex gap-2">
+                  {/* Play/Pause Button */}
+                  <button
+                    onClick={() => {
+                      if (player) {
+                        if (isPlaying) {
+                          player.pauseVideo();
+                        } else {
+                          player.playVideo();
+                        }
+                      }
+                    }}
+                    className="bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white p-2 rounded-lg transition-colors"
+                    title={isPlaying ? 'Duraklat' : 'Oynat'}
+                  >
+                    {isPlaying ? (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    )}
+                  </button>
+
+                  {/* Speed Control */}
+                  <button
+                    onClick={() => {
+                      if (player && player.setPlaybackRate) {
+                        let newSpeed;
+                        if (playbackSpeed === 1) {
+                          newSpeed = 1.5;
+                        } else if (playbackSpeed === 1.5) {
+                          newSpeed = 2;
+                        } else {
+                          newSpeed = 1;
+                        }
+                        player.setPlaybackRate(newSpeed);
+                        setPlaybackSpeed(newSpeed);
+                      }
+                    }}
+                    className="bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-bold transition-colors"
+                  >
+                    {playbackSpeed === 1 ? '▶ 1x' : playbackSpeed === 1.5 ? '⚡ 1.5x' : '⚡⚡ 2x'}
+                  </button>
+
+                  {/* Fullscreen Button */}
+                  <button
+                    onClick={() => {
+                      if (player && player.getIframe) {
+                        const iframe = player.getIframe();
+                        if (iframe.requestFullscreen) {
+                          iframe.requestFullscreen();
+                        } else if (iframe.webkitRequestFullscreen) {
+                          iframe.webkitRequestFullscreen();
+                        }
+                      }
+                    }}
+                    className="bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white p-2 rounded-lg transition-colors"
+                    title="Tam Ekran"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Süre Bilgisi */}
+                <div className="flex items-center gap-3 text-sm">
                 <div className="flex items-center gap-3">
                   <span className="font-semibold text-gray-900 dark:text-gray-100">
                     {Math.floor(currentTime / 60)}:{String(Math.floor(currentTime % 60)).padStart(2, '0')}
