@@ -166,6 +166,15 @@ const VideoLibraryPage = ({ user }) => {
                   if (currentTime > lastValidTime + 1.5) {
                     console.log('İleri sarma algılandı, geri alınıyor...');
                     event.target.seekTo(lastValidTime, true);
+                    
+                    // Uyarı göster
+                    const warning = document.getElementById('seek-warning');
+                    if (warning) {
+                      warning.style.opacity = '1';
+                      setTimeout(() => {
+                        warning.style.opacity = '0';
+                      }, 2000);
+                    }
                   } else {
                     setLastValidTime(currentTime);
                   }
