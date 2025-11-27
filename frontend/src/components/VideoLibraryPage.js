@@ -464,6 +464,96 @@ const VideoLibraryPage = ({ user }) => {
               </div>
             </div>
 
+            {/* Custom Progress Bar */}
+            <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+              {/* Süre Bilgisi */}
+              <div className="flex items-center justify-between mb-2 text-sm">
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">
+                    {Math.floor(currentTime / 60)}:{String(Math.floor(currentTime % 60)).padStart(2, '0')}
+                  </span>
+                  <span className="text-gray-500 dark:text-gray-400">/</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    {Math.floor(duration / 60)}:{String(Math.floor(duration % 60)).padStart(2, '0')}
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  {/* İzleme Yüzdesi */}
+                  <div className="flex items-center gap-2">
+                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                      İzleme İlerlemesi:
+                    </div>
+                    <div className="bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                      {duration > 0 ? Math.floor((currentTime / duration) * 100) : 0}%
+                    </div>
+                  </div>
+                  
+                  {/* Oynatma Durumu */}
+                  <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+                    isPlaying 
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' 
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                  }`}>
+                    {isPlaying ? (
+                      <>
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        Oynatılıyor
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                        Duraklatıldı
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="relative">
+                {/* Arka plan - Tamamlanmamış */}
+                <div className="h-2 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden">
+                  {/* İlerleme - Tamamlanan */}
+                  <div 
+                    className="h-full bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 rounded-full transition-all duration-300 relative"
+                    style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
+                  >
+                    {/* Parlayan efekt */}
+                    <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                  </div>
+                </div>
+                
+                {/* Progress indicator (nokta) */}
+                <div 
+                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-purple-600 rounded-full shadow-lg transition-all duration-300"
+                  style={{ 
+                    left: `calc(${duration > 0 ? (currentTime / duration) * 100 : 0}% - 8px)`,
+                  }}
+                >
+                  {/* Glow efekti */}
+                  <div className="absolute inset-0 bg-purple-500 rounded-full animate-ping opacity-75"></div>
+                </div>
+              </div>
+              
+              {/* Bilgi Notları */}
+              <div className="mt-3 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 bg-purple-600 rounded-full"></div>
+                  İzlenen bölüm
+                </div>
+                <span>•</span>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                  İzlenmemiş bölüm
+                </div>
+                <span>•</span>
+                <span className="text-gray-600 dark:text-gray-400 font-medium">
+                  ⚠️ İleri sarılamaz - videoyu sonuna kadar izlemelisiniz
+                </span>
+              </div>
+            </div>
+
             {/* Video Details */}
             <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
