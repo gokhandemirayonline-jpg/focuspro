@@ -160,28 +160,34 @@ const VideoLibraryPage = ({ user }) => {
               setLastValidTime(0);
               
               // Her saniye kontrol et - ileri sarma engelle
+              let previousTime = 0;
               const interval = setInterval(() => {
-                if (event.target && event.target.getCurrentTime) {
+                if (event.target && event.target.getCurrentTime && event.target.getPlayerState) {
                   const currentTime = event.target.getCurrentTime();
+                  const playerState = event.target.getPlayerState();
                   
-                  // Eğer kullanıcı ileri sardıysa (1 saniyeden fazla atlama)
-                  if (currentTime > lastValidTime + 1.5) {
-                    console.log('İleri sarma algılandı, geri alınıyor...');
-                    event.target.seekTo(lastValidTime, true);
-                    
-                    // Uyarı göster
-                    const warning = document.getElementById('seek-warning');
-                    if (warning) {
-                      warning.style.opacity = '1';
-                      setTimeout(() => {
-                        warning.style.opacity = '0';
-                      }, 2000);
+                  // Video oynatılıyorsa (1 = playing)
+                  if (playerState === 1) {
+                    // Manuel ileri sarma kontrolü - 3 saniyeden fazla atlama
+                    if (currentTime > previousTime + 3) {
+                      console.log('İleri sarma algılandı! Geri alınıyor...');
+                      event.target.seekTo(previousTime, true);
+                      
+                      // Uyarı göster
+                      const warning = document.getElementById('seek-warning');
+                      if (warning) {
+                        warning.style.opacity = '1';
+                        setTimeout(() => {
+                          warning.style.opacity = '0';
+                        }, 2000);
+                      }
+                    } else {
+                      // Normal akış - süreyi güncelle
+                      previousTime = currentTime;
                     }
-                  } else {
-                    setLastValidTime(currentTime);
                   }
                 }
-              }, 500);
+              }, 1000);
 
               // Temizleme
               event.target._seekCheckInterval = interval;
