@@ -20,7 +20,7 @@ const VideoLibraryPage = ({ user }) => {
       const [categoriesRes, videosRes, progressRes] = await Promise.all([
         videoCategoryAPI.getAll(),
         videoAPI.getAll(),
-        progressAPI.getProgress()
+        progressAPI.get()
       ]);
 
       setCategories(categoriesRes.data);
