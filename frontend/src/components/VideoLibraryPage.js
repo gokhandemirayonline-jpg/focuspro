@@ -378,6 +378,23 @@ const VideoLibraryPage = ({ user }) => {
           <div className="bg-white dark:bg-gray-900 rounded-xl max-w-6xl w-full max-h-[95vh] overflow-y-auto">
             {/* Video */}
             <div className="aspect-video bg-black relative">
+              <style>{`
+                /* Seekbar'ı gizle */
+                #youtube-player-${selectedVideo.id} .ytp-progress-bar-container {
+                  display: none !important;
+                }
+                
+                /* Player kontrollerini küçült */
+                #youtube-player-${selectedVideo.id} .ytp-chrome-bottom {
+                  height: 36px !important;
+                }
+                
+                /* Time display'i gizle */
+                #youtube-player-${selectedVideo.id} .ytp-time-display {
+                  display: none !important;
+                }
+              `}</style>
+              
               <div id={`youtube-player-${selectedVideo.id}`} className="w-full h-full"></div>
               
               {/* Custom Speed Control */}
