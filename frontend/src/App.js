@@ -16,6 +16,7 @@ import FullLifeProfileForm from './components/FullLifeProfileForm';
 import ProspectsPage from './components/ProspectsPage';
 import HabitsPage from './components/HabitsPage';
 import DreamsPage from './components/DreamsPage';
+import VideoLibraryPage from './components/VideoLibraryPage';
 import './App.css';
 
 moment.locale('tr');
