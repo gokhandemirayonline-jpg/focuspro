@@ -15,6 +15,9 @@ const VideoLibraryPage = ({ user }) => {
   const [player, setPlayer] = useState(null);
   const [lastValidTime, setLastValidTime] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     loadData();
