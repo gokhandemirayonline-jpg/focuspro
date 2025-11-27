@@ -148,11 +148,14 @@ const VideoLibraryPage = ({ user }) => {
             autoplay: 1,
             controls: 1,
             disablekb: 0, // Klavye kontrollerini aç (space için)
-            modestbranding: 1,
-            rel: 0,
+            modestbranding: 1, // YouTube logosunu minimize et
+            rel: 0, // İlgili videoları gösterme
             fs: 1, // Tam ekran izin ver
             playsinline: 1,
             iv_load_policy: 3, // Annotations kapat
+            cc_load_policy: 0, // Altyazıları otomatik açma
+            color: 'white', // Progress bar rengi (gizli olsa da)
+            origin: window.location.origin, // Güvenlik için
           },
           events: {
             onReady: (event) => {
