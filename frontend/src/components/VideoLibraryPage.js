@@ -145,22 +145,23 @@ const VideoLibraryPage = ({ user }) => {
     disableContextMenu: true
   };
 
-  // Plyr event handlers
-  const handlePlyrReady = (plyr) => {
-    plyrRef.current = plyr;
-    setDuration(plyr.duration);
+  // Plyr initialization
+  useEffect(() => {
+    if (!selectedVideo || !plyrRef.current) return;
+    
+    const player = new Plyr(plyrRef.current, plyrOptions);
     
     // İleri sarma kontrolü
     let previousTime = 0;
     const seekInterval = setInterval(() => {
-      if (plyr && plyr.currentTime) {
-        const current = plyr.currentTime;
+      if (player && player.currentTime !== undefined) {
+        const current = player.currentTime;
         setCurrentTime(current);
         
         // 3 saniyeden fazla ileri atlama kontrolü
         if (current > previousTime + 3 && !videoCompleted) {
           console.log('İleri sarma algılandı!');
-          plyr.currentTime = previousTime;
+          player.currentTime = previousTime;
           showSeekWarning();
         } else {
           previousTime = current;
@@ -169,13 +170,21 @@ const VideoLibraryPage = ({ user }) => {
       }
     }, 1000);
     
-    // Cleanup
-    plyr.on('ended', () => {
+    player.on('ready', () => {
+      setDuration(player.duration);
+    });
+    
+    player.on('ended', () => {
       clearInterval(seekInterval);
       setVideoCompleted(true);
       setShowCommentSection(true);
     });
-  };
+    
+    return () => {
+      clearInterval(seekInterval);
+      if (player) player.destroy();
+    };
+  }, [selectedVideo]);
 
   const showSeekWarning = () => {
     const warning = document.getElementById('seek-warning-plyr');
