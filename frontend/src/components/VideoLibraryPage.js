@@ -356,18 +356,25 @@ const VideoLibraryPage = ({ user }) => {
                 onEnded={handleEnded}
                 onPlay={() => setPlaying(true)}
                 onPause={() => setPlaying(false)}
+                onStart={() => console.log('Video started!')}
+                onError={(e) => console.error('Player error:', e)}
                 progressInterval={1000}
+                style={{ backgroundColor: '#000' }}
                 config={{
                   youtube: {
                     playerVars: {
-                      autoplay: 0,
+                      autoplay: 1,
                       modestbranding: 1,
                       rel: 0,
                       showinfo: 0,
                       iv_load_policy: 3,
                       fs: 1,
                       disablekb: 0,
-                      origin: window.location.origin
+                      origin: window.location.origin,
+                      enablejsapi: 1
+                    },
+                    embedOptions: {
+                      host: 'https://www.youtube-nocookie.com'
                     }
                   }
                 }}
