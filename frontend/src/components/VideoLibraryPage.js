@@ -353,20 +353,11 @@ const VideoLibraryPage = ({ user }) => {
                 ⚠️ İleri sarılamaz!
               </div>
               
-              <Plyr
+              <div 
                 ref={plyrRef}
-                source={{
-                  type: 'video',
-                  sources: [
-                    {
-                      src: selectedVideo.youtube_id,
-                      provider: 'youtube'
-                    }
-                  ]
-                }}
-                options={plyrOptions}
-                onReady={(plyr) => handlePlyrReady(plyr)}
-              />
+                data-plyr-provider="youtube"
+                data-plyr-embed-id={selectedVideo.youtube_id}
+              ></div>
             </div>
 
             {/* Progress Info */}
