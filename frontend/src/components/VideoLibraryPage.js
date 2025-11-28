@@ -409,48 +409,27 @@ const VideoLibraryPage = ({ user }) => {
                   display: none !important;
                 }
                 
-                /* YouTube logosunu tamamen gizle - tüm versiyonlar */
-                #youtube-player-${selectedVideo.id} .ytp-youtube-button {
+                /* YouTube logosunu tamamen gizle - tüm versiyonlar - AGRESIF */
+                #youtube-player-${selectedVideo.id} .ytp-youtube-button,
+                #youtube-player-${selectedVideo.id} .ytp-watermark,
+                #youtube-player-${selectedVideo.id} .ytp-chrome-top-buttons,
+                #youtube-player-${selectedVideo.id} .ytp-show-cards-title,
+                #youtube-player-${selectedVideo.id} .ytp-title,
+                #youtube-player-${selectedVideo.id} .ytp-title-channel,
+                #youtube-player-${selectedVideo.id} .branding-img,
+                #youtube-player-${selectedVideo.id} .ytp-watermark img,
+                #youtube-player-${selectedVideo.id} .annotation,
+                #youtube-player-${selectedVideo.id} .ytp-pause-overlay,
+                #youtube-player-${selectedVideo.id} .ytp-ce-element,
+                #youtube-player-${selectedVideo.id} .ytp-cards-teaser,
+                #youtube-player-${selectedVideo.id} a[class*="ytp"],
+                #youtube-player-${selectedVideo.id} button[class*="ytp"]:not(.ytp-large-play-button) {
                   display: none !important;
                   opacity: 0 !important;
                   visibility: hidden !important;
-                }
-                
-                #youtube-player-${selectedVideo.id} .ytp-watermark {
-                  display: none !important;
-                  opacity: 0 !important;
-                  visibility: hidden !important;
-                }
-                
-                #youtube-player-${selectedVideo.id} .ytp-chrome-top-buttons {
-                  display: none !important;
-                }
-                
-                #youtube-player-${selectedVideo.id} .ytp-show-cards-title {
-                  display: none !important;
-                }
-                
-                #youtube-player-${selectedVideo.id} .ytp-title {
-                  display: none !important;
-                }
-                
-                #youtube-player-${selectedVideo.id} .ytp-title-channel {
-                  display: none !important;
-                }
-                
-                /* Tüm YouTube branding elementlerini gizle */
-                #youtube-player-${selectedVideo.id} .branding-img {
-                  display: none !important;
-                  opacity: 0 !important;
-                }
-                
-                #youtube-player-${selectedVideo.id} .ytp-watermark img {
-                  display: none !important;
-                  opacity: 0 !important;
-                }
-                
-                #youtube-player-${selectedVideo.id} .annotation {
-                  display: none !important;
+                  width: 0 !important;
+                  height: 0 !important;
+                  z-index: -9999 !important;
                 }
                 
                 /* Sağ alt köşedeki YouTube branding'i gizle */
