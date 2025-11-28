@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Lock, CheckCircle, Clock, Eye } from 'lucide-react';
 import { videoCategoryAPI, videoAPI, progressAPI } from '../services/api';
-import Plyr from 'plyr-react';
-import 'plyr-react/plyr.css';
+import Plyr from 'plyr';
+import 'plyr/dist/plyr.css';
 
 const VideoLibraryPage = ({ user }) => {
   const [categories, setCategories] = useState([]);
