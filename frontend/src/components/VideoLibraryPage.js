@@ -488,6 +488,9 @@ const VideoLibraryPage = ({ user }) => {
               
               <div id={`youtube-player-${selectedVideo.id}`} className="w-full h-full"></div>
               
+              {/* YouTube logosunu kapatmak için sağ alt overlay */}
+              <div className="absolute bottom-2 right-2 w-24 h-12 bg-black pointer-events-none z-20"></div>
+              
               {/* İleri Sarma Uyarısı */}
               <div className="absolute top-4 left-4 bg-red-600/90 text-white px-4 py-2 rounded-lg text-sm font-medium backdrop-blur-sm opacity-0" id="seek-warning">
                 ⚠️ İleri sarılamaz!
