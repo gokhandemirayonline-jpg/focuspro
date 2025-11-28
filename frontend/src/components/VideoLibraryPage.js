@@ -353,19 +353,21 @@ const VideoLibraryPage = ({ user }) => {
                 playbackRate={playbackRate}
                 onReady={handleReady}
                 onProgress={handleProgress}
-                onDuration={handleDuration}
                 onEnded={handleEnded}
                 onPlay={() => setPlaying(true)}
                 onPause={() => setPlaying(false)}
+                progressInterval={1000}
                 config={{
                   youtube: {
                     playerVars: {
+                      autoplay: 0,
                       modestbranding: 1,
                       rel: 0,
                       showinfo: 0,
                       iv_load_policy: 3,
                       fs: 1,
-                      disablekb: 0
+                      disablekb: 0,
+                      origin: window.location.origin
                     }
                   }
                 }}
