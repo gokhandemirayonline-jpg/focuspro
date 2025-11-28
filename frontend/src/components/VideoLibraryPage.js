@@ -112,7 +112,7 @@ const VideoLibraryPage = ({ user }) => {
     setVideoCompleted(false);
     setComment('');
     setShowCommentSection(false);
-    setPlaying(true);
+    setPlaying(false); // Önce false, sonra player hazır olunca true
     setCurrentTime(0);
     setLastValidTime(0);
     setPlaybackRate(1);
