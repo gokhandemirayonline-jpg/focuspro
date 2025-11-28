@@ -157,8 +157,12 @@ const VideoLibraryPage = ({ user }) => {
             playsinline: 1,
             iv_load_policy: 3, // Annotations kapat
             cc_load_policy: 0, // Altyazıları otomatik açma
-            color: 'white', // Progress bar rengi (gizli olsa da)
-            origin: window.location.origin, // Güvenlik için
+            color: 'white',
+            origin: window.location.origin,
+            // Ekstra gizleme parametreleri
+            showinfo: 0, // Video bilgilerini gösterme (deprecated ama ekleyelim)
+            enablejsapi: 1, // JS API kontrolü için
+            widget_referrer: window.location.origin,
           },
           events: {
             onReady: (event) => {
