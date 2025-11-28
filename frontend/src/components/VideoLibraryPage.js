@@ -390,78 +390,96 @@ const VideoLibraryPage = ({ user }) => {
             {/* Video */}
             <div className="aspect-video bg-black relative">
               <style>{`
-                /* Tüm YouTube kontrollerini gizle - sadece video göster */
-                #youtube-player-${selectedVideo.id} .ytp-chrome-bottom {
+                /* TÜM YOUTUBE UI ELEMENTLERINI GİZLE - SADECE VİDEO GÖSTER */
+                
+                /* Tüm YouTube native kontrollerini gizle */
+                #youtube-player-${selectedVideo.id} .ytp-chrome-bottom,
+                #youtube-player-${selectedVideo.id} .ytp-chrome-top,
+                #youtube-player-${selectedVideo.id} .ytp-chrome-controls,
+                #youtube-player-${selectedVideo.id} .ytp-progress-bar-container,
+                #youtube-player-${selectedVideo.id} .ytp-time-display,
+                #youtube-player-${selectedVideo.id} .ytp-left-controls,
+                #youtube-player-${selectedVideo.id} .ytp-right-controls {
                   display: none !important;
+                  opacity: 0 !important;
+                  visibility: hidden !important;
                 }
                 
-                #youtube-player-${selectedVideo.id} .ytp-chrome-top {
-                  display: none !important;
-                }
-                
-                /* Seekbar'ı gizle */
-                #youtube-player-${selectedVideo.id} .ytp-progress-bar-container {
-                  display: none !important;
-                }
-                
-                /* Time display'i gizle */
-                #youtube-player-${selectedVideo.id} .ytp-time-display {
-                  display: none !important;
-                }
-                
-                /* YouTube logosunu tamamen gizle - tüm versiyonlar - AGRESIF */
+                /* YouTube branding, logo, watermark - HEPSİNİ GİZLE */
                 #youtube-player-${selectedVideo.id} .ytp-youtube-button,
                 #youtube-player-${selectedVideo.id} .ytp-watermark,
                 #youtube-player-${selectedVideo.id} .ytp-chrome-top-buttons,
                 #youtube-player-${selectedVideo.id} .ytp-show-cards-title,
                 #youtube-player-${selectedVideo.id} .ytp-title,
+                #youtube-player-${selectedVideo.id} .ytp-title-text,
                 #youtube-player-${selectedVideo.id} .ytp-title-channel,
+                #youtube-player-${selectedVideo.id} .ytp-title-link,
                 #youtube-player-${selectedVideo.id} .branding-img,
-                #youtube-player-${selectedVideo.id} .ytp-watermark img,
-                #youtube-player-${selectedVideo.id} .annotation,
-                #youtube-player-${selectedVideo.id} .ytp-pause-overlay,
-                #youtube-player-${selectedVideo.id} .ytp-ce-element,
-                #youtube-player-${selectedVideo.id} .ytp-cards-teaser,
-                #youtube-player-${selectedVideo.id} a[class*="ytp"],
-                #youtube-player-${selectedVideo.id} button[class*="ytp"]:not(.ytp-large-play-button) {
+                #youtube-player-${selectedVideo.id} .ytp-watermark img {
                   display: none !important;
                   opacity: 0 !important;
                   visibility: hidden !important;
                   width: 0 !important;
                   height: 0 !important;
-                  z-index: -9999 !important;
                 }
                 
-                /* Sağ alt köşedeki YouTube branding'i gizle */
+                /* Share butonunu ve tüm action butonlarını gizle */
+                #youtube-player-${selectedVideo.id} .ytp-button[aria-label*="Share"],
+                #youtube-player-${selectedVideo.id} .ytp-button[aria-label*="Paylaş"],
+                #youtube-player-${selectedVideo.id} .ytp-share-button,
+                #youtube-player-${selectedVideo.id} .ytp-cards-button,
+                #youtube-player-${selectedVideo.id} .ytp-watch-later-button,
+                #youtube-player-${selectedVideo.id} .ytp-size-button,
+                #youtube-player-${selectedVideo.id} .ytp-overflow-button {
+                  display: none !important;
+                  opacity: 0 !important;
+                  visibility: hidden !important;
+                }
+                
+                /* Annotations, cards, end screens - HEPSİNİ GİZLE */
+                #youtube-player-${selectedVideo.id} .annotation,
+                #youtube-player-${selectedVideo.id} .ytp-pause-overlay,
+                #youtube-player-${selectedVideo.id} .ytp-ce-element,
+                #youtube-player-${selectedVideo.id} .ytp-cards-teaser,
+                #youtube-player-${selectedVideo.id} .ytp-endscreen-content,
+                #youtube-player-${selectedVideo.id} .ytp-ce-covering-overlay,
+                #youtube-player-${selectedVideo.id} .ytp-ce-expanding-overlay {
+                  display: none !important;
+                  opacity: 0 !important;
+                  visibility: hidden !important;
+                }
+                
+                /* Tüm YouTube linklerini ve butonlarını gizle */
+                #youtube-player-${selectedVideo.id} a[class*="ytp"],
+                #youtube-player-${selectedVideo.id} button[class*="ytp"]:not(.ytp-large-play-button),
+                #youtube-player-${selectedVideo.id} a[href*="youtube.com"],
+                #youtube-player-${selectedVideo.id} [class*="ytp-button"] {
+                  display: none !important;
+                  opacity: 0 !important;
+                  pointer-events: none !important;
+                }
+                
+                /* Video gradient overlays - YouTube'un kendi UI'ı */
+                #youtube-player-${selectedVideo.id} .ytp-gradient-top,
+                #youtube-player-${selectedVideo.id} .ytp-gradient-bottom {
+                  display: none !important;
+                  opacity: 0 !important;
+                }
+                
+                /* IFrame pointer events - sadece videoya izin ver */
                 #youtube-player-${selectedVideo.id} iframe {
                   pointer-events: none !important;
                 }
                 
                 #youtube-player-${selectedVideo.id} .html5-video-player {
                   pointer-events: auto !important;
-                }
-                
-                /* Video başlığındaki linkleri engelle */
-                #youtube-player-${selectedVideo.id} .ytp-title-link {
-                  pointer-events: none !important;
-                  cursor: default !important;
-                }
-                
-                /* Video üzerine tıklamayı engelle (pause hariç) */
-                #youtube-player-${selectedVideo.id} .ytp-cued-thumbnail-overlay {
-                  pointer-events: none !important;
-                }
-                
-                /* Tüm dış linkleri engelle */
-                #youtube-player-${selectedVideo.id} a[href*="youtube.com"] {
-                  pointer-events: none !important;
-                  cursor: default !important;
-                  display: none !important;
-                }
-                
-                /* Video tıklamasını izin ver (pause/play için) */
-                #youtube-player-${selectedVideo.id} .html5-video-player {
                   cursor: pointer !important;
+                }
+                
+                /* Video frame'i temiz tut */
+                #youtube-player-${selectedVideo.id} {
+                  position: relative;
+                  overflow: hidden;
                 }
               `}</style>
               
