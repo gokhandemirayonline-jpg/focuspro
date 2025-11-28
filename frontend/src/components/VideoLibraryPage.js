@@ -489,8 +489,11 @@ const VideoLibraryPage = ({ user }) => {
                         return;
                       }
                     }
-                    setSelectedVideo(null);
+                    // Önce playing'i durdur, sonra modal'ı kapat
                     setPlaying(false);
+                    setTimeout(() => {
+                      setSelectedVideo(null);
+                    }, 100);
                   }}
                   className="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
