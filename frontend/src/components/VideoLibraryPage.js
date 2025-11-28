@@ -349,18 +349,30 @@ const VideoLibraryPage = ({ user }) => {
                 url={`https://www.youtube.com/watch?v=${selectedVideo.youtube_id}`}
                 playing={playing}
                 controls={true}
+                light={false}
                 width="100%"
                 height="100%"
                 playbackRate={playbackRate}
                 onReady={handleReady}
                 onProgress={handleProgress}
                 onEnded={handleEnded}
-                onPlay={() => setPlaying(true)}
-                onPause={() => setPlaying(false)}
-                onStart={() => console.log('Video started!')}
-                onError={(e) => console.error('Player error:', e)}
+                onPlay={() => {
+                  console.log('Video playing!');
+                  setPlaying(true);
+                }}
+                onPause={() => {
+                  console.log('Video paused!');
+                  setPlaying(false);
+                }}
+                onError={(e) => {
+                  console.error('Player error:', e);
+                  console.error('Video ID:', selectedVideo.youtube_id);
+                  console.error('URL:', `https://www.youtube.com/watch?v=${selectedVideo.youtube_id}`);
+                }}
                 progressInterval={1000}
                 style={{ backgroundColor: '#000' }}
+                pip={false}
+                stopOnUnmount={true}
                 config={{
                   youtube: {
                     playerVars: {
@@ -370,12 +382,8 @@ const VideoLibraryPage = ({ user }) => {
                       showinfo: 0,
                       iv_load_policy: 3,
                       fs: 1,
-                      disablekb: 0,
-                      origin: window.location.origin,
-                      enablejsapi: 1
-                    },
-                    embedOptions: {
-                      host: 'https://www.youtube-nocookie.com'
+                      controls: 1,
+                      disablekb: 0
                     }
                   }
                 }}
