@@ -153,10 +153,11 @@ const VideoLibraryPage = ({ user }) => {
 
   const handleProgress = (state) => {
     setCurrentTime(state.playedSeconds);
-  };
-
-  const handleDuration = (duration) => {
-    setDuration(duration);
+    // Duration'ı progress'ten al
+    if (duration === 0 && playerRef.current) {
+      const dur = playerRef.current.getDuration();
+      if (dur) setDuration(dur);
+    }
   };
 
   const handleEnded = () => {
@@ -165,9 +166,15 @@ const VideoLibraryPage = ({ user }) => {
     setPlaying(false);
   };
 
-  const handleReady = () => {
-    // Player hazır olduğunda otomatik başlat
-    setPlaying(true);
+  const handleReady = (player) => {
+    // Player hazır olduğunda duration al ve otomatik başlat
+    if (player && player.getDuration) {
+      const dur = player.getDuration();
+      if (dur) setDuration(dur);
+    }
+    setTimeout(() => {
+      setPlaying(true);
+    }, 500);
   };
 
   // Cleanup - modal kapanırken player'ı düzgün temizle
