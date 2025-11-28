@@ -165,6 +165,20 @@ const VideoLibraryPage = ({ user }) => {
     setPlaying(false);
   };
 
+  const handleReady = () => {
+    // Player hazır olduğunda otomatik başlat
+    setPlaying(true);
+  };
+
+  // Cleanup - modal kapanırken player'ı düzgün temizle
+  useEffect(() => {
+    return () => {
+      if (playerRef.current) {
+        setPlaying(false);
+      }
+    };
+  }, [selectedVideo]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
