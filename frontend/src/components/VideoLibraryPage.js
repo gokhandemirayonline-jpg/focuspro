@@ -335,7 +335,7 @@ const VideoLibraryPage = ({ user }) => {
           <div className="bg-white dark:bg-gray-900 rounded-xl max-w-6xl w-full max-h-[95vh] overflow-y-auto">
             {/* Video Player */}
             <div className="relative bg-black aspect-video">
-              {/* İleri Sarma Uyarısı */}
+              {/* İleri Sarma Uyarısı - Sadece bu kalacak, overlay'ler yok */}
               <div 
                 className="absolute top-4 left-4 bg-red-600/90 text-white px-4 py-2 rounded-lg text-sm font-medium backdrop-blur-sm opacity-0 z-50 transition-opacity duration-300" 
                 id="seek-warning-reactplayer"
@@ -343,6 +343,7 @@ const VideoLibraryPage = ({ user }) => {
                 ⚠️ İleri sarılamaz!
               </div>
               
+              {/* React Player - Temiz, Overlay Yok */}
               <ReactPlayer
                 ref={playerRef}
                 url={`https://www.youtube.com/watch?v=${selectedVideo.youtube_id}`}
