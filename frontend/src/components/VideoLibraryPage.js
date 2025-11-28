@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Lock, CheckCircle, Clock, Eye } from 'lucide-react';
 import { videoCategoryAPI, videoAPI, progressAPI } from '../services/api';
-import ReactPlayer from 'react-player/youtube';
+import ReactPlayer from 'react-player';
 
 const VideoLibraryPage = ({ user }) => {
   const [categories, setCategories] = useState([]);
