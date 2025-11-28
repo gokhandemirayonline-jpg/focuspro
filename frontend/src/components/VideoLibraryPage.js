@@ -30,22 +30,20 @@ const VideoLibraryPage = ({ user }) => {
     if (!selectedVideo || !playing) return;
     
     const interval = setInterval(() => {
-      if (playerRef.current) {
-        const current = playerRef.current.getCurrentTime();
-        
-        // 3 saniyeden fazla ileri atlama kontrolü
-        if (current > lastValidTime + 3) {
-          console.log('İleri sarma algılandı!');
+      // getCurrentTime ve seekTo kullanmak yerine onProgress'ten gelen currentTime kullanıyoruz
+      if (currentTime > lastValidTime + 3 && currentTime > 0) {
+        console.log('İleri sarma algılandı!');
+        if (playerRef.current) {
           playerRef.current.seekTo(lastValidTime, 'seconds');
-          showSeekWarning();
-        } else {
-          setLastValidTime(current);
         }
+        showSeekWarning();
+      } else if (currentTime > 0) {
+        setLastValidTime(currentTime);
       }
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [selectedVideo, playing, lastValidTime]);
+  }, [selectedVideo, playing, currentTime, lastValidTime]);
 
   const showSeekWarning = () => {
     const warning = document.getElementById('seek-warning-reactplayer');
