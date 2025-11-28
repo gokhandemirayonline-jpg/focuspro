@@ -467,11 +467,18 @@ const VideoLibraryPage = ({ user }) => {
               
               <div id={`youtube-player-${selectedVideo.id}`} className="w-full h-full"></div>
               
-              {/* YouTube logosunu kapatmak için sağ alt overlay */}
-              <div className="absolute bottom-2 right-2 w-24 h-12 bg-black pointer-events-none z-20"></div>
+              {/* YouTube UI elementlerini kapatmak için overlay'ler */}
+              {/* Sağ üst köşe - Share ve diğer butonlar */}
+              <div className="absolute top-0 right-0 w-48 h-16 bg-black pointer-events-none z-20"></div>
+              
+              {/* Sağ alt köşe - YouTube logosu */}
+              <div className="absolute bottom-0 right-0 w-28 h-14 bg-black pointer-events-none z-20"></div>
+              
+              {/* Sol üst köşe - Video başlığı ve kanal adı */}
+              <div className="absolute top-0 left-0 w-80 h-20 bg-gradient-to-b from-black/80 to-transparent pointer-events-none z-20"></div>
               
               {/* İleri Sarma Uyarısı */}
-              <div className="absolute top-4 left-4 bg-red-600/90 text-white px-4 py-2 rounded-lg text-sm font-medium backdrop-blur-sm opacity-0" id="seek-warning">
+              <div className="absolute top-24 left-4 bg-red-600/90 text-white px-4 py-2 rounded-lg text-sm font-medium backdrop-blur-sm opacity-0 z-30" id="seek-warning">
                 ⚠️ İleri sarılamaz!
               </div>
             </div>
