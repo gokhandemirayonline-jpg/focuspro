@@ -344,6 +344,7 @@ const VideoLibraryPage = ({ user }) => {
                 width="100%"
                 height="100%"
                 playbackRate={playbackRate}
+                onReady={handleReady}
                 onProgress={handleProgress}
                 onDuration={handleDuration}
                 onEnded={handleEnded}
