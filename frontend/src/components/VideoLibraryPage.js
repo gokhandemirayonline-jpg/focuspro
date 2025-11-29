@@ -167,11 +167,23 @@ const VideoLibraryPage = ({ user }) => {
           events: {
             onReady: (event) => {
               setPlayer(event.target);
-              setLastValidTime(0);
-              setDuration(event.target.getDuration());
+              const videoDuration = event.target.getDuration();
+              setDuration(videoDuration);
+              
+              // Kaldığı yerden devam et
+              const progress = videoProgress[selectedVideo.id];
+              let startTime = 0;
+              
+              if (progress && progress.watch_percentage > 0 && progress.watch_percentage < 100) {
+                startTime = (progress.watch_percentage / 100) * videoDuration;
+                event.target.seekTo(startTime, true);
+                console.log(`Video kaldığı yerden başlatıldı: ${Math.floor(startTime)}s`);
+              }
+              
+              setLastValidTime(startTime);
               
               // Her saniye kontrol et - ileri sarma engelle + progress güncelle
-              let previousTime = 0;
+              let previousTime = startTime;
               const interval = setInterval(() => {
                 if (event.target && event.target.getCurrentTime && event.target.getPlayerState) {
                   const currentTime = event.target.getCurrentTime();
