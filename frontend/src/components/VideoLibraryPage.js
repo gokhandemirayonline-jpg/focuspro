@@ -211,6 +211,15 @@ const VideoLibraryPage = ({ user }) => {
                     } else {
                       // Normal akış - süreyi güncelle
                       previousTime = currentTime;
+                      
+                      // Her 10 saniyede bir progress'i kaydet
+                      if (Math.floor(currentTime) % 10 === 0 && currentTime > 0) {
+                        const watchPercentage = (currentTime / videoDuration) * 100;
+                        progressAPI.updateProgress(selectedVideo.id, {
+                          watch_percentage: Math.floor(watchPercentage),
+                          watched: false
+                        }).catch(err => console.error('Progress kayıt hatası:', err));
+                      }
                     }
                   }
                 }
