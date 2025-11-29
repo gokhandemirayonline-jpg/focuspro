@@ -630,6 +630,17 @@ const VideoLibraryPage = ({ user }) => {
                 </div>
               </div>
               
+              {/* İzlenme Sayısı - Progress Bar'ın üstünde */}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                  <Eye size={14} />
+                  <span>İzlenme:</span>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    {selectedVideo.view_count || 0} kez
+                  </span>
+                </div>
+              </div>
+              
               {/* Progress Bar */}
               <div className="relative">
                 {/* Arka plan - Tamamlanmamış */}
