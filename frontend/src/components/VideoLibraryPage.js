@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play, Lock, CheckCircle, Clock, Eye } from 'lucide-react';
 import { videoCategoryAPI, videoAPI, progressAPI } from '../services/api';
-import ReactPlayer from 'react-player';
 
 const VideoLibraryPage = ({ user }) => {
   const [categories, setCategories] = useState([]);
@@ -13,47 +12,16 @@ const VideoLibraryPage = ({ user }) => {
   const [videoCompleted, setVideoCompleted] = useState(false);
   const [comment, setComment] = useState('');
   const [showCommentSection, setShowCommentSection] = useState(false);
-  const [playing, setPlaying] = useState(false);
+  const [player, setPlayer] = useState(null);
+  const [lastValidTime, setLastValidTime] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [playbackRate, setPlaybackRate] = useState(1);
-  const [lastValidTime, setLastValidTime] = useState(0);
-  
-  const playerRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     loadData();
   }, []);
-
-  // İleri sarma kontrolü
-  useEffect(() => {
-    if (!selectedVideo || !playing) return;
-    
-    const interval = setInterval(() => {
-      // getCurrentTime ve seekTo kullanmak yerine onProgress'ten gelen currentTime kullanıyoruz
-      if (currentTime > lastValidTime + 3 && currentTime > 0) {
-        console.log('İleri sarma algılandı!');
-        if (playerRef.current) {
-          playerRef.current.seekTo(lastValidTime, 'seconds');
-        }
-        showSeekWarning();
-      } else if (currentTime > 0) {
-        setLastValidTime(currentTime);
-      }
-    }, 1000);
-    
-    return () => clearInterval(interval);
-  }, [selectedVideo, playing, currentTime, lastValidTime]);
-
-  const showSeekWarning = () => {
-    const warning = document.getElementById('seek-warning-reactplayer');
-    if (warning) {
-      warning.style.opacity = '1';
-      setTimeout(() => {
-        warning.style.opacity = '0';
-      }, 2000);
-    }
-  };
 
   const loadData = async () => {
     try {
@@ -66,6 +34,7 @@ const VideoLibraryPage = ({ user }) => {
 
       setCategories(categoriesRes.data);
       
+      // Videoları kategoriye ve order'a göre sırala
       const sortedVideos = videosRes.data.sort((a, b) => {
         if (a.category_id !== b.category_id) {
           return (a.category_id || '').localeCompare(b.category_id || '');
@@ -74,6 +43,7 @@ const VideoLibraryPage = ({ user }) => {
       });
       setVideos(sortedVideos);
 
+      // Progress verilerini objeye çevir
       const progressMap = {};
       progressRes.data.forEach(p => {
         progressMap[p.video_id] = p;
@@ -86,17 +56,21 @@ const VideoLibraryPage = ({ user }) => {
     }
   };
 
+  // Kategoriye göre filtrelenmiş videolar
   const filteredVideos = selectedCategory === 'all' 
     ? videos 
     : videos.filter(v => v.category_id === selectedCategory);
 
+  // Video kilit kontrolü - kategori içinde sıralı izleme
   const isVideoUnlocked = (video) => {
+    // İlk video her zaman açık
     const categoryVideos = videos.filter(v => v.category_id === video.category_id)
       .sort((a, b) => a.order - b.order);
     
     const videoIndex = categoryVideos.findIndex(v => v.id === video.id);
     if (videoIndex === 0) return true;
 
+    // Önceki video izlendi mi kontrol et
     const previousVideo = categoryVideos[videoIndex - 1];
     const previousProgress = videoProgress[previousVideo.id];
     
@@ -112,10 +86,7 @@ const VideoLibraryPage = ({ user }) => {
     setVideoCompleted(false);
     setComment('');
     setShowCommentSection(false);
-    setPlaying(false); // Önce false, sonra player hazır olunca true
-    setCurrentTime(0);
-    setLastValidTime(0);
-    setPlaybackRate(1);
+    setPlaybackSpeed(1);
   };
 
   const handleVideoComplete = async () => {
@@ -130,8 +101,10 @@ const VideoLibraryPage = ({ user }) => {
         watched: true
       });
       
+      // Yorumu kaydet
       await progressAPI.complete(selectedVideo.id, comment);
       
+      // Progress'i güncelle
       setVideoProgress(prev => ({
         ...prev,
         [selectedVideo.id]: {
@@ -144,44 +117,123 @@ const VideoLibraryPage = ({ user }) => {
 
       alert('✅ Video başarıyla tamamlandı! Sonraki video açıldı.');
       setSelectedVideo(null);
-      loadData();
+      loadData(); // Kilit durumlarını güncelle
     } catch (error) {
       console.error('Video tamamlama hatası:', error);
       alert('Video tamamlanırken bir hata oluştu.');
     }
   };
 
-  const handleProgress = (state) => {
-    setCurrentTime(state.playedSeconds);
-    // Duration'ı progress'ten al
-    if (duration === 0 && playerRef.current) {
-      const dur = playerRef.current.getDuration();
-      if (dur) setDuration(dur);
-    }
-  };
-
-  const handleEnded = () => {
-    setVideoCompleted(true);
-    setShowCommentSection(true);
-    setPlaying(false);
-  };
-
-  const handleReady = (player) => {
-    // Player hazır olduğunda duration al ve otomatik başlat
-    if (player && player.getDuration) {
-      const dur = player.getDuration();
-      if (dur) setDuration(dur);
-    }
-    setTimeout(() => {
-      setPlaying(true);
-    }, 500);
-  };
-
-  // Cleanup - modal kapanırken player'ı düzgün temizle
+  // YouTube Player API callback
   useEffect(() => {
+    if (!selectedVideo) {
+      if (player) {
+        player.destroy();
+        setPlayer(null);
+      }
+      return;
+    }
+
+    // YouTube IFrame API'yi yükle (zaten yüklüyse tekrar yükleme)
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+
+    // Player'ı oluştur
+    const initPlayer = () => {
+      if (window.YT && window.YT.Player) {
+        const newPlayer = new window.YT.Player(`youtube-player-${selectedVideo.id}`, {
+          videoId: selectedVideo.youtube_id,
+          playerVars: {
+            autoplay: 1,
+            controls: 0, // YouTube kontrollerini tamamen kapat
+            disablekb: 1, // Klavye kontrollerini kapat
+            modestbranding: 1, // YouTube logosunu minimize et
+            rel: 0, // İlgili videoları gösterme
+            fs: 0, // Tam ekran kapat (custom buton kullanacağız)
+            playsinline: 1,
+            iv_load_policy: 3, // Annotations kapat
+            cc_load_policy: 0, // Altyazıları otomatik açma
+            color: 'white',
+            origin: window.location.origin,
+            // Ekstra gizleme parametreleri
+            showinfo: 0, // Video bilgilerini gösterme (deprecated ama ekleyelim)
+            enablejsapi: 1, // JS API kontrolü için
+            widget_referrer: window.location.origin,
+          },
+          events: {
+            onReady: (event) => {
+              setPlayer(event.target);
+              setLastValidTime(0);
+              setDuration(event.target.getDuration());
+              
+              // Her saniye kontrol et - ileri sarma engelle + progress güncelle
+              let previousTime = 0;
+              const interval = setInterval(() => {
+                if (event.target && event.target.getCurrentTime && event.target.getPlayerState) {
+                  const currentTime = event.target.getCurrentTime();
+                  const playerState = event.target.getPlayerState();
+                  
+                  // Progress bar'ı güncelle
+                  setCurrentTime(currentTime);
+                  setIsPlaying(playerState === 1);
+                  
+                  // Video oynatılıyorsa (1 = playing)
+                  if (playerState === 1) {
+                    // Manuel ileri sarma kontrolü - 3 saniyeden fazla atlama
+                    if (currentTime > previousTime + 3) {
+                      console.log('İleri sarma algılandı! Geri alınıyor...');
+                      event.target.seekTo(previousTime, true);
+                      
+                      // Uyarı göster
+                      const warning = document.getElementById('seek-warning');
+                      if (warning) {
+                        warning.style.opacity = '1';
+                        setTimeout(() => {
+                          warning.style.opacity = '0';
+                        }, 2000);
+                      }
+                    } else {
+                      // Normal akış - süreyi güncelle
+                      previousTime = currentTime;
+                    }
+                  }
+                }
+              }, 1000);
+
+              // Temizleme
+              event.target._seekCheckInterval = interval;
+            },
+            onStateChange: (event) => {
+              // Video bittiğinde (0 = YT.PlayerState.ENDED)
+              if (event.data === 0) {
+                setVideoCompleted(true);
+                setShowCommentSection(true);
+                
+                // Interval'i temizle
+                if (event.target._seekCheckInterval) {
+                  clearInterval(event.target._seekCheckInterval);
+                }
+              }
+            }
+          }
+        });
+      }
+    };
+
+    // API hazırsa hemen başlat, değilse bekle
+    if (window.YT && window.YT.Player) {
+      initPlayer();
+    } else {
+      window.onYouTubeIframeAPIReady = initPlayer;
+    }
+
     return () => {
-      if (playerRef.current) {
-        setPlaying(false);
+      if (player && player._seekCheckInterval) {
+        clearInterval(player._seekCheckInterval);
       }
     };
   }, [selectedVideo]);
@@ -206,7 +258,7 @@ const VideoLibraryPage = ({ user }) => {
         </p>
       </div>
 
-      {/* Kategori Tabları */}
+      {/* Kategori Tabları - YouTube Tarzı */}
       <div className="mb-8 overflow-x-auto">
         <div className="flex gap-2 min-w-max pb-2">
           <button
@@ -235,9 +287,9 @@ const VideoLibraryPage = ({ user }) => {
         </div>
       </div>
 
-      {/* Video Grid */}
+      {/* Video Grid - YouTube Tarzı */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredVideos.map((video) => {
+        {filteredVideos.map((video, index) => {
           const progress = videoProgress[video.id];
           const isWatched = progress?.watched === true;
           const isUnlocked = isVideoUnlocked(video);
@@ -249,6 +301,7 @@ const VideoLibraryPage = ({ user }) => {
               onClick={() => handleVideoClick(video)}
               className={`group cursor-pointer ${!isUnlocked ? 'opacity-60' : ''}`}
             >
+              {/* Thumbnail */}
               <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-800 mb-3">
                 <img
                   src={`https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg`}
@@ -259,12 +312,15 @@ const VideoLibraryPage = ({ user }) => {
                   }}
                 />
                 
+                {/* Overlay */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
 
+                {/* Duration Badge */}
                 <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
                   {video.duration}
                 </div>
 
+                {/* Lock/Play/Complete Icon */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   {!isUnlocked ? (
                     <div className="bg-black/80 p-4 rounded-full">
@@ -281,6 +337,7 @@ const VideoLibraryPage = ({ user }) => {
                   )}
                 </div>
 
+                {/* Progress Bar */}
                 {watchPercentage > 0 && watchPercentage < 100 && (
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-300">
                     <div 
@@ -291,6 +348,7 @@ const VideoLibraryPage = ({ user }) => {
                 )}
               </div>
 
+              {/* Video Info */}
               <div className="space-y-1">
                 <h3 className="font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 text-sm">
                   {video.title}
@@ -329,106 +387,214 @@ const VideoLibraryPage = ({ user }) => {
         </div>
       )}
 
-      {/* Video Player Modal with React Player */}
+      {/* Video Player Modal */}
       {selectedVideo && (
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-900 rounded-xl max-w-6xl w-full max-h-[95vh] overflow-y-auto">
-            {/* Video Player */}
-            <div className="relative bg-black aspect-video">
-              {/* İleri Sarma Uyarısı - Sadece bu kalacak, overlay'ler yok */}
-              <div 
-                className="absolute top-4 left-4 bg-red-600/90 text-white px-4 py-2 rounded-lg text-sm font-medium backdrop-blur-sm opacity-0 z-50 transition-opacity duration-300" 
-                id="seek-warning-reactplayer"
-              >
+            {/* Video */}
+            <div className="aspect-video bg-black relative">
+              <style>{`
+                /* TÜM YOUTUBE UI ELEMENTLERINI GİZLE - SADECE VİDEO GÖSTER */
+                
+                /* Tüm YouTube native kontrollerini gizle */
+                #youtube-player-${selectedVideo.id} .ytp-chrome-bottom,
+                #youtube-player-${selectedVideo.id} .ytp-chrome-top,
+                #youtube-player-${selectedVideo.id} .ytp-chrome-controls,
+                #youtube-player-${selectedVideo.id} .ytp-progress-bar-container,
+                #youtube-player-${selectedVideo.id} .ytp-time-display,
+                #youtube-player-${selectedVideo.id} .ytp-left-controls,
+                #youtube-player-${selectedVideo.id} .ytp-right-controls {
+                  display: none !important;
+                  opacity: 0 !important;
+                  visibility: hidden !important;
+                }
+                
+                /* YouTube branding, logo, watermark - HEPSİNİ GİZLE */
+                #youtube-player-${selectedVideo.id} .ytp-youtube-button,
+                #youtube-player-${selectedVideo.id} .ytp-watermark,
+                #youtube-player-${selectedVideo.id} .ytp-chrome-top-buttons,
+                #youtube-player-${selectedVideo.id} .ytp-show-cards-title,
+                #youtube-player-${selectedVideo.id} .ytp-title,
+                #youtube-player-${selectedVideo.id} .ytp-title-text,
+                #youtube-player-${selectedVideo.id} .ytp-title-channel,
+                #youtube-player-${selectedVideo.id} .ytp-title-link,
+                #youtube-player-${selectedVideo.id} .branding-img,
+                #youtube-player-${selectedVideo.id} .ytp-watermark img {
+                  display: none !important;
+                  opacity: 0 !important;
+                  visibility: hidden !important;
+                  width: 0 !important;
+                  height: 0 !important;
+                }
+                
+                /* Share butonunu ve tüm action butonlarını gizle */
+                #youtube-player-${selectedVideo.id} .ytp-button[aria-label*="Share"],
+                #youtube-player-${selectedVideo.id} .ytp-button[aria-label*="Paylaş"],
+                #youtube-player-${selectedVideo.id} .ytp-share-button,
+                #youtube-player-${selectedVideo.id} .ytp-cards-button,
+                #youtube-player-${selectedVideo.id} .ytp-watch-later-button,
+                #youtube-player-${selectedVideo.id} .ytp-size-button,
+                #youtube-player-${selectedVideo.id} .ytp-overflow-button {
+                  display: none !important;
+                  opacity: 0 !important;
+                  visibility: hidden !important;
+                }
+                
+                /* Annotations, cards, end screens - HEPSİNİ GİZLE */
+                #youtube-player-${selectedVideo.id} .annotation,
+                #youtube-player-${selectedVideo.id} .ytp-pause-overlay,
+                #youtube-player-${selectedVideo.id} .ytp-ce-element,
+                #youtube-player-${selectedVideo.id} .ytp-cards-teaser,
+                #youtube-player-${selectedVideo.id} .ytp-endscreen-content,
+                #youtube-player-${selectedVideo.id} .ytp-ce-covering-overlay,
+                #youtube-player-${selectedVideo.id} .ytp-ce-expanding-overlay {
+                  display: none !important;
+                  opacity: 0 !important;
+                  visibility: hidden !important;
+                }
+                
+                /* Tüm YouTube linklerini ve butonlarını gizle */
+                #youtube-player-${selectedVideo.id} a[class*="ytp"],
+                #youtube-player-${selectedVideo.id} button[class*="ytp"]:not(.ytp-large-play-button),
+                #youtube-player-${selectedVideo.id} a[href*="youtube.com"],
+                #youtube-player-${selectedVideo.id} [class*="ytp-button"] {
+                  display: none !important;
+                  opacity: 0 !important;
+                  pointer-events: none !important;
+                }
+                
+                /* Video gradient overlays - YouTube'un kendi UI'ı */
+                #youtube-player-${selectedVideo.id} .ytp-gradient-top,
+                #youtube-player-${selectedVideo.id} .ytp-gradient-bottom {
+                  display: none !important;
+                  opacity: 0 !important;
+                }
+                
+                /* IFrame pointer events - sadece videoya izin ver */
+                #youtube-player-${selectedVideo.id} iframe {
+                  pointer-events: none !important;
+                }
+                
+                #youtube-player-${selectedVideo.id} .html5-video-player {
+                  pointer-events: auto !important;
+                  cursor: pointer !important;
+                }
+                
+                /* Video frame'i temiz tut */
+                #youtube-player-${selectedVideo.id} {
+                  position: relative;
+                  overflow: hidden;
+                }
+              `}</style>
+              
+              <div id={`youtube-player-${selectedVideo.id}`} className="w-full h-full"></div>
+              
+              {/* İleri Sarma Uyarısı - Overlay'ler kaldırıldı */}
+              <div className="absolute top-4 left-4 bg-red-600/90 text-white px-4 py-2 rounded-lg text-sm font-medium backdrop-blur-sm opacity-0 z-30" id="seek-warning">
                 ⚠️ İleri sarılamaz!
               </div>
-              
-              {/* React Player - Temiz, Overlay Yok */}
-              <ReactPlayer
-                ref={playerRef}
-                url={`https://www.youtube.com/watch?v=${selectedVideo.youtube_id}`}
-                playing={playing}
-                controls={true}
-                light={false}
-                width="100%"
-                height="100%"
-                playbackRate={playbackRate}
-                onReady={handleReady}
-                onProgress={handleProgress}
-                onEnded={handleEnded}
-                onPlay={() => {
-                  console.log('Video playing!');
-                  setPlaying(true);
-                }}
-                onPause={() => {
-                  console.log('Video paused!');
-                  setPlaying(false);
-                }}
-                onError={(e) => {
-                  console.error('Player error:', e);
-                  console.error('Video ID:', selectedVideo.youtube_id);
-                  console.error('URL:', `https://www.youtube.com/watch?v=${selectedVideo.youtube_id}`);
-                }}
-                progressInterval={1000}
-                style={{ backgroundColor: '#000' }}
-                pip={false}
-                stopOnUnmount={true}
-                config={{
-                  youtube: {
-                    playerVars: {
-                      autoplay: 1,
-                      modestbranding: 1,
-                      rel: 0,
-                      showinfo: 0,
-                      iv_load_policy: 3,
-                      fs: 1,
-                      controls: 1,
-                      disablekb: 0
-                    }
-                  }
-                }}
-              />
             </div>
 
-            {/* Progress Info & Custom Controls */}
+            {/* Custom Progress Bar */}
             <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-4">
-                  {/* Playback Speed Control */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Hız:</span>
-                    <div className="flex gap-1">
-                      {[0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map(rate => (
-                        <button
-                          key={rate}
-                          onClick={() => setPlaybackRate(rate)}
-                          className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                            playbackRate === rate
-                              ? 'bg-purple-600 text-white'
-                              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                          }`}
-                        >
-                          {rate}x
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+              {/* Kontrol Butonları ve Süre Bilgisi */}
+              <div className="flex items-center gap-4 mb-2">
+                {/* Custom Controls - Sol taraf */}
+                <div className="flex gap-2">
+                  {/* Play/Pause Button */}
+                  <button
+                    onClick={() => {
+                      if (player) {
+                        if (isPlaying) {
+                          player.pauseVideo();
+                        } else {
+                          player.playVideo();
+                        }
+                      }
+                    }}
+                    className="bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white p-2 rounded-lg transition-colors"
+                    title={isPlaying ? 'Duraklat' : 'Oynat'}
+                  >
+                    {isPlaying ? (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    )}
+                  </button>
+
+                  {/* Speed Control */}
+                  <button
+                    onClick={() => {
+                      if (player && player.setPlaybackRate) {
+                        let newSpeed;
+                        if (playbackSpeed === 1) {
+                          newSpeed = 1.5;
+                        } else if (playbackSpeed === 1.5) {
+                          newSpeed = 2;
+                        } else {
+                          newSpeed = 1;
+                        }
+                        player.setPlaybackRate(newSpeed);
+                        setPlaybackSpeed(newSpeed);
+                      }
+                    }}
+                    className="bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-bold transition-colors"
+                  >
+                    {playbackSpeed === 1 ? '▶ 1x' : playbackSpeed === 1.5 ? '⚡ 1.5x' : '⚡⚡ 2x'}
+                  </button>
+
+                  {/* Fullscreen Button */}
+                  <button
+                    onClick={() => {
+                      if (player && player.getIframe) {
+                        const iframe = player.getIframe();
+                        if (iframe.requestFullscreen) {
+                          iframe.requestFullscreen();
+                        } else if (iframe.webkitRequestFullscreen) {
+                          iframe.webkitRequestFullscreen();
+                        }
+                      }
+                    }}
+                    className="bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white p-2 rounded-lg transition-colors"
+                    title="Tam Ekran"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                    </svg>
+                  </button>
                 </div>
-                
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">İzleme İlerlemesi:</span>
+
+                {/* Süre Bilgisi */}
+                <div className="flex items-center gap-3 text-sm">
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">
+                    {Math.floor(currentTime / 60)}:{String(Math.floor(currentTime % 60)).padStart(2, '0')}
+                  </span>
+                  <span className="text-gray-500 dark:text-gray-400">/</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    {Math.floor(duration / 60)}:{String(Math.floor(duration % 60)).padStart(2, '0')}
+                  </span>
+                  
+                  {/* İzleme Yüzdesi */}
+                  <div className="flex items-center gap-2 ml-4">
+                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                      İzleme İlerlemesi:
+                    </div>
                     <div className="bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold">
                       {duration > 0 ? Math.floor((currentTime / duration) * 100) : 0}%
                     </div>
                   </div>
                   
+                  {/* Oynatma Durumu */}
                   <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-                    playing 
+                    isPlaying 
                       ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' 
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                   }`}>
-                    {playing ? (
+                    {isPlaying ? (
                       <>
                         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                         Oynatılıyor
@@ -443,8 +609,47 @@ const VideoLibraryPage = ({ user }) => {
                 </div>
               </div>
               
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                <span className="font-medium">⚠️ Önemli:</span> İleri sarılamaz - videoyu sonuna kadar izlemelisiniz
+              {/* Progress Bar */}
+              <div className="relative">
+                {/* Arka plan - Tamamlanmamış */}
+                <div className="h-2 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden">
+                  {/* İlerleme - Tamamlanan */}
+                  <div 
+                    className="h-full bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 rounded-full transition-all duration-300 relative"
+                    style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
+                  >
+                    {/* Parlayan efekt */}
+                    <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                  </div>
+                </div>
+                
+                {/* Progress indicator (nokta) */}
+                <div 
+                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-purple-600 rounded-full shadow-lg transition-all duration-300"
+                  style={{ 
+                    left: `calc(${duration > 0 ? (currentTime / duration) * 100 : 0}% - 8px)`,
+                  }}
+                >
+                  {/* Glow efekti */}
+                  <div className="absolute inset-0 bg-purple-500 rounded-full animate-ping opacity-75"></div>
+                </div>
+              </div>
+              
+              {/* Bilgi Notları */}
+              <div className="mt-3 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 bg-purple-600 rounded-full"></div>
+                  İzlenen bölüm
+                </div>
+                <span>•</span>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                  İzlenmemiş bölüm
+                </div>
+                <span>•</span>
+                <span className="text-gray-600 dark:text-gray-400 font-medium">
+                  ⚠️ İleri sarılamaz - videoyu sonuna kadar izlemelisiniz
+                </span>
               </div>
             </div>
 
@@ -457,6 +662,7 @@ const VideoLibraryPage = ({ user }) => {
                 {selectedVideo.description}
               </p>
 
+              {/* Video Tamamlanma Uyarısı */}
               {!showCommentSection && (
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
                   <div className="flex items-start gap-3">
@@ -464,11 +670,13 @@ const VideoLibraryPage = ({ user }) => {
                     <div className="text-sm text-blue-800 dark:text-blue-300">
                       <p className="font-semibold mb-1">Video izleniyor...</p>
                       <p>Videoyu sonuna kadar izledikten sonra yorum yazabilir ve tamamlayabilirsiniz.</p>
+                      <p className="mt-1 text-xs">💡 İpucu: 2x hızlandırma yapabilirsiniz (video ayarlarından)</p>
                     </div>
                   </div>
                 </div>
               )}
 
+              {/* Yorum/Not Alanı - Video bittiğinde göster */}
               {showCommentSection && (
                 <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
                   <div className="flex items-start gap-3 mb-3">
@@ -514,11 +722,7 @@ const VideoLibraryPage = ({ user }) => {
                         return;
                       }
                     }
-                    // Önce playing'i durdur, sonra modal'ı kapat
-                    setPlaying(false);
-                    setTimeout(() => {
-                      setSelectedVideo(null);
-                    }, 100);
+                    setSelectedVideo(null);
                   }}
                   className="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
