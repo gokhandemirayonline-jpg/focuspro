@@ -5377,7 +5377,11 @@ const FocusProApp = () => {
           )}
 
           {/* STATISTICS PAGE */}
-          {currentPage === 'statistics' && currentUser?.role === 'admin' && (
+          {currentPage === 'statistics' && (
+            <StatisticsPage user={currentUser} />
+          )}
+
+          {currentPage === 'statistics_old' && currentUser?.role === 'admin' && (
             <div>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-3xl font-bold text-gray-800">İstatistikler & Analitik</h2>
