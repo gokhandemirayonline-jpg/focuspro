@@ -5,6 +5,117 @@ import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from 
 import { arrayMove, SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+// Sortable Video Card Component
+const SortableVideoCard = ({ video, isUnlocked, progress, onVideoClick, isAdmin }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: video.id, disabled: !isAdmin });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const isWatched = progress?.watched === true;
+  const watchPercentage = progress?.watch_percentage || 0;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group relative ${!isUnlocked ? 'opacity-60' : ''}`}
+    >
+      {/* Drag Handle - Sadece Admin için */}
+      {isAdmin && (
+        <div
+          {...attributes}
+          {...listeners}
+          className="absolute top-2 left-2 z-10 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg cursor-grab active:cursor-grabbing shadow-md hover:bg-white dark:hover:bg-gray-700 transition-colors"
+        >
+          <GripVertical size={20} className="text-gray-600 dark:text-gray-400" />
+        </div>
+      )}
+
+      {/* Video Card */}
+      <div onClick={() => onVideoClick(video)} className="cursor-pointer">
+        <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-800 mb-3">
+          <img
+            src={`https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg`}
+            alt={video.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              e.target.src = `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`;
+            }}
+          />
+          
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+
+          <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+            {video.duration}
+          </div>
+
+          <div className="absolute inset-0 flex items-center justify-center">
+            {!isUnlocked ? (
+              <div className="bg-black/80 p-4 rounded-full">
+                <Lock className="text-white" size={32} />
+              </div>
+            ) : isWatched ? (
+              <div className="bg-green-600/90 p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                <CheckCircle className="text-white" size={28} />
+              </div>
+            ) : (
+              <div className="bg-red-600/90 p-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                <Play className="text-white" size={32} />
+              </div>
+            )}
+          </div>
+
+          {watchPercentage > 0 && watchPercentage < 100 && (
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-300">
+              <div 
+                className="h-full bg-red-600"
+                style={{ width: `${watchPercentage}%` }}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-1">
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 text-sm">
+            {video.title}
+          </h3>
+          
+          <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+            <span className="flex items-center gap-1">
+              <Eye size={14} />
+              {video.view_count || 0}
+            </span>
+            <span>{video.level}</span>
+            {isWatched && (
+              <span className="flex items-center gap-1 text-green-600 dark:text-green-400 font-medium">
+                <CheckCircle size={14} />
+                İzlendi
+              </span>
+            )}
+          </div>
+
+          {video.description && (
+            <p className="text-xs text-gray-500 dark:text-gray-500 line-clamp-2">
+              {video.description}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const VideoLibraryPage = ({ user }) => {
   const [categories, setCategories] = useState([]);
   const [videos, setVideos] = useState([]);
@@ -15,12 +126,21 @@ const VideoLibraryPage = ({ user }) => {
   const [videoCompleted, setVideoCompleted] = useState(false);
   const [comment, setComment] = useState('');
   const [showCommentSection, setShowCommentSection] = useState(false);
-  const [player, setPlayer] = useState(null);
-  const [lastValidTime, setLastValidTime] = useState(0);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [player, setPlayer] = useState(null);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [lastValidTime, setLastValidTime] = useState(0);
+
+  // Drag & Drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px hareket ettikten sonra drag başlasın
+      },
+    })
+  );
 
   useEffect(() => {
     loadData();
