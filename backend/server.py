@@ -3882,6 +3882,510 @@ Analizi çok detaylı, motivasyonel ve uygulanabilir yap."""
 
 # ==================== END FULL LIFE PROFILE ====================
 
+# ==================== STATS & ANALYTICS ====================
+
+@api_router.get("/stats/overview")
+async def get_stats_overview(current_user: dict = Depends(get_current_user)):
+    """
+    Kullanıcı veya admin için genel istatistik özeti
+    Admin: Tüm sistem
+    User: Kendi verileri
+    """
+    try:
+        user_id = current_user['id']
+        is_admin = current_user.get('role') == 'admin'
+        
+        # Tarih filtreleri için yardımcı fonksiyon
+        from datetime import datetime, timedelta
+        
+        today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        week_ago = today - timedelta(days=7)
+        month_ago = today - timedelta(days=30)
+        
+        if is_admin:
+            # Admin için tüm sistem istatistikleri
+            total_users = await db.users.count_documents({})
+            total_tasks = await db.tasks.count_documents({})
+            completed_tasks = await db.tasks.count_documents({"status": "completed"})
+            total_meetings = await db.meetings.count_documents({})
+            total_partners = await db.partners.count_documents({})
+            total_videos = await db.videos.count_documents({})
+            
+            # Haftalık yeni kullanıcılar
+            weekly_users = await db.users.count_documents({
+                "created_at": {"$gte": week_ago.isoformat()}
+            })
+            
+        else:
+            # Kullanıcı için kendi istatistikleri
+            total_users = 0  # Kullanıcı görmez
+            total_tasks = await db.tasks.count_documents({"user_id": user_id})
+            completed_tasks = await db.tasks.count_documents({
+                "user_id": user_id,
+                "status": "completed"
+            })
+            total_meetings = await db.meetings.count_documents({"user_id": user_id})
+            total_partners = await db.partners.count_documents({"sponsor_id": user_id})
+            
+            # Video progress
+            watched_videos = await db.video_progress.count_documents({
+                "user_id": user_id,
+                "watched": True
+            })
+            total_videos = await db.videos.count_documents({})
+            
+            weekly_users = 0
+        
+        return {
+            "total_users": total_users,
+            "total_tasks": total_tasks,
+            "completed_tasks": completed_tasks,
+            "total_meetings": total_meetings,
+            "total_partners": total_partners,
+            "total_videos": total_videos,
+            "watched_videos": watched_videos if not is_admin else 0,
+            "weekly_new_users": weekly_users,
+            "is_admin": is_admin
+        }
+    except Exception as e:
+        logger.error(f"Stats overview error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/stats/tasks")
+async def get_task_stats(
+    period: str = "week",
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Görev istatistikleri (zaman bazlı)
+    period: today, week, month, year
+    """
+    try:
+        user_id = current_user['id']
+        is_admin = current_user.get('role') == 'admin'
+        
+        from datetime import datetime, timedelta
+        
+        # Tarih aralığını belirle
+        now = datetime.utcnow()
+        if period == "today":
+            start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        elif period == "week":
+            start_date = now - timedelta(days=7)
+        elif period == "month":
+            start_date = now - timedelta(days=30)
+        elif period == "year":
+            start_date = now - timedelta(days=365)
+        else:
+            start_date = now - timedelta(days=7)
+        
+        # Query filtresi
+        query = {"created_at": {"$gte": start_date.isoformat()}}
+        if not is_admin:
+            query["user_id"] = user_id
+        
+        # Toplam görevler
+        total = await db.tasks.count_documents(query)
+        
+        # Durum bazlı dağılım
+        completed = await db.tasks.count_documents({**query, "status": "completed"})
+        pending = await db.tasks.count_documents({**query, "status": "pending"})
+        in_progress = await db.tasks.count_documents({**query, "status": "in_progress"})
+        
+        # Öncelik bazlı dağılım
+        high_priority = await db.tasks.count_documents({**query, "priority": "high"})
+        medium_priority = await db.tasks.count_documents({**query, "priority": "medium"})
+        low_priority = await db.tasks.count_documents({**query, "priority": "low"})
+        
+        # Günlük trend (son 7 gün)
+        daily_trend = []
+        for i in range(7):
+            day = now - timedelta(days=6-i)
+            day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
+            day_end = day_start + timedelta(days=1)
+            
+            day_query = {
+                "created_at": {
+                    "$gte": day_start.isoformat(),
+                    "$lt": day_end.isoformat()
+                }
+            }
+            if not is_admin:
+                day_query["user_id"] = user_id
+            
+            day_count = await db.tasks.count_documents(day_query)
+            completed_count = await db.tasks.count_documents({
+                **day_query,
+                "status": "completed"
+            })
+            
+            daily_trend.append({
+                "date": day_start.strftime("%Y-%m-%d"),
+                "total": day_count,
+                "completed": completed_count
+            })
+        
+        return {
+            "period": period,
+            "total": total,
+            "by_status": {
+                "completed": completed,
+                "pending": pending,
+                "in_progress": in_progress
+            },
+            "by_priority": {
+                "high": high_priority,
+                "medium": medium_priority,
+                "low": low_priority
+            },
+            "daily_trend": daily_trend,
+            "completion_rate": round((completed / total * 100) if total > 0 else 0, 1)
+        }
+    except Exception as e:
+        logger.error(f"Task stats error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/stats/meetings")
+async def get_meeting_stats(
+    period: str = "week",
+    current_user: dict = Depends(get_current_user)
+):
+    """Görüşme istatistikleri"""
+    try:
+        user_id = current_user['id']
+        is_admin = current_user.get('role') == 'admin'
+        
+        from datetime import datetime, timedelta
+        
+        now = datetime.utcnow()
+        if period == "today":
+            start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        elif period == "week":
+            start_date = now - timedelta(days=7)
+        elif period == "month":
+            start_date = now - timedelta(days=30)
+        else:
+            start_date = now - timedelta(days=7)
+        
+        query = {"date": {"$gte": start_date.isoformat()}}
+        if not is_admin:
+            query["user_id"] = user_id
+        
+        total = await db.meetings.count_documents(query)
+        completed = await db.meetings.count_documents({**query, "status": "completed"})
+        
+        # Tür bazlı
+        meetings_list = await db.meetings.find(query, {"_id": 0, "type": 1}).to_list(1000)
+        type_counts = {}
+        for m in meetings_list:
+            m_type = m.get("type", "other")
+            type_counts[m_type] = type_counts.get(m_type, 0) + 1
+        
+        return {
+            "period": period,
+            "total": total,
+            "completed": completed,
+            "by_type": type_counts,
+            "success_rate": round((completed / total * 100) if total > 0 else 0, 1)
+        }
+    except Exception as e:
+        logger.error(f"Meeting stats error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/stats/partners")
+async def get_partner_stats(
+    period: str = "month",
+    current_user: dict = Depends(get_current_user)
+):
+    """Partner istatistikleri"""
+    try:
+        user_id = current_user['id']
+        is_admin = current_user.get('role') == 'admin'
+        
+        from datetime import datetime, timedelta
+        
+        now = datetime.utcnow()
+        if period == "month":
+            start_date = now - timedelta(days=30)
+        elif period == "year":
+            start_date = now - timedelta(days=365)
+        else:
+            start_date = now - timedelta(days=30)
+        
+        query = {}
+        if not is_admin:
+            query["sponsor_id"] = user_id
+        
+        total = await db.partners.count_documents(query)
+        
+        # Aktif partnerler
+        active = await db.partners.count_documents({**query, "status": "active"})
+        
+        # Yeni partnerler (dönem içinde)
+        new_query = {**query, "joined_date": {"$gte": start_date.isoformat()}}
+        new_partners = await db.partners.count_documents(new_query)
+        
+        # Level bazlı dağılım
+        partners_list = await db.partners.find(query, {"_id": 0, "level": 1}).to_list(1000)
+        level_counts = {}
+        for p in partners_list:
+            level = p.get("level", "1")
+            level_counts[level] = level_counts.get(level, 0) + 1
+        
+        # Aylık büyüme trendi (son 6 ay)
+        monthly_trend = []
+        for i in range(6):
+            month_start = now - timedelta(days=(5-i)*30)
+            month_end = month_start + timedelta(days=30)
+            
+            month_query = {
+                **query,
+                "joined_date": {
+                    "$gte": month_start.isoformat(),
+                    "$lt": month_end.isoformat()
+                }
+            }
+            
+            month_count = await db.partners.count_documents(month_query)
+            monthly_trend.append({
+                "month": month_start.strftime("%Y-%m"),
+                "count": month_count
+            })
+        
+        return {
+            "period": period,
+            "total": total,
+            "active": active,
+            "new_partners": new_partners,
+            "by_level": level_counts,
+            "monthly_trend": monthly_trend,
+            "growth_rate": round((new_partners / total * 100) if total > 0 else 0, 1)
+        }
+    except Exception as e:
+        logger.error(f"Partner stats error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/stats/education")
+async def get_education_stats(
+    period: str = "month",
+    current_user: dict = Depends(get_current_user)
+):
+    """Eğitim video istatistikleri"""
+    try:
+        user_id = current_user['id']
+        is_admin = current_user.get('role') == 'admin'
+        
+        # Toplam video sayısı
+        total_videos = await db.videos.count_documents({})
+        
+        if is_admin:
+            # Admin için tüm kullanıcıların izleme verileri
+            all_progress = await db.video_progress.find({}, {"_id": 0}).to_list(10000)
+            
+            total_views = sum(p.get("view_count", 0) for p in all_progress)
+            watched_count = sum(1 for p in all_progress if p.get("watched", False))
+            
+            # Video bazlı izlenme
+            video_views = {}
+            for p in all_progress:
+                vid = p.get("video_id")
+                if vid:
+                    video_views[vid] = video_views.get(vid, 0) + 1
+            
+            # En çok izlenen videolar
+            sorted_videos = sorted(video_views.items(), key=lambda x: x[1], reverse=True)[:10]
+            top_videos = []
+            for vid, count in sorted_videos:
+                video = await db.videos.find_one({"id": vid}, {"_id": 0, "title": 1})
+                if video:
+                    top_videos.append({
+                        "video_id": vid,
+                        "title": video.get("title", "Unknown"),
+                        "views": count
+                    })
+            
+            return {
+                "total_videos": total_videos,
+                "total_views": total_views,
+                "total_completed": watched_count,
+                "completion_rate": round((watched_count / (len(all_progress) or 1) * 100), 1),
+                "top_videos": top_videos,
+                "is_admin": True
+            }
+        else:
+            # Kullanıcı için kendi verisi
+            user_progress = await db.video_progress.find(
+                {"user_id": user_id},
+                {"_id": 0}
+            ).to_list(1000)
+            
+            watched_count = sum(1 for p in user_progress if p.get("watched", False))
+            total_views = sum(p.get("view_count", 0) for p in user_progress)
+            
+            avg_watch_percentage = sum(p.get("watch_percentage", 0) for p in user_progress) / len(user_progress) if user_progress else 0
+            
+            # Kategori bazlı ilerleme
+            categories = await db.video_categories.find({}, {"_id": 0}).to_list(100)
+            category_progress = []
+            
+            for cat in categories:
+                cat_videos = await db.videos.count_documents({"category_id": cat["id"]})
+                cat_watched = 0
+                
+                for p in user_progress:
+                    video = await db.videos.find_one({"id": p["video_id"]}, {"_id": 0, "category_id": 1})
+                    if video and video.get("category_id") == cat["id"] and p.get("watched"):
+                        cat_watched += 1
+                
+                category_progress.append({
+                    "category": cat["name"],
+                    "total": cat_videos,
+                    "watched": cat_watched,
+                    "percentage": round((cat_watched / cat_videos * 100) if cat_videos > 0 else 0, 1)
+                })
+            
+            return {
+                "total_videos": total_videos,
+                "watched_videos": watched_count,
+                "total_views": total_views,
+                "completion_rate": round((watched_count / total_videos * 100) if total_videos > 0 else 0, 1),
+                "avg_watch_percentage": round(avg_watch_percentage, 1),
+                "category_progress": category_progress,
+                "is_admin": False
+            }
+    except Exception as e:
+        logger.error(f"Education stats error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/stats/performance")
+async def get_performance_stats(
+    current_user: dict = Depends(get_current_user)
+):
+    """Genel performans skoru ve özet"""
+    try:
+        user_id = current_user['id']
+        is_admin = current_user.get('role') == 'admin'
+        
+        from datetime import datetime, timedelta
+        
+        now = datetime.utcnow()
+        month_ago = now - timedelta(days=30)
+        
+        if is_admin:
+            # Admin için sistem geneli performans
+            total_users = await db.users.count_documents({})
+            active_users = await db.users.count_documents({
+                "last_login": {"$gte": month_ago.isoformat()}
+            })
+            
+            total_tasks = await db.tasks.count_documents({})
+            completed_tasks = await db.tasks.count_documents({"status": "completed"})
+            
+            return {
+                "is_admin": True,
+                "performance_score": round((active_users / total_users * 100) if total_users > 0 else 0, 1),
+                "total_users": total_users,
+                "active_users": active_users,
+                "task_completion_rate": round((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0, 1),
+                "system_health": "Excellent" if active_users / total_users > 0.7 else "Good"
+            }
+        else:
+            # Kullanıcı için kişisel performans
+            query = {"user_id": user_id}
+            month_query = {
+                **query,
+                "created_at": {"$gte": month_ago.isoformat()}
+            }
+            
+            # Görev tamamlama
+            total_tasks = await db.tasks.count_documents(month_query)
+            completed_tasks = await db.tasks.count_documents({
+                **month_query,
+                "status": "completed"
+            })
+            task_score = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+            
+            # Video izleme
+            total_videos = await db.videos.count_documents({})
+            watched_videos = await db.video_progress.count_documents({
+                **query,
+                "watched": True
+            })
+            video_score = (watched_videos / total_videos * 100) if total_videos > 0 else 0
+            
+            # Görüşme başarısı
+            total_meetings = await db.meetings.count_documents(month_query)
+            completed_meetings = await db.meetings.count_documents({
+                **month_query,
+                "status": "completed"
+            })
+            meeting_score = (completed_meetings / total_meetings * 100) if total_meetings > 0 else 0
+            
+            # Alışkanlık skoru
+            total_habits = await db.habits.count_documents(query)
+            if total_habits > 0:
+                habit_completions = await db.habit_completions.count_documents({
+                    **query,
+                    "completed_at": {"$gte": month_ago.isoformat()}
+                })
+                expected_completions = total_habits * 30  # Son 30 gün
+                habit_score = min((habit_completions / expected_completions * 100), 100) if expected_completions > 0 else 0
+            else:
+                habit_score = 0
+            
+            # Genel performans skoru (ağırlıklı ortalama)
+            overall_score = (
+                task_score * 0.4 +
+                video_score * 0.2 +
+                meeting_score * 0.2 +
+                habit_score * 0.2
+            )
+            
+            # Performans seviyesi
+            if overall_score >= 80:
+                level = "Mükemmel"
+                emoji = "🏆"
+            elif overall_score >= 60:
+                level = "İyi"
+                emoji = "⭐"
+            elif overall_score >= 40:
+                level = "Orta"
+                emoji = "📈"
+            else:
+                level = "Geliştirilmeli"
+                emoji = "💪"
+            
+            return {
+                "is_admin": False,
+                "performance_score": round(overall_score, 1),
+                "level": level,
+                "emoji": emoji,
+                "breakdown": {
+                    "tasks": round(task_score, 1),
+                    "education": round(video_score, 1),
+                    "meetings": round(meeting_score, 1),
+                    "habits": round(habit_score, 1)
+                },
+                "stats": {
+                    "completed_tasks": completed_tasks,
+                    "total_tasks": total_tasks,
+                    "watched_videos": watched_videos,
+                    "total_videos": total_videos,
+                    "completed_meetings": completed_meetings,
+                    "total_meetings": total_meetings
+                }
+            }
+    except Exception as e:
+        logger.error(f"Performance stats error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== END STATS & ANALYTICS ====================
+
 # Include the router in the main app
 app.include_router(api_router)
 
