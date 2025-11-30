@@ -706,16 +706,33 @@ const VideoLibraryPage = ({ user }) => {
                 {selectedVideo.description}
               </p>
 
-              {/* Video Tamamlanma Uyarısı */}
+              {/* Video İzleme Bilgisi */}
               {!showCommentSection && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                <div className={`rounded-lg p-4 mb-4 border ${
+                  videoProgress[selectedVideo.id]?.watched 
+                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                    : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                }`}>
                   <div className="flex items-start gap-3">
-                    <Clock className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" size={20} />
-                    <div className="text-sm text-blue-800 dark:text-blue-300">
-                      <p className="font-semibold mb-1">Video izleniyor...</p>
-                      <p>Videoyu sonuna kadar izledikten sonra yorum yazabilir ve tamamlayabilirsiniz.</p>
-                      <p className="mt-1 text-xs">💡 İpucu: 2x hızlandırma yapabilirsiniz (video ayarlarından)</p>
-                    </div>
+                    {videoProgress[selectedVideo.id]?.watched ? (
+                      <>
+                        <CheckCircle className="text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" size={20} />
+                        <div className="text-sm text-green-800 dark:text-green-300">
+                          <p className="font-semibold mb-1">✅ Bu videoyu tamamladınız!</p>
+                          <p>Tekrar izleyebilir, dilediğiniz gibi ileri/geri sarabilirsiniz.</p>
+                          <p className="mt-1 text-xs">💬 İsterseniz tekrar yorum bırakabilirsiniz.</p>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" size={20} />
+                        <div className="text-sm text-blue-800 dark:text-blue-300">
+                          <p className="font-semibold mb-1">Video izleniyor...</p>
+                          <p>Videoyu sonuna kadar izledikten sonra yorum yazabilir ve tamamlayabilirsiniz.</p>
+                          <p className="mt-1 text-xs">💡 İpucu: 2x hızlandırma yapabilirsiniz (video ayarlarından)</p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
