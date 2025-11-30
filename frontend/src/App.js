@@ -3703,21 +3703,6 @@ const FocusProApp = () => {
           {/* INBOX PAGE */}
           {currentPage === 'inbox' && (
             <div>
-              {/* Auto-open message from notification */}
-              {React.useEffect(() => {
-                if (autoOpenMessageId && messages.length > 0) {
-                  const message = messages.find(m => m.id === autoOpenMessageId);
-                  if (message) {
-                    setSelectedMessage(message);
-                    setShowMessageDetailModal(true);
-                    if (!message.read) {
-                      markMessageAsRead(message.id);
-                    }
-                    setAutoOpenMessageId(null); // Reset
-                  }
-                }
-              }, [autoOpenMessageId, messages])}
-              
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-3xl font-bold text-gray-800">Gelen Kutusu</h2>
                 <div className="flex gap-3">
