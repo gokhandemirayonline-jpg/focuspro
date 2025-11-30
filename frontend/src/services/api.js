@@ -55,6 +55,7 @@ export const videoAPI = {
   delete: (videoId) => api.delete(`/videos/${videoId}`),
   trackView: (videoId) => api.post(`/videos/${videoId}/view`),
   getStatistics: () => api.get('/videos/statistics/views'),
+  reorder: (orderUpdates) => api.post('/admin/videos/reorder', orderUpdates)
 };
 
 // Video Progress API
