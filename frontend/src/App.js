@@ -7963,7 +7963,7 @@ const FocusProApp = () => {
                         return;
                       }
                       try {
-                        await messageAPI.reply(selectedMessage.id, { content: replyContent });
+                        await messageAPI.reply(selectedMessage.id, replyContent);
                         setReplyContent('');
                         setShowMessageDetailModal(false);
                         setSelectedMessage(null);
@@ -7972,7 +7972,8 @@ const FocusProApp = () => {
                         alert('Cevap gönderildi!');
                       } catch (error) {
                         console.error('Reply error:', error);
-                        alert('Cevap gönderilirken hata oluştu');
+                        console.error('Error details:', error.response?.data);
+                        alert('Cevap gönderilirken hata oluştu: ' + (error.response?.data?.detail || error.message));
                       }
                     }}
                     disabled={!replyContent.trim()}
