@@ -2079,7 +2079,7 @@ async def reply_to_message(message_id: str, reply_data: MessageReply, current_us
         title="Yeni Mesaj Cevabı",
         message=f"{current_user['name']} mesajınıza cevap verdi",
         type="message",
-        link="/messages"
+        link=f"/messages?id={msg_doc['id']}"  # Mesaj ID'sini link'e ekle
     )
     notif_doc = notification.model_dump()
     notif_doc['created_at'] = notif_doc['created_at'].isoformat()
