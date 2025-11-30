@@ -35,16 +35,30 @@ const StatisticsPage = ({ user }) => {
     loadAllStats();
   }, [timePeriod, selectedUserId]);
 
+  const loadUsers = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/users`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error('Kullanıcılar yüklenirken hata:', error);
+    }
+  };
+
   const loadAllStats = async () => {
     try {
       setLoading(true);
       const [overview, tasks, meetings, partners, education, performance] = await Promise.all([
-        statsAPI.getOverview(),
-        statsAPI.getTasks(timePeriod),
-        statsAPI.getMeetings(timePeriod),
-        statsAPI.getPartners('month'),
-        statsAPI.getEducation('month'),
-        statsAPI.getPerformance()
+        statsAPI.getOverview(selectedUserId),
+        statsAPI.getTasks(timePeriod, selectedUserId),
+        statsAPI.getMeetings(timePeriod, selectedUserId),
+        statsAPI.getPartners('month', selectedUserId),
+        statsAPI.getEducation('month', selectedUserId),
+        statsAPI.getPerformance(selectedUserId)
       ]);
 
       setStatsData({
