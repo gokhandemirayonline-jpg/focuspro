@@ -495,97 +495,30 @@ const VideoLibraryPage = ({ user }) => {
         </div>
       </div>
 
-      {/* Video Grid - YouTube Tarzı */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredVideos.map((video, index) => {
-          const progress = videoProgress[video.id];
-          const isWatched = progress?.watched === true;
-          const isUnlocked = isVideoUnlocked(video);
-          const watchPercentage = progress?.watch_percentage || 0;
-
-          return (
-            <div
-              key={video.id}
-              onClick={() => handleVideoClick(video)}
-              className={`group cursor-pointer ${!isUnlocked ? 'opacity-60' : ''}`}
-            >
-              {/* Thumbnail */}
-              <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-800 mb-3">
-                <img
-                  src={`https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg`}
-                  alt={video.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  onError={(e) => {
-                    e.target.src = `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`;
-                  }}
-                />
-                
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-
-                {/* Duration Badge */}
-                <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
-                  {video.duration}
-                </div>
-
-                {/* Lock/Play/Complete Icon */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  {!isUnlocked ? (
-                    <div className="bg-black/80 p-4 rounded-full">
-                      <Lock className="text-white" size={32} />
-                    </div>
-                  ) : isWatched ? (
-                    <div className="bg-green-600/90 p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                      <CheckCircle className="text-white" size={28} />
-                    </div>
-                  ) : (
-                    <div className="bg-red-600/90 p-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Play className="text-white" size={32} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Progress Bar */}
-                {watchPercentage > 0 && watchPercentage < 100 && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-300">
-                    <div 
-                      className="h-full bg-red-600"
-                      style={{ width: `${watchPercentage}%` }}
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Video Info */}
-              <div className="space-y-1">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 text-sm">
-                  {video.title}
-                </h3>
-                
-                <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
-                  <span className="flex items-center gap-1">
-                    <Eye size={14} />
-                    {video.view_count || 0}
-                  </span>
-                  <span>{video.level}</span>
-                  {isWatched && (
-                    <span className="flex items-center gap-1 text-green-600 dark:text-green-400 font-medium">
-                      <CheckCircle size={14} />
-                      İzlendi
-                    </span>
-                  )}
-                </div>
-
-                {video.description && (
-                  <p className="text-xs text-gray-500 dark:text-gray-500 line-clamp-2">
-                    {video.description}
-                  </p>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* Video Grid - Drag & Drop Destekli */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={filteredVideos.map(v => v.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredVideos.map((video) => (
+              <SortableVideoCard
+                key={video.id}
+                video={video}
+                isUnlocked={isVideoUnlocked(video)}
+                progress={videoProgress[video.id]}
+                onVideoClick={handleVideoClick}
+                isAdmin={user?.role === 'admin'}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
 
       {filteredVideos.length === 0 && (
         <div className="text-center py-20">
