@@ -36,14 +36,24 @@ const SortableVideoCard = ({ video, isUnlocked, progress, onVideoClick, isAdmin 
         <div
           {...attributes}
           {...listeners}
-          className="absolute top-2 left-2 z-10 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg cursor-grab active:cursor-grabbing shadow-md hover:bg-white dark:hover:bg-gray-700 transition-colors"
+          className="absolute top-2 left-2 z-20 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg cursor-grab active:cursor-grabbing shadow-md hover:bg-white dark:hover:bg-gray-700 transition-colors"
+          onClick={(e) => e.stopPropagation()}
         >
           <GripVertical size={20} className="text-gray-600 dark:text-gray-400" />
         </div>
       )}
 
       {/* Video Card */}
-      <div onClick={() => onVideoClick(video)} className="cursor-pointer">
+      <div 
+        onClick={(e) => {
+          // Drag handle'a tıklandıysa video açma
+          if (e.target.closest('[data-drag-handle]')) {
+            return;
+          }
+          onVideoClick(video);
+        }} 
+        className="cursor-pointer"
+      >
         <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-800 mb-3">
           <img
             src={`https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg`}
