@@ -184,6 +184,50 @@ const VideoLibraryPage = ({ user }) => {
     ? videos 
     : videos.filter(v => v.category_id === selectedCategory);
 
+  // Drag & Drop Handler
+  const handleDragEnd = async (event) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = filteredVideos.findIndex(v => v.id === active.id);
+      const newIndex = filteredVideos.findIndex(v => v.id === over.id);
+
+      // Yeni sıralamayı oluştur
+      const newVideos = arrayMove(filteredVideos, oldIndex, newIndex).map((v, idx) => ({
+        ...v,
+        order: idx + 1
+      }));
+
+      // UI'ı hemen güncelle
+      setVideos(prevVideos => {
+        const updatedVideos = [...prevVideos];
+        // filteredVideos'daki değişiklikleri ana videos array'ine uygula
+        newVideos.forEach(newVideo => {
+          const index = updatedVideos.findIndex(v => v.id === newVideo.id);
+          if (index !== -1) {
+            updatedVideos[index] = newVideo;
+          }
+        });
+        return updatedVideos;
+      });
+
+      // Backend'e gönder
+      try {
+        const orderUpdates = newVideos.map(v => ({
+          id: v.id,
+          order: v.order
+        }));
+        
+        await videoAPI.reorder(orderUpdates);
+        console.log('Video sıralaması güncellendi');
+      } catch (error) {
+        console.error('Sıralama güncelleme hatası:', error);
+        // Hata durumunda yeniden yükle
+        loadData();
+      }
+    }
+  };
+
   // Video kilit kontrolü - kategori içinde sıralı izleme
   const isVideoUnlocked = (video) => {
     // İlk video her zaman açık
