@@ -309,12 +309,12 @@ export const fullLifeProfileAPI = {
 
 // Stats API
 export const statsAPI = {
-  getOverview: () => api.get('/stats/overview'),
-  getTasks: (period = 'week') => api.get(`/stats/tasks?period=${period}`),
-  getMeetings: (period = 'week') => api.get(`/stats/meetings?period=${period}`),
-  getPartners: (period = 'month') => api.get(`/stats/partners?period=${period}`),
-  getEducation: (period = 'month') => api.get(`/stats/education?period=${period}`),
-  getPerformance: () => api.get('/stats/performance'),
+  getOverview: (targetUserId = null) => api.get('/stats/overview', { params: { target_user_id: targetUserId } }),
+  getTasks: (period = 'week', targetUserId = null) => api.get('/stats/tasks', { params: { period, target_user_id: targetUserId } }),
+  getMeetings: (period = 'week', targetUserId = null) => api.get('/stats/meetings', { params: { period, target_user_id: targetUserId } }),
+  getPartners: (period = 'month', targetUserId = null) => api.get('/stats/partners', { params: { period, target_user_id: targetUserId } }),
+  getEducation: (period = 'month', targetUserId = null) => api.get('/stats/education', { params: { period, target_user_id: targetUserId } }),
+  getPerformance: (targetUserId = null) => api.get('/stats/performance', { params: { target_user_id: targetUserId } }),
 };
 
 export default api;
