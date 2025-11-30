@@ -691,9 +691,15 @@ const VideoLibraryPage = ({ user }) => {
                   İzlenmemiş bölüm
                 </div>
                 <span>•</span>
-                <span className="text-gray-600 dark:text-gray-400 font-medium">
-                  ⚠️ İleri sarılamaz - videoyu sonuna kadar izlemelisiniz
-                </span>
+                {videoProgress[selectedVideo.id]?.watched ? (
+                  <span className="text-green-600 dark:text-green-400 font-medium">
+                    ✅ Tamamlandı - İleri/geri sarabilirsiniz
+                  </span>
+                ) : (
+                  <span className="text-gray-600 dark:text-gray-400 font-medium">
+                    ⚠️ İleri sarılamaz - videoyu sonuna kadar izlemelisiniz
+                  </span>
+                )}
               </div>
             </div>
 
