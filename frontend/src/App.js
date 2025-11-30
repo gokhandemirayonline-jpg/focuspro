@@ -17,6 +17,7 @@ import ProspectsPage from './components/ProspectsPage';
 import HabitsPage from './components/HabitsPage';
 import DreamsPage from './components/DreamsPage';
 import VideoLibraryPage from './components/VideoLibraryPage';
+import StatisticsPage from './components/StatisticsPage';
 import './App.css';
 
 moment.locale('tr');
