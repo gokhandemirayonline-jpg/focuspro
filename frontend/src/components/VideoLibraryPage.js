@@ -161,7 +161,7 @@ const VideoLibraryPage = ({ user }) => {
           playerVars: {
             autoplay: 0,  // Autoplay kapalı - kullanıcı tıklaması ile başlatılacak
             controls: 0, // YouTube kontrollerini tamamen kapat
-            disablekb: 1, // Klavye kontrollerini kapat
+            disablekb: videoProgress[selectedVideo.id]?.watched ? 0 : 1,  // Tamamlanmış videoda klavye aktif
             modestbranding: 1, // YouTube logosunu minimize et
             rel: 0, // İlgili videoları gösterme
             fs: 0, // Tam ekran kapat (custom buton kullanacağız)
