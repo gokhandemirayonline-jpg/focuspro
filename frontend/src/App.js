@@ -323,6 +323,21 @@ const FocusProApp = () => {
     }
   }, [isLoggedIn, currentUser]);
 
+  // Auto-open message from notification
+  useEffect(() => {
+    if (currentPage === 'inbox' && autoOpenMessageId && messages.length > 0) {
+      const message = messages.find(m => m.id === autoOpenMessageId);
+      if (message) {
+        setSelectedMessage(message);
+        setShowMessageDetailModal(true);
+        if (!message.read) {
+          markMessageAsRead(message.id);
+        }
+        setAutoOpenMessageId(null); // Reset
+      }
+    }
+  }, [currentPage, autoOpenMessageId, messages]);
+
   // Dark mode initialization - sayfa yüklendiğinde
   useEffect(() => {
     // Önce localStorage'dan oku
