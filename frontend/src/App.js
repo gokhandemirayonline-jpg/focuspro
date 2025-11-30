@@ -2396,6 +2396,14 @@ const FocusProApp = () => {
                                 else if (notif.type === 'goal') setAgendaTab('goals');
                                 else if (notif.type === 'prospect') setAgendaTab('prospects');
                               }
+                              // Eğer message notification ise, mesaj ID'sini al
+                              if (targetPage === 'inbox' && notif.link) {
+                                const urlParams = new URLSearchParams(notif.link.split('?')[1]);
+                                const messageId = urlParams.get('id');
+                                if (messageId) {
+                                  setAutoOpenMessageId(messageId);
+                                }
+                              }
                               setShowNotifications(false);
                             }}
                             className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${!notif.read ? 'bg-purple-50' : ''}`}
