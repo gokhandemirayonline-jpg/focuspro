@@ -100,52 +100,23 @@ const StatisticsPage = ({ user }) => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="p-6">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          İstatistikler ve Performans Analizi
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          {selectedUserId 
-            ? `${users.find(u => u.id === selectedUserId)?.name || 'Kullanıcı'} - Kişisel performans verileri`
-            : isAdmin 
-              ? 'Sistem geneli performans ve analiz verileri' 
-              : 'Kişisel performans ve analiz verileri'
-          }
-        </p>
-      </div>
-
-      {/* Controls */}
-      <div className="mb-6 flex flex-wrap gap-3 items-center justify-between">
-        <div className="flex gap-2 flex-wrap">
-          {isAdmin && (
-            <select
-              value={selectedUserId || ''}
-              onChange={(e) => setSelectedUserId(e.target.value || null)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="">🌐 Sistem Geneli</option>
-              {users.map(u => (
-                <option key={u.id} value={u.id}>
-                  👤 {u.name} ({u.user_number ? String(u.user_number).padStart(2, '0') : u.id})
-                </option>
-              ))}
-            </select>
-          )}
-          <select
-            value={timePeriod}
-            onChange={(e) => setTimePeriod(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
-          >
-            <option value="today">Bugün</option>
-            <option value="week">Bu Hafta</option>
-            <option value="month">Bu Ay</option>
-            <option value="year">Bu Yıl</option>
-          </select>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+            İstatistikler & Analitik
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            {selectedUserId 
+              ? `${users.find(u => u.id === selectedUserId)?.name || 'Kullanıcı'} - Kişisel performans verileri`
+              : isAdmin 
+                ? 'Sistem geneli performans ve analiz verileri' 
+                : 'Kişisel performans ve analiz verileri'
+            }
+          </p>
         </div>
-        
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button
             onClick={loadAllStats}
             className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg transition-colors"
@@ -155,55 +126,240 @@ const StatisticsPage = ({ user }) => {
           </button>
           <button
             onClick={exportToPDF}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+            className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-700"
           >
-            <Download size={18} />
+            <Download size={20} />
             PDF İndir
           </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex gap-4 overflow-x-auto">
-          {tabs.map(tab => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                }`}
-              >
-                <Icon size={20} />
-                {tab.name}
-              </button>
-            );
-          })}
-        </div>
+      {/* Controls */}
+      <div className="mb-6 flex gap-3 flex-wrap">
+        {isAdmin && (
+          <select
+            value={selectedUserId || ''}
+            onChange={(e) => setSelectedUserId(e.target.value || null)}
+            className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
+          >
+            <option value="">🌐 Sistem Geneli</option>
+            {users.map(u => (
+              <option key={u.id} value={u.id}>
+                👤 {u.name} ({u.user_number ? String(u.user_number).padStart(2, '0') : u.id})
+              </option>
+            ))}
+          </select>
+        )}
+        <select
+          value={timePeriod}
+          onChange={(e) => setTimePeriod(e.target.value)}
+          className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
+        >
+          <option value="today">Bugün</option>
+          <option value="week">Bu Hafta</option>
+          <option value="month">Bu Ay</option>
+          <option value="year">Bu Yıl</option>
+        </select>
       </div>
 
-      {/* Tab Content */}
-      <div className="space-y-6">
-        {activeTab === 'performance' && (
-          <PerformanceTab data={statsData.performance} isAdmin={isAdmin} />
-        )}
-        {activeTab === 'tasks' && (
-          <TasksTab data={statsData.tasks} period={timePeriod} />
-        )}
-        {activeTab === 'meetings' && (
-          <MeetingsTab data={statsData.meetings} period={timePeriod} />
-        )}
-        {activeTab === 'partners' && (
-          <PartnersTab data={statsData.partners} isAdmin={isAdmin} />
-        )}
-        {activeTab === 'education' && (
-          <EducationTab data={statsData.education} isAdmin={isAdmin} />
+      {/* Grid Cards - Dashboard Style */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {statsData.performance && (
+          <>
+            <div className="bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setActiveTab('performance')}>
+              <div className="flex items-center justify-between mb-2">
+                <Award size={32} className="opacity-80" />
+                <span className="text-3xl font-bold">{statsData.performance.performance_score}%</span>
+              </div>
+              <h3 className="text-lg font-semibold">Performans Skoru</h3>
+              <p className="text-sm opacity-80">{statsData.performance.level || 'Genel Performans'}</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setActiveTab('tasks')}>
+              <div className="flex items-center justify-between mb-2">
+                <CheckCircle size={32} className="opacity-80" />
+                <span className="text-3xl font-bold">{statsData.tasks?.total || 0}</span>
+              </div>
+              <h3 className="text-lg font-semibold">Toplam Görev</h3>
+              <p className="text-sm opacity-80">Tamamlanma: {statsData.tasks?.completion_rate || 0}%</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setActiveTab('meetings')}>
+              <div className="flex items-center justify-between mb-2">
+                <Calendar size={32} className="opacity-80" />
+                <span className="text-3xl font-bold">{statsData.meetings?.total || 0}</span>
+              </div>
+              <h3 className="text-lg font-semibold">Görüşmeler</h3>
+              <p className="text-sm opacity-80">Başarı: {statsData.meetings?.success_rate || 0}%</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-pink-500 to-pink-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setActiveTab('partners')}>
+              <div className="flex items-center justify-between mb-2">
+                <Users size={32} className="opacity-80" />
+                <span className="text-3xl font-bold">{statsData.partners?.total || 0}</span>
+              </div>
+              <h3 className="text-lg font-semibold">Partnerler</h3>
+              <p className="text-sm opacity-80">Aktif: {statsData.partners?.active || 0}</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setActiveTab('education')}>
+              <div className="flex items-center justify-between mb-2">
+                <GraduationCap size={32} className="opacity-80" />
+                <span className="text-3xl font-bold">{statsData.education?.watched_videos || 0}/{statsData.education?.total_videos || 0}</span>
+              </div>
+              <h3 className="text-lg font-semibold">Eğitim</h3>
+              <p className="text-sm opacity-80">Tamamlanma: {statsData.education?.completion_rate || 0}%</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-orange-500 to-orange-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+              <div className="flex items-center justify-between mb-2">
+                <TrendingUp size={32} className="opacity-80" />
+                <span className="text-3xl font-bold">{statsData.tasks?.by_status?.completed || 0}</span>
+              </div>
+              <h3 className="text-lg font-semibold">Tamamlanan</h3>
+              <p className="text-sm opacity-80">Bu dönem</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-teal-500 to-teal-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+              <div className="flex items-center justify-between mb-2">
+                <Target size={32} className="opacity-80" />
+                <span className="text-3xl font-bold">{statsData.partners?.new_partners || 0}</span>
+              </div>
+              <h3 className="text-lg font-semibold">Yeni Partner</h3>
+              <p className="text-sm opacity-80">Bu dönem</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
+              <div className="flex items-center justify-between mb-2">
+                <DollarSign size={32} className="opacity-80" />
+                <span className="text-3xl font-bold">{statsData.education?.total_views || 0}</span>
+              </div>
+              <h3 className="text-lg font-semibold">Toplam İzlenme</h3>
+              <p className="text-sm opacity-80">Video izlenmeleri</p>
+            </div>
+          </>
         )}
       </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Performance Chart */}
+        {statsData.performance && !statsData.performance.is_admin && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Performans Dağılımı</h3>
+            {statsData.performance.breakdown && (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Görevler', value: statsData.performance.breakdown.tasks, color: COLORS[0] },
+                      { name: 'Eğitim', value: statsData.performance.breakdown.education, color: COLORS[1] },
+                      { name: 'Görüşmeler', value: statsData.performance.breakdown.meetings, color: COLORS[2] },
+                      { name: 'Alışkanlıklar', value: statsData.performance.breakdown.habits, color: COLORS[3] },
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {[0, 1, 2, 3].map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        )}
+
+        {/* Task Trend Chart */}
+        {statsData.tasks && statsData.tasks.daily_trend && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Görev Trendi (7 Gün)</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={statsData.tasks.daily_trend}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" tick={{fontSize: 10}} />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="total" stroke={COLORS[4]} strokeWidth={2} name="Toplam" />
+                <Line type="monotone" dataKey="completed" stroke={COLORS[3]} strokeWidth={2} name="Tamamlanan" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Partner Growth Chart */}
+        {statsData.partners && statsData.partners.monthly_trend && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Partner Büyüme Trendi</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={statsData.partners.monthly_trend}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Area type="monotone" dataKey="count" stroke={COLORS[0]} fill={COLORS[0]} name="Yeni Partnerler" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Task Status Distribution */}
+        {statsData.tasks && statsData.tasks.by_status && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Görev Durum Dağılımı</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={[
+                { name: 'Tamamlanan', value: statsData.tasks.by_status.completed, color: COLORS[3] },
+                { name: 'Devam Eden', value: statsData.tasks.by_status.in_progress, color: COLORS[4] },
+                { name: 'Bekleyen', value: statsData.tasks.by_status.pending, color: COLORS[5] },
+              ]}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill={COLORS[0]}>
+                  {[0, 1, 2].map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index + 3]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+
+      {/* Education Progress */}
+      {statsData.education && statsData.education.category_progress && statsData.education.category_progress.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
+          <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Kategori Bazlı Eğitim İlerlemesi</h3>
+          <div className="space-y-4">
+            {statsData.education.category_progress.map((cat, index) => (
+              <div key={index}>
+                <div className="flex justify-between mb-2">
+                  <span className="text-gray-900 dark:text-gray-100 font-medium">{cat.category}</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    {cat.watched}/{cat.total} ({cat.percentage}%)
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                  <div
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-300"
+                    style={{ width: `${cat.percentage}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
