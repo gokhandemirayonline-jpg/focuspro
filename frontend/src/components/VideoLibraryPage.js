@@ -193,6 +193,11 @@ const VideoLibraryPage = ({ user }) => {
               
               setLastValidTime(startTime);
               
+              // Video hazır, otomatik başlat (browser policy izin verirse)
+              setTimeout(() => {
+                event.target.playVideo();
+              }, 500);
+              
               // Video tamamlanmış mı kontrol et
               const isVideoCompleted = progress?.watched === true;
               
