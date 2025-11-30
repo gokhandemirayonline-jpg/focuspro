@@ -2504,6 +2504,38 @@ async def get_learning_path_progress(path_id: str, current_user: dict = Depends(
 
 
 # ============= VIDEO PROGRESS ENDPOINTS (Enhanced) =============
+@api_router.post("/videos/{video_id}/view")
+async def increment_video_view(
+    video_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Increment view count when video is opened"""
+    # Update or create progress with view count increment
+    result = await db.video_progress.update_one(
+        {"user_id": current_user['id'], "video_id": video_id},
+        {
+            "$inc": {"view_count": 1},
+            "$setOnInsert": {
+                "watched": False,
+                "watch_percentage": 0,
+                "unlocked": True,
+                "user_id": current_user['id'],
+                "video_id": video_id,
+                "id": str(uuid.uuid4())
+            },
+            "$set": {"updated_at": datetime.utcnow().isoformat()}
+        },
+        upsert=True
+    )
+    
+    # Get updated progress
+    progress = await db.video_progress.find_one(
+        {"user_id": current_user['id'], "video_id": video_id},
+        {"_id": 0}
+    )
+    
+    return {"success": True, "view_count": progress.get('view_count', 1)}
+
 @api_router.patch("/videos/{video_id}/progress")
 async def update_video_progress(
     video_id: str,
