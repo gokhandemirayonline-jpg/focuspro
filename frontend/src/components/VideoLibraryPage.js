@@ -743,20 +743,36 @@ const VideoLibraryPage = ({ user }) => {
 
               {/* Actions */}
               <div className="flex gap-3">
-                <button
-                  onClick={handleVideoComplete}
-                  disabled={!videoCompleted || comment.trim().length < 10}
-                  className={`flex-1 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
-                    videoCompleted && comment.trim().length >= 10
-                      ? 'bg-green-600 hover:bg-green-700 text-white cursor-pointer'
-                      : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed'
-                  }`}
-                >
-                  <CheckCircle size={20} />
-                  {videoCompleted 
-                    ? (comment.trim().length >= 10 ? 'Gönder ve Tamamla' : 'Yorumunuzu Yazın') 
-                    : 'Videoyu Sonuna Kadar İzleyin'}
-                </button>
+                {/* Kullanıcı için Tamamla Butonu */}
+                {user?.role !== 'admin' && (
+                  <button
+                    onClick={handleVideoComplete}
+                    disabled={!videoCompleted || comment.trim().length < 10}
+                    className={`flex-1 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                      videoCompleted && comment.trim().length >= 10
+                        ? 'bg-green-600 hover:bg-green-700 text-white cursor-pointer'
+                        : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <CheckCircle size={20} />
+                    {videoCompleted 
+                      ? (comment.trim().length >= 10 ? 'Gönder ve Tamamla' : 'Yorumunuzu Yazın') 
+                      : 'Videoyu Sonuna Kadar İzleyin'}
+                  </button>
+                )}
+                
+                {/* Admin için basit Kapat butonu (video bittiğinde otomatik progress kaydedilir) */}
+                {user?.role === 'admin' && videoCompleted && (
+                  <button
+                    onClick={() => {
+                      // Admin için progress otomatik kaydedildi, sadece kapat
+                      setSelectedVideo(null);
+                    }}
+                    className="flex-1 px-6 py-3 rounded-lg font-medium bg-green-600 hover:bg-green-700 text-white transition-colors"
+                  >
+                    Tamam
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     if (videoCompleted && comment.trim().length > 0) {
