@@ -871,27 +871,6 @@ const EducationTab = ({ data, isAdmin }) => {
   );
 };
 
-// Reusable Stat Card Component
-const StatCard = ({ title, value, icon: Icon, color = 'blue' }) => {
-  const colorClasses = {
-    blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-    green: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
-    purple: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
-    pink: 'bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400',
-    yellow: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
-  };
-
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-3">
-        <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
-          <Icon size={24} />
-        </div>
-      </div>
-      <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">{title}</p>
-      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
-    </div>
-  );
-};
+*/
 
 export default StatisticsPage;
