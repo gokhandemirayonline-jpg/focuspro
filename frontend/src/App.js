@@ -3750,83 +3750,194 @@ const FocusProApp = () => {
           {/* INBOX PAGE */}
           {currentPage === 'inbox' && (
             <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold text-gray-800">Gelen Kutusu</h2>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => messageAPI.markAllRead().then(() => loadMessages())}
-                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    Tümünü Okundu İşaretle
-                  </button>
-                  {currentUser?.role === 'admin' && (
-                    <button
-                      onClick={() => setShowSendMessageModal(true)}
-                      className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
-                    >
-                      <Send size={20} />
-                      Mesaj Gönder
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Messages List */}
-              <div className="space-y-3">
-                {messages.length === 0 ? (
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-                    <Mail size={48} className="mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-600">Henüz mesajınız yok</p>
+              {/* Thread List (Ana Görünüm) */}
+              {!selectedThread && (
+                <>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-3xl font-bold text-gray-800">Gelen Kutusu</h2>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => messageAPI.markAllRead().then(() => loadMessages())}
+                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                      >
+                        Tümünü Okundu İşaretle
+                      </button>
+                      {currentUser?.role === 'admin' && (
+                        <button
+                          onClick={() => setShowSendMessageModal(true)}
+                          className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
+                        >
+                          <Send size={20} />
+                          Mesaj Gönder
+                        </button>
+                      )}
+                    </div>
                   </div>
-                ) : (
-                  messages.map(message => (
-                    <div
-                      key={message.id}
-                      onClick={() => {
-                        setSelectedMessage(message);
-                        setShowMessageDetailModal(true);
-                        if (!message.read) {
-                          markMessageAsRead(message.id);
-                        }
-                      }}
-                      className={`bg-white rounded-xl shadow-sm border p-4 cursor-pointer transition-all hover:shadow-md ${
-                        message.read ? 'border-gray-100' : 'border-purple-200 bg-purple-50'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                              {message.sender_name.charAt(0)}
+
+                  {/* Thread List (Kişilere Göre Gruplandırılmış) */}
+                  <div className="space-y-3">
+                    {messages.length === 0 ? (
+                      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+                        <Mail size={48} className="mx-auto text-gray-400 mb-4" />
+                        <p className="text-gray-600">Henüz mesajınız yok</p>
+                      </div>
+                    ) : (
+                      groupMessagesBySender().map(thread => (
+                        <div
+                          key={thread.sender_id}
+                          onClick={() => setSelectedThread(thread)}
+                          className={`bg-white rounded-xl shadow-sm border p-4 cursor-pointer transition-all hover:shadow-md ${
+                            thread.unreadCount > 0 ? 'border-purple-200 bg-purple-50' : 'border-gray-100'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                {thread.sender_name.charAt(0)}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <h3 className={`font-semibold text-lg ${thread.unreadCount > 0 ? 'text-purple-900' : 'text-gray-800'}`}>
+                                    {thread.sender_name}
+                                  </h3>
+                                  {thread.unreadCount > 0 && (
+                                    <span className="px-2 py-0.5 bg-purple-600 text-white text-xs rounded-full font-bold">
+                                      {thread.unreadCount}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  {thread.messages.length} mesaj
+                                </p>
+                                {/* Son mesaj önizleme */}
+                                <p className="text-sm text-gray-700 line-clamp-1 mt-2">
+                                  <span className="font-medium">{thread.lastMessage.subject}:</span> {thread.lastMessage.content}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <h3 className={`font-semibold ${message.read ? 'text-gray-800' : 'text-purple-900'}`}>
-                                {message.subject}
-                              </h3>
-                              <p className="text-sm text-gray-600">
-                                Gönderen: {message.sender_name}
+                            <div className="text-right ml-4">
+                              <p className="text-xs text-gray-500">
+                                {new Date(thread.lastMessage.created_at).toLocaleDateString('tr-TR', { 
+                                  day: 'numeric', 
+                                  month: 'short',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
                               </p>
                             </div>
                           </div>
-                          <p className="text-sm text-gray-700 line-clamp-2 ml-13">
-                            {message.content}
-                          </p>
                         </div>
-                        <div className="text-right ml-4">
-                          <p className="text-xs text-gray-500 mb-2">
-                            {new Date(message.created_at).toLocaleDateString('tr-TR')}
-                          </p>
-                          {!message.read && (
-                            <span className="inline-block px-2 py-1 bg-purple-600 text-white text-xs rounded-full">
-                              Yeni
-                            </span>
-                          )}
-                        </div>
+                      ))
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Thread Detayı (Kişinin Tüm Mesajları) */}
+              {selectedThread && (
+                <div>
+                  {/* Header */}
+                  <div className="flex items-center gap-4 mb-6 pb-4 border-b">
+                    <button
+                      onClick={() => setSelectedThread(null)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                        {selectedThread.sender_name.charAt(0)}
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-800">{selectedThread.sender_name}</h2>
+                        <p className="text-sm text-gray-600">{selectedThread.messages.length} mesaj</p>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
+                  </div>
+
+                  {/* Mesajlar (Kronolojik) */}
+                  <div className="space-y-4">
+                    {selectedThread.messages
+                      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+                      .map(msg => (
+                        <div
+                          key={msg.id}
+                          className={`bg-white rounded-xl shadow-sm border p-5 ${
+                            !msg.read ? 'border-purple-200 bg-purple-50' : 'border-gray-100'
+                          }`}
+                        >
+                          {/* Video Yorumu Etiketi */}
+                          {msg.subject.includes('Video Yorumu') && (
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
+                                </svg>
+                                Video Yorumu
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Mesaj Başlığı */}
+                          <h3 className="font-semibold text-lg text-gray-900 mb-2">
+                            {msg.subject}
+                          </h3>
+
+                          {/* Mesaj İçeriği */}
+                          <p className="text-gray-700 whitespace-pre-wrap mb-3">
+                            {msg.content}
+                          </p>
+
+                          {/* Cevaplar */}
+                          {msg.replies && msg.replies.length > 0 && (
+                            <div className="mt-4 pl-4 border-l-4 border-purple-300 space-y-3">
+                              {msg.replies.map((reply, idx) => (
+                                <div key={idx} className="bg-purple-50 rounded-lg p-3">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                      {reply.sender_name.charAt(0)}
+                                    </div>
+                                    <span className="font-semibold text-sm text-purple-900">
+                                      {reply.sender_name}
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                      {new Date(reply.created_at).toLocaleDateString('tr-TR')}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-700 ml-8">
+                                    {reply.content}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Alt Bilgi */}
+                          <div className="flex items-center justify-between mt-4 pt-3 border-t">
+                            <p className="text-xs text-gray-500">
+                              {new Date(msg.created_at).toLocaleString('tr-TR')}
+                            </p>
+                            {currentUser?.role === 'admin' && (
+                              <button
+                                onClick={() => {
+                                  setSelectedMessage(msg);
+                                  setShowMessageDetailModal(true);
+                                  if (!msg.read) markMessageAsRead(msg.id);
+                                }}
+                                className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center gap-1"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                </svg>
+                                Cevapla
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
