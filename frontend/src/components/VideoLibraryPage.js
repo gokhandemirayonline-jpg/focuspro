@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Lock, CheckCircle, Clock, Eye } from 'lucide-react';
+import { Play, Lock, CheckCircle, Clock, Eye, GripVertical } from 'lucide-react';
 import { videoCategoryAPI, videoAPI, progressAPI } from '../services/api';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const VideoLibraryPage = ({ user }) => {
   const [categories, setCategories] = useState([]);
