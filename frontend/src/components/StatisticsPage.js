@@ -52,13 +52,14 @@ const StatisticsPage = ({ user }) => {
   const loadAllStats = async () => {
     try {
       setLoading(true);
-      const [overview, tasks, meetings, partners, education, performance] = await Promise.all([
+      const [overview, tasks, meetings, partners, education, performance, habits] = await Promise.all([
         statsAPI.getOverview(selectedUserId),
         statsAPI.getTasks(timePeriod, selectedUserId),
         statsAPI.getMeetings(timePeriod, selectedUserId),
         statsAPI.getPartners('month', selectedUserId),
         statsAPI.getEducation('month', selectedUserId),
-        statsAPI.getPerformance(selectedUserId)
+        statsAPI.getPerformance(selectedUserId),
+        statsAPI.getHabits(timePeriod, selectedUserId)
       ]);
 
       setStatsData({
@@ -67,7 +68,8 @@ const StatisticsPage = ({ user }) => {
         meetings: meetings.data,
         partners: partners.data,
         education: education.data,
-        performance: performance.data
+        performance: performance.data,
+        habits: habits.data
       });
     } catch (error) {
       console.error('İstatistikler yüklenirken hata:', error);
