@@ -111,6 +111,7 @@ const FocusProApp = () => {
   const [newMessage, setNewMessage] = useState({ subject: '', content: '', recipient_ids: [] });
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [showMessageDetailModal, setShowMessageDetailModal] = useState(false);
+  const [autoOpenMessageId, setAutoOpenMessageId] = useState(null);
   
   // Statistics states
   const [dashboardStats, setDashboardStats] = useState(null);
