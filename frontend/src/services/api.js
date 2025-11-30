@@ -222,7 +222,11 @@ export const messageAPI = {
   markRead: (messageId) => api.patch(`/messages/${messageId}/read`),
   markAllRead: () => api.patch('/messages/read-all'),
   delete: (messageId) => api.delete(`/messages/${messageId}`),
-  reply: (messageId, content) => api.post(`/messages/${messageId}/reply`, { content }),
+  reply: (messageId, content) => {
+    // content string ise, obje yap. Obje ise olduğu gibi gönder
+    const body = typeof content === 'string' ? { content } : content;
+    return api.post(`/messages/${messageId}/reply`, body);
+  },
   getThread: (messageId) => api.get(`/messages/${messageId}/thread`),
 };
 
