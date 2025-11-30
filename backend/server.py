@@ -3885,15 +3885,23 @@ Analizi çok detaylı, motivasyonel ve uygulanabilir yap."""
 # ==================== STATS & ANALYTICS ====================
 
 @api_router.get("/stats/overview")
-async def get_stats_overview(current_user: dict = Depends(get_current_user)):
+async def get_stats_overview(
+    target_user_id: str = None,
+    current_user: dict = Depends(get_current_user)
+):
     """
     Kullanıcı veya admin için genel istatistik özeti
-    Admin: Tüm sistem
+    Admin: Tüm sistem veya belirli kullanıcı
     User: Kendi verileri
     """
     try:
         user_id = current_user['id']
         is_admin = current_user.get('role') == 'admin'
+        
+        # Admin başka kullanıcıyı seçmişse
+        if is_admin and target_user_id:
+            user_id = target_user_id
+            is_admin = False  # Bu kullanıcının istatistiklerini göster
         
         # Tarih filtreleri için yardımcı fonksiyon
         from datetime import datetime, timedelta
