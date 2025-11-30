@@ -187,41 +187,55 @@ const VideoLibraryPage = ({ user }) => {
   // Drag & Drop Handler
   const handleDragEnd = async (event) => {
     const { active, over } = event;
+    
+    console.log('Drag ended:', { active: active?.id, over: over?.id });
 
     if (over && active.id !== over.id) {
       const oldIndex = filteredVideos.findIndex(v => v.id === active.id);
       const newIndex = filteredVideos.findIndex(v => v.id === over.id);
+      
+      console.log('Moving from', oldIndex, 'to', newIndex);
 
-      // Yeni sıralamayı oluştur
-      const newVideos = arrayMove(filteredVideos, oldIndex, newIndex).map((v, idx) => ({
+      // Tüm videoları güncelle (filter edilmiş değil, hepsi)
+      const categoryVideos = videos.filter(v => 
+        selectedCategory === 'all' ? true : v.category_id === selectedCategory
+      );
+      
+      const otherVideos = videos.filter(v => 
+        selectedCategory === 'all' ? false : v.category_id !== selectedCategory
+      );
+      
+      // Sadece bu kategorideki videoları yeniden sırala
+      const reorderedCategory = arrayMove(categoryVideos, oldIndex, newIndex).map((v, idx) => ({
         ...v,
-        order: idx + 1
+        order: idx
       }));
-
-      // UI'ı hemen güncelle
-      setVideos(prevVideos => {
-        const updatedVideos = [...prevVideos];
-        // filteredVideos'daki değişiklikleri ana videos array'ine uygula
-        newVideos.forEach(newVideo => {
-          const index = updatedVideos.findIndex(v => v.id === newVideo.id);
-          if (index !== -1) {
-            updatedVideos[index] = newVideo;
-          }
-        });
-        return updatedVideos;
+      
+      // Tüm videoları birleştir
+      const allVideos = [...reorderedCategory, ...otherVideos].sort((a, b) => {
+        if (a.category_id !== b.category_id) {
+          return (a.category_id || '').localeCompare(b.category_id || '');
+        }
+        return a.order - b.order;
       });
+
+      // UI'ı güncelle
+      setVideos(allVideos);
+      
+      console.log('Videos updated in UI');
 
       // Backend'e gönder
       try {
-        const orderUpdates = newVideos.map(v => ({
+        const orderUpdates = reorderedCategory.map(v => ({
           id: v.id,
           order: v.order
         }));
         
         await videoAPI.reorder(orderUpdates);
-        console.log('Video sıralaması güncellendi');
+        console.log('✅ Backend güncellendi:', orderUpdates.length, 'video');
       } catch (error) {
-        console.error('Sıralama güncelleme hatası:', error);
+        console.error('❌ Sıralama hatası:', error);
+        alert('Sıralama kaydedilemedi: ' + error.message);
         // Hata durumunda yeniden yükle
         loadData();
       }
