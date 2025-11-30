@@ -107,7 +107,12 @@ const StatisticsPage = ({ user }) => {
           İstatistikler ve Performans Analizi
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          {isAdmin ? 'Sistem geneli' : 'Kişisel'} performans ve analiz verileri
+          {selectedUserId 
+            ? `${users.find(u => u.id === selectedUserId)?.name || 'Kullanıcı'} - Kişisel performans verileri`
+            : isAdmin 
+              ? 'Sistem geneli performans ve analiz verileri' 
+              : 'Kişisel performans ve analiz verileri'
+          }
         </p>
       </div>
 
