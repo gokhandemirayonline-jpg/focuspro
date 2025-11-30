@@ -15,6 +15,8 @@ const StatisticsPage = ({ user }) => {
   const [activeTab, setActiveTab] = useState('performance');
   const [timePeriod, setTimePeriod] = useState('week');
   const [loading, setLoading] = useState(true);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [users, setUsers] = useState([]);
   const [statsData, setStatsData] = useState({
     overview: null,
     tasks: null,
@@ -27,8 +29,11 @@ const StatisticsPage = ({ user }) => {
   const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
+    if (isAdmin) {
+      loadUsers();
+    }
     loadAllStats();
-  }, [timePeriod]);
+  }, [timePeriod, selectedUserId]);
 
   const loadAllStats = async () => {
     try {
