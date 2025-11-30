@@ -339,6 +339,37 @@ const FocusProApp = () => {
     }
   }, [currentPage, autoOpenMessageId, messages]);
 
+  // Mesajları gönderene göre grupla (Thread sistemi)
+  const groupMessagesBySender = () => {
+    const grouped = {};
+    
+    messages.forEach(msg => {
+      const senderId = msg.sender_id;
+      if (!grouped[senderId]) {
+        grouped[senderId] = {
+          sender_id: senderId,
+          sender_name: msg.sender_name,
+          messages: [],
+          unreadCount: 0,
+          lastMessage: null,
+          lastMessageDate: null
+        };
+      }
+      
+      grouped[senderId].messages.push(msg);
+      if (!msg.read) grouped[senderId].unreadCount++;
+      
+      // En son mesajı bul
+      if (!grouped[senderId].lastMessage || new Date(msg.created_at) > new Date(grouped[senderId].lastMessage.created_at)) {
+        grouped[senderId].lastMessage = msg;
+        grouped[senderId].lastMessageDate = new Date(msg.created_at);
+      }
+    });
+    
+    // Array'e çevir ve tarihe göre sırala (en yeni üstte)
+    return Object.values(grouped).sort((a, b) => b.lastMessageDate - a.lastMessageDate);
+  };
+
   // Dark mode initialization - sayfa yüklendiğinde
   useEffect(() => {
     // Önce localStorage'dan oku
