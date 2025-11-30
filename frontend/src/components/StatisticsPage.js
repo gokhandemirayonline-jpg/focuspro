@@ -355,6 +355,8 @@ const StatisticsPage = ({ user }) => {
   );
 };
 
+// Unused Tab Components (kept for potential future use)
+/*
 // Performance Tab
 const PerformanceTab = ({ data, isAdmin }) => {
   if (!data) return null;
