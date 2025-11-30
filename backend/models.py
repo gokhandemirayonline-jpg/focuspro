@@ -134,6 +134,7 @@ class VideoProgressBase(BaseModel):
     unlocked: bool = True  # Varsayılan olarak açık
     comment: Optional[str] = None
     completed_at: Optional[datetime] = None
+    view_count: int = 0  # Kaç kez izlendiği
 
 class VideoProgressUpdate(BaseModel):
     watch_percentage: int
