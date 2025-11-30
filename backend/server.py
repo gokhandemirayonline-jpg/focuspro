@@ -4294,6 +4294,162 @@ async def get_education_stats(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.get("/stats/habits")
+async def get_habit_stats(
+    period: str = "week",
+    target_user_id: str = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Alışkanlık istatistikleri"""
+    try:
+        user_id = current_user['id']
+        is_admin = current_user.get('role') == 'admin'
+        
+        # Admin başka kullanıcıyı seçmişse
+        if is_admin and target_user_id:
+            user_id = target_user_id
+            is_admin = False
+        
+        from datetime import datetime, timedelta
+        
+        now = datetime.utcnow()
+        if period == "today":
+            start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        elif period == "week":
+            start_date = now - timedelta(days=7)
+        elif period == "month":
+            start_date = now - timedelta(days=30)
+        else:
+            start_date = now - timedelta(days=7)
+        
+        if is_admin:
+            # Admin için tüm sistem alışkanlıkları
+            total_habits = await db.habits.count_documents({})
+            total_users_with_habits = len(await db.habits.distinct("user_id"))
+            
+            # Toplam tamamlanmış alışkanlıklar (period içinde)
+            completions = await db.habit_completions.find({
+                "completed_at": {"$gte": start_date.isoformat()}
+            }, {"_id": 0}).to_list(10000)
+            
+            total_completions = len(completions)
+            
+            # En aktif kullanıcılar
+            user_completion_counts = {}
+            for comp in completions:
+                uid = comp.get("user_id")
+                if uid:
+                    user_completion_counts[uid] = user_completion_counts.get(uid, 0) + 1
+            
+            # Top 5 kullanıcı
+            top_users = sorted(user_completion_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+            top_users_list = []
+            for uid, count in top_users:
+                user = await db.users.find_one({"id": uid}, {"_id": 0, "name": 1, "user_number": 1})
+                if user:
+                    top_users_list.append({
+                        "user_id": uid,
+                        "name": user.get("name", "Unknown"),
+                        "user_number": user.get("user_number"),
+                        "completions": count
+                    })
+            
+            # En popüler alışkanlıklar
+            habit_completion_counts = {}
+            for comp in completions:
+                hid = comp.get("habit_id")
+                if hid:
+                    habit_completion_counts[hid] = habit_completion_counts.get(hid, 0) + 1
+            
+            top_habits = sorted(habit_completion_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+            top_habits_list = []
+            for hid, count in top_habits:
+                habit = await db.habits.find_one({"id": hid}, {"_id": 0, "title": 1})
+                if habit:
+                    top_habits_list.append({
+                        "habit_id": hid,
+                        "title": habit.get("title", "Unknown"),
+                        "completions": count
+                    })
+            
+            return {
+                "period": period,
+                "is_admin": True,
+                "total_habits": total_habits,
+                "total_users_with_habits": total_users_with_habits,
+                "total_completions": total_completions,
+                "avg_completions_per_user": round(total_completions / total_users_with_habits, 1) if total_users_with_habits > 0 else 0,
+                "top_users": top_users_list,
+                "top_habits": top_habits_list
+            }
+        else:
+            # Kullanıcı için kendi alışkanlıkları
+            user_habits = await db.habits.find(
+                {"user_id": user_id},
+                {"_id": 0}
+            ).to_list(100)
+            
+            total_habits = len(user_habits)
+            
+            # Tamamlanmış alışkanlıklar (period içinde)
+            completions = await db.habit_completions.find({
+                "user_id": user_id,
+                "completed_at": {"$gte": start_date.isoformat()}
+            }, {"_id": 0}).to_list(1000)
+            
+            total_completions = len(completions)
+            
+            # Günlük tamamlanma trendi (son 7 gün)
+            daily_completions = []
+            for i in range(7):
+                day = now - timedelta(days=6-i)
+                day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
+                day_end = day_start + timedelta(days=1)
+                
+                day_count = sum(1 for c in completions 
+                               if day_start.isoformat() <= c.get("completed_at", "") < day_end.isoformat())
+                
+                daily_completions.append({
+                    "date": day_start.strftime("%Y-%m-%d"),
+                    "completions": day_count
+                })
+            
+            # Alışkanlık bazlı tamamlanma
+            habit_stats = []
+            for habit in user_habits:
+                habit_id = habit.get("id")
+                habit_completions = sum(1 for c in completions if c.get("habit_id") == habit_id)
+                
+                habit_stats.append({
+                    "habit_id": habit_id,
+                    "title": habit.get("title", "Unknown"),
+                    "completions": habit_completions,
+                    "target_per_week": 7,  # Daily habit
+                    "completion_rate": round((habit_completions / 7 * 100) if period == "week" else (habit_completions / 30 * 100), 1)
+                })
+            
+            # En başarılı alışkanlık
+            best_habit = max(habit_stats, key=lambda x: x["completion_rate"]) if habit_stats else None
+            
+            # Ortalama günlük tamamlanma
+            avg_daily = round(total_completions / 7, 1) if period == "week" else round(total_completions / 30, 1)
+            
+            return {
+                "period": period,
+                "is_admin": False,
+                "total_habits": total_habits,
+                "total_completions": total_completions,
+                "avg_daily_completions": avg_daily,
+                "completion_rate": round((total_completions / (total_habits * 7) * 100) if total_habits > 0 and period == "week" else 0, 1),
+                "daily_trend": daily_completions,
+                "habit_stats": habit_stats,
+                "best_habit": best_habit
+            }
+    except Exception as e:
+        logger.error(f"Habit stats error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.get("/stats/performance")
 async def get_performance_stats(
     target_user_id: str = None,
