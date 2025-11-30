@@ -2503,6 +2503,28 @@ async def get_learning_path_progress(path_id: str, current_user: dict = Depends(
     }
 
 
+# ============= VIDEO MANAGEMENT (Admin) =============
+@api_router.post("/admin/videos/reorder")
+async def reorder_videos(
+    order_updates: list[dict],
+    current_user: dict = Depends(get_current_user)
+):
+    """Reorder videos (Admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    try:
+        # Bulk update video orders
+        for update in order_updates:
+            await db.videos.update_one(
+                {"id": update['id']},
+                {"$set": {"order": update['order']}}
+            )
+        
+        return {"success": True, "updated": len(order_updates)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============= VIDEO PROGRESS ENDPOINTS (Enhanced) =============
 @api_router.post("/videos/{video_id}/view")
 async def increment_video_view(
