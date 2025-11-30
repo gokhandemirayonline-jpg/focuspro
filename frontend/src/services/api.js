@@ -307,4 +307,14 @@ export const fullLifeProfileAPI = {
   gapAnalysis: (analysisData) => api.post('/full-life-profile/gap-analysis', analysisData),
 };
 
+// Stats API
+export const statsAPI = {
+  getOverview: () => api.get('/stats/overview'),
+  getTasks: (period = 'week') => api.get(`/stats/tasks?period=${period}`),
+  getMeetings: (period = 'week') => api.get(`/stats/meetings?period=${period}`),
+  getPartners: (period = 'month') => api.get(`/stats/partners?period=${period}`),
+  getEducation: (period = 'month') => api.get(`/stats/education?period=${period}`),
+  getPerformance: () => api.get('/stats/performance'),
+};
+
 export default api;
