@@ -22,7 +22,8 @@ const StatisticsPage = ({ user }) => {
     meetings: null,
     partners: null,
     education: null,
-    performance: null
+    performance: null,
+    habits: null
   });
 
   const isAdmin = user?.role === 'admin';
