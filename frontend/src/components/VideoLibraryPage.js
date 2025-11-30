@@ -706,8 +706,8 @@ const VideoLibraryPage = ({ user }) => {
                 </div>
               )}
 
-              {/* Yorum/Not Alanı - Video bittiğinde göster */}
-              {showCommentSection && (
+              {/* Yorum/Not Alanı - Video bittiğinde göster (Admin hariç) */}
+              {showCommentSection && user?.role !== 'admin' && (
                 <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
                   <div className="flex items-start gap-3 mb-3">
                     <CheckCircle className="text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" size={20} />
@@ -726,6 +726,18 @@ const VideoLibraryPage = ({ user }) => {
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                     {comment.length} karakter {comment.trim().length < 10 && '(En az 10 karakter yazmalısınız)'}
                   </p>
+                </div>
+              )}
+              
+              {/* Admin için video tamamlandı mesajı */}
+              {showCommentSection && user?.role === 'admin' && (
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="text-green-600 dark:text-green-400" size={24} />
+                    <p className="text-sm font-semibold text-green-800 dark:text-green-300">
+                      ✅ Video tamamlandı!
+                    </p>
+                  </div>
                 </div>
               )}
 
