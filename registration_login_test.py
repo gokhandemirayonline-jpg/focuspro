@@ -20,7 +20,7 @@ import time
 from typing import Dict, Any
 
 # Backend URL from environment
-BACKEND_URL = "https://mlm-dashboard-6.preview.emergentagent.com"
+BACKEND_URL = "https://agent-learninghub.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class RegistrationLoginTester:
