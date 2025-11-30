@@ -113,7 +113,21 @@ const StatisticsPage = ({ user }) => {
 
       {/* Controls */}
       <div className="mb-6 flex flex-wrap gap-3 items-center justify-between">
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {isAdmin && (
+            <select
+              value={selectedUserId || ''}
+              onChange={(e) => setSelectedUserId(e.target.value || null)}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="">🌐 Sistem Geneli</option>
+              {users.map(u => (
+                <option key={u.id} value={u.id}>
+                  👤 {u.name} ({u.user_number ? String(u.user_number).padStart(2, '0') : u.id})
+                </option>
+              ))}
+            </select>
+          )}
           <select
             value={timePeriod}
             onChange={(e) => setTimePeriod(e.target.value)}
