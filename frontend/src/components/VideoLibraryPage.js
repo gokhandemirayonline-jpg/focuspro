@@ -159,7 +159,7 @@ const VideoLibraryPage = ({ user }) => {
         const newPlayer = new window.YT.Player(`youtube-player-${selectedVideo.id}`, {
           videoId: selectedVideo.youtube_id,
           playerVars: {
-            autoplay: 1,
+            autoplay: 0,  // Autoplay kapalı - kullanıcı tıklaması ile başlatılacak
             controls: 0, // YouTube kontrollerini tamamen kapat
             disablekb: 1, // Klavye kontrollerini kapat
             modestbranding: 1, // YouTube logosunu minimize et
