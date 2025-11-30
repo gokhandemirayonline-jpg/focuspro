@@ -82,11 +82,22 @@ const VideoLibraryPage = ({ user }) => {
       alert('Bu videoyu izlemek için önceki videoları tamamlamalısınız!');
       return;
     }
+    
+    // İzlenme sayısını artır
+    try {
+      await progressAPI.incrementView(video.id);
+    } catch (error) {
+      console.error('View count artırma hatası:', error);
+    }
+    
     setSelectedVideo(video);
     setVideoCompleted(false);
     setComment('');
     setShowCommentSection(false);
     setPlaybackSpeed(1);
+    
+    // Progress'i yeniden yükle (view_count güncellenmiş olacak)
+    loadData();
   };
 
   const handleVideoComplete = async () => {
