@@ -315,6 +315,7 @@ export const statsAPI = {
   getPartners: (period = 'month', targetUserId = null) => api.get('/stats/partners', { params: { period, target_user_id: targetUserId } }),
   getEducation: (period = 'month', targetUserId = null) => api.get('/stats/education', { params: { period, target_user_id: targetUserId } }),
   getPerformance: (targetUserId = null) => api.get('/stats/performance', { params: { target_user_id: targetUserId } }),
+  getHabits: (period = 'week', targetUserId = null) => api.get('/stats/habits', { params: { period, target_user_id: targetUserId } }),
 };
 
 export default api;
