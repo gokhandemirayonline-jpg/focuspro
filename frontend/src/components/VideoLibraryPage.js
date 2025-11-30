@@ -193,6 +193,9 @@ const VideoLibraryPage = ({ user }) => {
               
               setLastValidTime(startTime);
               
+              // Video tamamlanmış mı kontrol et
+              const isVideoCompleted = progress?.watched === true;
+              
               // Her saniye kontrol et - ileri sarma engelle + progress güncelle
               let previousTime = startTime;
               const interval = setInterval(() => {
@@ -206,8 +209,8 @@ const VideoLibraryPage = ({ user }) => {
                   
                   // Video oynatılıyorsa (1 = playing)
                   if (playerState === 1) {
-                    // Manuel ileri sarma kontrolü - 3 saniyeden fazla atlama
-                    if (currentTime > previousTime + 3) {
+                    // İLERİ SARMA KONTROLÜ - Sadece tamamlanmamış videolar için
+                    if (!isVideoCompleted && currentTime > previousTime + 3) {
                       console.log('İleri sarma algılandı! Geri alınıyor...');
                       event.target.seekTo(previousTime, true);
                       
@@ -223,8 +226,8 @@ const VideoLibraryPage = ({ user }) => {
                       // Normal akış - süreyi güncelle
                       previousTime = currentTime;
                       
-                      // Her 10 saniyede bir progress'i kaydet
-                      if (Math.floor(currentTime) % 10 === 0 && currentTime > 0) {
+                      // Her 10 saniyede bir progress'i kaydet (sadece tamamlanmamışlar için)
+                      if (!isVideoCompleted && Math.floor(currentTime) % 10 === 0 && currentTime > 0) {
                         const watchPercentage = (currentTime / videoDuration) * 100;
                         progressAPI.updateProgress(selectedVideo.id, {
                           watch_percentage: Math.floor(watchPercentage),
