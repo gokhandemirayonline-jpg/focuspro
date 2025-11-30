@@ -4118,12 +4118,18 @@ async def get_meeting_stats(
 @api_router.get("/stats/partners")
 async def get_partner_stats(
     period: str = "month",
+    target_user_id: str = None,
     current_user: dict = Depends(get_current_user)
 ):
     """Partner istatistikleri"""
     try:
         user_id = current_user['id']
         is_admin = current_user.get('role') == 'admin'
+        
+        # Admin başka kullanıcıyı seçmişse
+        if is_admin and target_user_id:
+            user_id = target_user_id
+            is_admin = False
         
         from datetime import datetime, timedelta
         
