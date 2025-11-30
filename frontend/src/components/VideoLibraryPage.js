@@ -36,6 +36,7 @@ const SortableVideoCard = ({ video, isUnlocked, progress, onVideoClick, isAdmin 
         <div
           {...attributes}
           {...listeners}
+          data-drag-handle="true"
           className="absolute top-2 left-2 z-20 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg cursor-grab active:cursor-grabbing shadow-md hover:bg-white dark:hover:bg-gray-700 transition-colors"
           onClick={(e) => e.stopPropagation()}
         >
