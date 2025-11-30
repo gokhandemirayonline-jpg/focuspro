@@ -3856,86 +3856,124 @@ const FocusProApp = () => {
                     </div>
                   </div>
 
-                  {/* Mesajlar (Kronolojik) */}
+                  {/* Mesajlar (WhatsApp Tarzı - Thread Gruplandırılmış) */}
                   <div className="space-y-4">
-                    {selectedThread.messages
-                      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-                      .map(msg => (
-                        <div
-                          key={msg.id}
-                          className={`bg-white rounded-xl shadow-sm border p-5 ${
-                            !msg.read ? 'border-purple-200 bg-purple-50' : 'border-gray-100'
-                          }`}
-                        >
-                          {/* Video Yorumu Etiketi */}
-                          {msg.subject.includes('Video Yorumu') && (
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium flex items-center gap-1">
-                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
-                                </svg>
-                                Video Yorumu
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Mesaj Başlığı */}
-                          <h3 className="font-semibold text-lg text-gray-900 mb-2">
-                            {msg.subject}
-                          </h3>
-
-                          {/* Mesaj İçeriği */}
-                          <p className="text-gray-700 whitespace-pre-wrap mb-3">
-                            {msg.content}
-                          </p>
-
-                          {/* Cevaplar */}
-                          {msg.replies && msg.replies.length > 0 && (
-                            <div className="mt-4 pl-4 border-l-4 border-purple-300 space-y-3">
-                              {msg.replies.map((reply, idx) => (
-                                <div key={idx} className="bg-purple-50 rounded-lg p-3">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                      {reply.sender_name.charAt(0)}
-                                    </div>
-                                    <span className="font-semibold text-sm text-purple-900">
-                                      {reply.sender_name}
-                                    </span>
-                                    <span className="text-xs text-gray-500">
-                                      {new Date(reply.created_at).toLocaleDateString('tr-TR')}
-                                    </span>
+                    {(() => {
+                      // Parent mesajları bul (parent_id olmayan veya kendi parent'ı olan)
+                      const parentMessages = selectedThread.messages
+                        .filter(msg => !msg.parent_id || msg.parent_id === msg.id)
+                        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                      
+                      // Her parent için reply'leri bul
+                      return parentMessages.map(parentMsg => {
+                        const replies = selectedThread.messages
+                          .filter(msg => msg.parent_id === parentMsg.id && msg.id !== parentMsg.id)
+                          .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                        
+                        return (
+                          <div
+                            key={parentMsg.id}
+                            className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+                          >
+                            {/* Video Yorumu Etiketi */}
+                            {parentMsg.subject.includes('Video Yorumu') && (
+                              <div className="bg-gradient-to-r from-blue-50 to-purple-50 px-5 py-3 border-b">
+                                <div className="flex items-center gap-2">
+                                  <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium flex items-center gap-1">
+                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                      <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
+                                    </svg>
+                                    Video Yorumu
                                   </div>
-                                  <p className="text-sm text-gray-700 ml-8">
-                                    {reply.content}
-                                  </p>
+                                  <span className="text-sm font-semibold text-gray-700">{parentMsg.subject}</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Konuşma Alanı (WhatsApp gibi) */}
+                            <div className="p-5 space-y-3 bg-gray-50">
+                              {/* İlk Mesaj (Kullanıcıdan) */}
+                              <div className="flex items-start gap-3">
+                                <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                                  {parentMsg.sender_name.charAt(0)}
+                                </div>
+                                <div className="flex-1">
+                                  <div className="bg-white rounded-lg rounded-tl-none shadow-sm p-4 border border-gray-200">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <span className="font-semibold text-sm text-gray-900">
+                                        {parentMsg.sender_name}
+                                      </span>
+                                      <span className="text-xs text-gray-500">
+                                        {new Date(parentMsg.created_at).toLocaleString('tr-TR', {
+                                          day: 'numeric',
+                                          month: 'short',
+                                          hour: '2-digit',
+                                          minute: '2-digit'
+                                        })}
+                                      </span>
+                                    </div>
+                                    <p className="text-gray-700 text-sm whitespace-pre-wrap">
+                                      {parentMsg.content}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Cevaplar (Reply'ler) */}
+                              {replies.map(reply => (
+                                <div key={reply.id} className="flex items-start gap-3 pl-8">
+                                  <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-700 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 shadow-md">
+                                    {reply.sender_name.charAt(0)}
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg rounded-tl-none shadow-sm p-4 border border-purple-200">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <span className="font-semibold text-sm text-purple-900">
+                                          {reply.sender_name}
+                                        </span>
+                                        <span className="text-xs text-purple-600">
+                                          {new Date(reply.created_at).toLocaleString('tr-TR', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                          })}
+                                        </span>
+                                      </div>
+                                      <p className="text-gray-800 text-sm whitespace-pre-wrap">
+                                        {reply.content}
+                                      </p>
+                                    </div>
+                                  </div>
                                 </div>
                               ))}
                             </div>
-                          )}
 
-                          {/* Alt Bilgi */}
-                          <div className="flex items-center justify-between mt-4 pt-3 border-t">
-                            <p className="text-xs text-gray-500">
-                              {new Date(msg.created_at).toLocaleString('tr-TR')}
-                            </p>
+                            {/* Alt Bar - Cevapla Butonu */}
                             {currentUser?.role === 'admin' && (
-                              <button
-                                onClick={() => {
-                                  setSelectedMessage(msg);
-                                  setShowMessageDetailModal(true);
-                                  if (!msg.read) markMessageAsRead(msg.id);
-                                }}
-                                className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center gap-1"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                </svg>
-                                Cevapla
-                              </button>
+                              <div className="bg-white px-5 py-3 border-t flex items-center justify-between">
+                                <span className="text-xs text-gray-500">
+                                  {replies.length > 0 ? `${replies.length} cevap` : 'Henüz cevap verilmedi'}
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    setSelectedMessage(parentMsg);
+                                    setShowMessageDetailModal(true);
+                                    if (!parentMsg.read) markMessageAsRead(parentMsg.id);
+                                  }}
+                                  className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-purple-50 transition-colors"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                  </svg>
+                                  Cevapla
+                                </button>
+                              </div>
                             )}
                           </div>
-                        </div>
-                      ))}
+                        );
+                      });
+                    })()}
                   </div>
                 </div>
               )}
