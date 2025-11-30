@@ -7879,19 +7879,22 @@ const FocusProApp = () => {
       {/* Message Detail Modal */}
       {showMessageDetailModal && selectedMessage && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-gray-800">{selectedMessage.subject}</h3>
               <button
                 onClick={() => {
                   setShowMessageDetailModal(false);
                   setSelectedMessage(null);
+                  setReplyContent('');
                 }}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <X size={24} />
               </button>
             </div>
+            
+            {/* Gönderen Bilgisi */}
             <div className="border-b pb-4 mb-4">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
@@ -7905,17 +7908,84 @@ const FocusProApp = () => {
                 </div>
               </div>
             </div>
+            
+            {/* Mesaj İçeriği */}
             <div className="prose max-w-none mb-6">
               <p className="text-gray-700 whitespace-pre-wrap">{selectedMessage.content}</p>
             </div>
-            <div className="flex justify-end">
-              <button
-                onClick={() => deleteMessage(selectedMessage.id)}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              >
-                Mesajı Sil
-              </button>
-            </div>
+
+            {/* Önceki Cevaplar */}
+            {selectedMessage.replies && selectedMessage.replies.length > 0 && (
+              <div className="mb-6 space-y-3">
+                <h4 className="font-semibold text-gray-800 mb-3">Cevaplar</h4>
+                {selectedMessage.replies.map((reply, idx) => (
+                  <div key={idx} className="bg-purple-50 rounded-lg p-4 border border-purple-100">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                        {reply.sender_name.charAt(0)}
+                      </div>
+                      <div>
+                        <span className="font-semibold text-sm text-purple-900">{reply.sender_name}</span>
+                        <span className="text-xs text-gray-500 ml-2">
+                          {new Date(reply.created_at).toLocaleDateString('tr-TR')}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-700 ml-10">{reply.content}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Reply Alanı (Admin için) */}
+            {currentUser?.role === 'admin' && (
+              <div className="border-t pt-4">
+                <h4 className="font-semibold text-gray-800 mb-3">Cevap Yaz</h4>
+                <textarea
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  placeholder="Cevabınızı yazın..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  rows={4}
+                />
+                <div className="flex justify-end gap-3 mt-3">
+                  <button
+                    onClick={() => deleteMessage(selectedMessage.id)}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  >
+                    Mesajı Sil
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!replyContent.trim()) {
+                        alert('Lütfen bir cevap yazın');
+                        return;
+                      }
+                      try {
+                        await messageAPI.reply(selectedMessage.id, { content: replyContent });
+                        setReplyContent('');
+                        setShowMessageDetailModal(false);
+                        setSelectedMessage(null);
+                        setSelectedThread(null); // Thread'i resetle, yeniden yüklensin
+                        await loadMessages();
+                        alert('Cevap gönderildi!');
+                      } catch (error) {
+                        console.error('Reply error:', error);
+                        alert('Cevap gönderilirken hata oluştu');
+                      }
+                    }}
+                    disabled={!replyContent.trim()}
+                    className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                      replyContent.trim()
+                        ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    Cevap Gönder
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
