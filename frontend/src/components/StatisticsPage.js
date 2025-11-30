@@ -90,14 +90,6 @@ const StatisticsPage = ({ user }) => {
     );
   }
 
-  const tabs = [
-    { id: 'performance', name: 'Performans', icon: Award },
-    { id: 'tasks', name: 'Görevler', icon: CheckCircle },
-    { id: 'meetings', name: 'Görüşmeler', icon: Calendar },
-    { id: 'partners', name: 'Partnerler', icon: Users },
-    { id: 'education', name: 'Eğitim', icon: GraduationCap },
-  ];
-
   return (
     <div className="p-6">
       {/* Header */}
