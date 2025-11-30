@@ -112,6 +112,7 @@ const FocusProApp = () => {
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [showMessageDetailModal, setShowMessageDetailModal] = useState(false);
   const [autoOpenMessageId, setAutoOpenMessageId] = useState(null);
+  const [selectedThread, setSelectedThread] = useState(null); // Thread (kişi) seçimi
   
   // Statistics states
   const [dashboardStats, setDashboardStats] = useState(null);
