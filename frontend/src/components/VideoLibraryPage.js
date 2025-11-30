@@ -198,9 +198,6 @@ const VideoLibraryPage = ({ user }) => {
                 event.target.playVideo();
               }, 500);
               
-              // Video tamamlanmış mı kontrol et
-              const isVideoCompleted = progress?.watched === true;
-              
               // Her saniye kontrol et - ileri sarma engelle + progress güncelle
               let previousTime = startTime;
               const interval = setInterval(() => {
@@ -214,6 +211,10 @@ const VideoLibraryPage = ({ user }) => {
                   
                   // Video oynatılıyorsa (1 = playing)
                   if (playerState === 1) {
+                    // Video tamamlanmış mı dinamik kontrol et (her saniye güncellenir)
+                    const currentProgress = videoProgress[selectedVideo.id];
+                    const isVideoCompleted = currentProgress?.watched === true;
+                    
                     // İLERİ SARMA KONTROLÜ - Sadece tamamlanmamış videolar için
                     if (!isVideoCompleted && currentTime > previousTime + 3) {
                       console.log('İleri sarma algılandı! Geri alınıyor...');
