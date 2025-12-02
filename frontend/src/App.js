@@ -19,6 +19,7 @@ import DreamsPage from './components/DreamsPage';
 import VideoLibraryPage from './components/VideoLibraryPage';
 import StatisticsPage from './components/StatisticsPage';
 import BlogPage from './components/BlogPage';
+import AdminVideoManagement from './components/AdminVideoManagement';
 import './App.css';
 
 moment.locale('tr');
