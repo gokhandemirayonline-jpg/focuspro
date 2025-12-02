@@ -4643,66 +4643,6 @@ const FocusProApp = () => {
             <StatisticsPage user={currentUser} />
           )}
 
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={eventParticipationData.slice(0, 8)}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="event_name" tick={{fontSize: 10}} />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="participants" fill="#3B82F6" name="Katılımcı" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Active Users Table */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">En Aktif Kullanıcılar</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sıra</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İsim</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hedefler</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Partnerler</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prospects</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nedenler</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Toplam</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {activeUsersData.map((user, index) => (
-                        <tr key={index} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-white font-bold ${
-                              index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-600' : 'bg-gray-300'
-                            }`}>
-                              {index + 1}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-900">{user.goals}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-900">{user.partners}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-900">{user.prospects}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-900">{user.reasons}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-bold">
-                              {user.total}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* BLOGS PAGE */}
           {currentPage === 'blogs' && (
             <BlogPage user={currentUser} />
