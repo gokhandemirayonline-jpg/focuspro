@@ -796,4 +796,329 @@ const BlogModal = ({ blog, categories, onClose, onSave }) => {
   );
 };
 
+// Recommendation Modal Component
+const RecommendationModal = ({ recommendation, onClose, onSave }) => {
+  const [formData, setFormData] = useState({
+    title: recommendation?.title || '',
+    author: recommendation?.author || '',
+    description: recommendation?.description || '',
+    type: recommendation?.type || 'book',
+    category: recommendation?.category || '',
+    link: recommendation?.link || '',
+    duration: recommendation?.duration || '',
+    cover_image: recommendation?.cover_image || ''
+  });
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMethod, setUploadMethod] = useState('file');
+
+  const recommendationCategories = [
+    'Kişisel Gelişim',
+    'Liderlik',
+    'Satış & Pazarlama',
+    'Motivasyon',
+    'Girişimcilik',
+    'İletişim',
+    'Network Marketing',
+    'Finans',
+    'Sağlık & Yaşam'
+  ];
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Sadece resim dosyaları yüklenebilir');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Dosya boyutu 5MB\'dan küçük olmalıdır');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const response = await uploadAPI.uploadFile(file);
+      const imageUrl = response.data.url;
+      
+      setFormData(prev => ({ ...prev, cover_image: imageUrl }));
+      alert('✅ Resim başarıyla yüklendi!');
+    } catch (error) {
+      console.error('Dosya yükleme hatası:', error);
+      alert('❌ Dosya yüklenirken hata oluştu');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData(prev => ({ ...prev, cover_image: '' }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.title || !formData.description) {
+      alert('Başlık ve açıklama zorunludur');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const url = `${process.env.REACT_APP_BACKEND_URL}/api/recommendations${recommendation ? `/${recommendation.id}` : ''}`;
+      const method = recommendation ? 'PUT' : 'POST';
+      
+      await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      onSave();
+    } catch (error) {
+      console.error('Tavsiye kaydetme hatası:', error);
+      alert('Tavsiye kaydedilemedi');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">
+            {recommendation ? 'Tavsiye Düzenle' : 'Yeni Tavsiye Oluştur'}
+          </h3>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Tür Seçimi */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Tür *
+              </label>
+              <div className="flex gap-3">
+                {[
+                  { value: 'book', label: '📚 Kitap' },
+                  { value: 'video', label: '🎥 Video' },
+                  { value: 'film', label: '🎬 Film/Dizi' }
+                ].map(type => (
+                  <button
+                    key={type.value}
+                    type="button"
+                    onClick={() => setFormData({...formData, type: type.value})}
+                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-colors ${
+                      formData.type === type.value
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Başlık */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Başlık *
+              </label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({...formData, title: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
+                placeholder="Tavsiye başlığı..."
+                required
+              />
+            </div>
+
+            {/* Yazar (Kitap için) veya Süre */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {formData.type === 'book' ? 'Yazar' : 'Yönetmen/Kanal'}
+                </label>
+                <input
+                  type="text"
+                  value={formData.author}
+                  onChange={(e) => setFormData({...formData, author: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
+                  placeholder={formData.type === 'book' ? 'Yazar adı' : 'Yönetmen/Kanal'}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Süre
+                </label>
+                <input
+                  type="text"
+                  value={formData.duration}
+                  onChange={(e) => setFormData({...formData, duration: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
+                  placeholder={formData.type === 'book' ? '250 sayfa' : '2 saat 15 dk'}
+                />
+              </div>
+            </div>
+
+            {/* Kategori */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Kategori
+              </label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({...formData, category: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="">Kategori Seçin</option>
+                {recommendationCategories.map(cat => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Link */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Link (URL)
+              </label>
+              <input
+                type="url"
+                value={formData.link}
+                onChange={(e) => setFormData({...formData, link: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
+                placeholder="https://..."
+              />
+            </div>
+
+            {/* Kapak Görseli */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Kapak Görseli
+              </label>
+              
+              {/* Tab Seçimi */}
+              <div className="flex gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => setUploadMethod('file')}
+                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+                    uploadMethod === 'file'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  <Upload size={16} className="inline mr-2" />
+                  Dosya Yükle
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUploadMethod('url')}
+                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+                    uploadMethod === 'url'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  URL Gir
+                </button>
+              </div>
+              
+              {uploadMethod === 'file' && (
+                <label className="block cursor-pointer">
+                  <div className="flex items-center justify-center gap-2 px-4 py-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 transition-colors bg-gray-50 dark:bg-gray-700">
+                    <Upload size={20} className="text-gray-500 dark:text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {uploading ? 'Yükleniyor...' : 'Resim seçin'}
+                    </span>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    disabled={uploading}
+                  />
+                </label>
+              )}
+              
+              {uploadMethod === 'url' && (
+                <input
+                  type="url"
+                  value={formData.cover_image}
+                  onChange={(e) => setFormData({...formData, cover_image: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
+                  placeholder="https://example.com/image.jpg"
+                />
+              )}
+              
+              {formData.cover_image && (
+                <div className="relative mt-3">
+                  <img 
+                    src={formData.cover_image} 
+                    alt="Preview" 
+                    className="w-full h-48 object-cover rounded-lg border-2 border-gray-200 dark:border-gray-700"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/600x300?text=Resim+Yüklenemedi';
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 shadow-lg"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Açıklama */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Açıklama *
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                rows={4}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
+                placeholder="Neden tavsiye ediyorsunuz?"
+                required
+              />
+            </div>
+
+            {/* Butonlar */}
+            <div className="flex gap-3 pt-4">
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex-1 bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                {saving ? 'Kaydediliyor...' : (recommendation ? 'Güncelle' : 'Oluştur')}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium"
+              >
+                İptal
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default BlogPage;
