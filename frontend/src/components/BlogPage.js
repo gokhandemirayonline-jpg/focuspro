@@ -454,26 +454,70 @@ const BlogModal = ({ blog, categories, onClose, onSave }) => {
               </select>
             </div>
 
-            {/* Kapak Görseli URL */}
+            {/* Kapak Görseli */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Kapak Görseli URL
+                Kapak Görseli
               </label>
-              <input
-                type="url"
-                value={formData.cover_image}
-                onChange={(e) => setFormData({...formData, cover_image: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
-                placeholder="https://example.com/image.jpg"
-              />
-              {formData.cover_image && (
-                <img 
-                  src={formData.cover_image} 
-                  alt="Preview" 
-                  className="mt-2 w-full h-48 object-cover rounded-lg"
-                  onError={(e) => e.target.style.display = 'none'}
-                />
-              )}
+              
+              {/* Dosya Yükleme veya URL */}
+              <div className="space-y-3">
+                {/* Dosya Yükleme Butonu */}
+                <div className="flex gap-2">
+                  <label className="flex-1 cursor-pointer">
+                    <div className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors bg-gray-50 dark:bg-gray-700">
+                      <Upload size={20} className="text-gray-500 dark:text-gray-400" />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {uploading ? 'Yükleniyor...' : 'Dosya Seç'}
+                      </span>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      disabled={uploading}
+                    />
+                  </label>
+                  
+                  <span className="flex items-center text-gray-500 dark:text-gray-400">veya</span>
+                  
+                  {/* URL Input */}
+                  <input
+                    type="url"
+                    value={formData.cover_image}
+                    onChange={(e) => setFormData({...formData, cover_image: e.target.value})}
+                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
+                    placeholder="URL girin..."
+                    disabled={uploading}
+                  />
+                </div>
+                
+                {/* Önizleme */}
+                {formData.cover_image && (
+                  <div className="relative">
+                    <img 
+                      src={formData.cover_image} 
+                      alt="Preview" 
+                      className="w-full h-48 object-cover rounded-lg"
+                      onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/400x200?text=Resim+Yüklenemedi';
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 shadow-lg"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+                
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Maksimum 5MB, JPG/PNG/GIF/WEBP formatları desteklenir
+                </p>
+              </div>
             </div>
 
             {/* Özet */}
