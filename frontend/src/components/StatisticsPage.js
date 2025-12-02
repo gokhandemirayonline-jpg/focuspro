@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import {
   TrendingUp, Users, CheckCircle, Calendar, GraduationCap,
-  DollarSign, Target, Download, RefreshCw, Award
+  DollarSign, Target, Download, RefreshCw, Award, BarChart3
 } from 'lucide-react';
 import { statsAPI } from '../services/api';
 
