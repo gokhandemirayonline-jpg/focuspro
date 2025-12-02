@@ -415,7 +415,9 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Statistics page habit statistics section"
+    - "Blog page cover image upload and preview flow"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
