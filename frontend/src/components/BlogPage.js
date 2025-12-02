@@ -29,6 +29,7 @@ const BlogPage = ({ user }) => {
 
   useEffect(() => {
     loadBlogs();
+    loadRecommendations();
   }, []);
 
   const loadBlogs = async () => {
@@ -40,6 +41,20 @@ const BlogPage = ({ user }) => {
       console.error('Blog yükleme hatası:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadRecommendations = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/recommendations`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      setRecommendations(data);
+    } catch (error) {
+      console.error('Tavsiye yükleme hatası:', error);
     }
   };
 
