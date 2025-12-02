@@ -41,6 +41,15 @@ const VideoLibraryPage = ({ user }) => {
     }
   };
 
+  const loadAllVideos = async () => {
+    try {
+      const response = await videoAPI.getAll();
+      setAllVideos(response.data);
+    } catch (error) {
+      console.error('Video yükleme hatası:', error);
+    }
+  };
+
   const loadVideos = async (categoryId) => {
     try {
       const response = await videoAPI.getAll();
@@ -50,6 +59,20 @@ const VideoLibraryPage = ({ user }) => {
       setVideos(categoryVideos);
     } catch (error) {
       console.error('Video yükleme hatası:', error);
+    }
+  };
+
+  const loadStatistics = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/video-statistics`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      setStatistics(data);
+    } catch (error) {
+      console.error('İstatistik yükleme hatası:', error);
     }
   };
 
