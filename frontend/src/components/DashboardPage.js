@@ -27,47 +27,47 @@ const DashboardPage = ({
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="bg-white p-3 md:p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Tamamlanan</p>
-              <p className="text-3xl font-bold text-green-600 mt-2">{stats.completedTasks}</p>
+              <p className="text-gray-500 text-xs md:text-sm">Tamamlanan</p>
+              <p className="text-xl md:text-3xl font-bold text-green-600 mt-1 md:mt-2">{stats.completedTasks}</p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <CheckCircle2 className="text-green-600" size={24} />
+            <div className="w-8 h-8 md:w-12 md:h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <CheckCircle2 className="text-green-600" size={18} />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="bg-white p-3 md:p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Bugünkü Görüşmeler</p>
-              <p className="text-3xl font-bold text-blue-600 mt-2">{stats.todayMeetings}</p>
+              <p className="text-gray-500 text-xs md:text-sm">Görüşmeler</p>
+              <p className="text-xl md:text-3xl font-bold text-blue-600 mt-1 md:mt-2">{stats.todayMeetings}</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Calendar className="text-blue-600" size={24} />
+            <div className="w-8 h-8 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Calendar className="text-blue-600" size={18} />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="bg-white p-3 md:p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Aktif Partnerler</p>
-              <p className="text-3xl font-bold text-indigo-600 mt-2">{stats.activePartners}</p>
+              <p className="text-gray-500 text-xs md:text-sm">Partnerler</p>
+              <p className="text-xl md:text-3xl font-bold text-indigo-600 mt-1 md:mt-2">{stats.activePartners}</p>
             </div>
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-              <Users className="text-indigo-600" size={24} />
+            <div className="w-8 h-8 md:w-12 md:h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+              <Users className="text-indigo-600" size={18} />
             </div>
           </div>
         </div>
       </div>
 
       {/* Daily Habits */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">Günlük Alışkanlıklar</h3>
-        <div className="space-y-4">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 md:p-6 mb-4 md:mb-8">
+        <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4">Günlük Alışkanlıklar</h3>
+        <div className="space-y-3 md:space-y-4">
           {dailyHabits.map(habit => (
             <div key={habit.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div className="flex-1">
