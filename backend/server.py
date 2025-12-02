@@ -4615,7 +4615,7 @@ async def upload_file(
         with open(file_path, "wb") as f:
             f.write(contents)
         
-        # URL döndür
+        # URL döndür (full URL)
         file_url = f"/uploads/{unique_filename}"
         
         logger.info(f"File uploaded: {file_url} by user {current_user['id']}")
@@ -4623,6 +4623,7 @@ async def upload_file(
         return {
             "success": True,
             "url": file_url,
+            "full_url": file_url,  # Frontend bunu kullanacak
             "filename": unique_filename,
             "size": len(contents)
         }
