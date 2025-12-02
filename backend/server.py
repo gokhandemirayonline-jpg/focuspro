@@ -4580,6 +4580,60 @@ async def get_performance_stats(
 
 # ==================== END STATS & ANALYTICS ====================
 
+# ==================== FILE UPLOAD ====================
+
+@api_router.post("/upload")
+async def upload_file(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Dosya yükleme endpoint'i (resim, video vb.)
+    """
+    try:
+        # Dosya tipini kontrol et
+        allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+        if file.content_type not in allowed_types:
+            raise HTTPException(status_code=400, detail="Sadece resim dosyaları yüklenebilir (jpg, png, gif, webp)")
+        
+        # Dosya boyutunu kontrol et (max 5MB)
+        contents = await file.read()
+        if len(contents) > 5 * 1024 * 1024:  # 5MB
+            raise HTTPException(status_code=400, detail="Dosya boyutu 5MB'dan büyük olamaz")
+        
+        # Upload klasörünü oluştur
+        upload_dir = Path("/app/backend/uploads")
+        upload_dir.mkdir(exist_ok=True)
+        
+        # Benzersiz dosya adı oluştur
+        file_extension = file.filename.split('.')[-1]
+        unique_filename = f"{uuid.uuid4()}.{file_extension}"
+        file_path = upload_dir / unique_filename
+        
+        # Dosyayı kaydet
+        with open(file_path, "wb") as f:
+            f.write(contents)
+        
+        # URL döndür
+        file_url = f"/uploads/{unique_filename}"
+        
+        logger.info(f"File uploaded: {file_url} by user {current_user['id']}")
+        
+        return {
+            "success": True,
+            "url": file_url,
+            "filename": unique_filename,
+            "size": len(contents)
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"File upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Dosya yüklenirken hata oluştu: {str(e)}")
+
+# ==================== END FILE UPLOAD ====================
+
 # Include the router in the main app
 app.include_router(api_router)
 
