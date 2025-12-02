@@ -3491,8 +3491,7 @@ const FocusProApp = () => {
 
           {/* RECOMMENDATIONS PAGE - Merged with Blogs */}
 
-              {/* Activity Logs Tab */}
-              {adminTab === 'logs' && (
+              {/* Activity Logs Tab - Moved to Admin Panel */}
                 <div>
                   {/* Statistics Cards */}
                   {logStatistics && (
