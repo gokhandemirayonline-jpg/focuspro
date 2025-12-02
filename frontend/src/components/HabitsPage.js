@@ -128,8 +128,8 @@ const HabitsPage = ({ user }) => {
       clearInterval(dateCheckInterval);
       window.removeEventListener('focus', handleFocus);
     };
-  }, []); // Boş array - sadece component mount'ta çalışsın
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line
+  }, []);
 
   // Seçilen güne göre tamamlanmaları yükle
   useEffect(() => {
