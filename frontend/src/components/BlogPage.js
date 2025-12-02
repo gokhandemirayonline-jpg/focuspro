@@ -488,20 +488,20 @@ const BlogPage = ({ user }) => {
         />
       )}
 
-      {/* Tavsiye Modal - Placeholder for now */}
+      {/* Tavsiye Modal */}
       {showRecommendationModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md">
-            <h3 className="text-xl font-bold mb-4">Tavsiye Modal</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">Tavsiye modal içeriği eklenecek...</p>
-            <button
-              onClick={() => setShowRecommendationModal(false)}
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-            >
-              Kapat
-            </button>
-          </div>
-        </div>
+        <RecommendationModal
+          recommendation={editingRecommendation}
+          onClose={() => {
+            setShowRecommendationModal(false);
+            setEditingRecommendation(null);
+          }}
+          onSave={async () => {
+            await loadRecommendations();
+            setShowRecommendationModal(false);
+            setEditingRecommendation(null);
+          }}
+        />
       )}
     </div>
   );
