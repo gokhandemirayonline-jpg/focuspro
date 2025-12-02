@@ -358,7 +358,7 @@ const StatisticsPage = ({ user }) => {
       {/* Habit Statistics */}
       {statsData.habits && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
-          <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Al31fkanl31k 30statistikleri</h3>
+          <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Alışkanlık İstatistikleri</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Günlük oran */}
             <div className="bg-gray-50 dark:bg-gray-900/40 rounded-lg p-4 flex flex-col gap-1">
