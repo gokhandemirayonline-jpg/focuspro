@@ -371,6 +371,106 @@ const BlogPage = ({ user }) => {
         )}
       </div>
 
+        </>
+      )}
+
+      {/* Tavsiyeler Tab İçeriği */}
+      {activeTab === 'recommendations' && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {recommendations.map(rec => (
+            <div key={rec.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow">
+              {rec.cover_image && (
+                <img 
+                  src={rec.cover_image} 
+                  alt={rec.title}
+                  className="w-full h-48 object-cover"
+                />
+              )}
+              <div className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">
+                    {rec.type === 'book' ? '📚' : rec.type === 'video' ? '🎥' : '🎬'}
+                  </span>
+                  <span className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full">
+                    {rec.category}
+                  </span>
+                </div>
+                <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-2">{rec.title}</h3>
+                {rec.author && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Yazar: {rec.author}</p>
+                )}
+                {rec.duration && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Süre: {rec.duration}</p>
+                )}
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">{rec.description}</p>
+                <div className="flex gap-2">
+                  {rec.link && (
+                    <a
+                      href={rec.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 bg-purple-600 text-white py-2 px-3 rounded-lg text-sm text-center hover:bg-purple-700 flex items-center justify-center gap-2"
+                    >
+                      <ExternalLink size={16} />
+                      Görüntüle
+                    </a>
+                  )}
+                  {isAdmin && (
+                    <>
+                      <button
+                        onClick={() => {
+                          setEditingRecommendation(rec);
+                          setShowRecommendationModal(true);
+                        }}
+                        className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!window.confirm('Bu tavsiyeyi silmek istediğinizden emin misiniz?')) return;
+                          try {
+                            await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/recommendations/${rec.id}`, {
+                              method: 'DELETE',
+                              headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                              }
+                            });
+                            await loadRecommendations();
+                          } catch (error) {
+                            console.error('Tavsiye silme hatası:', error);
+                            alert('Tavsiye silinemedi');
+                          }
+                        }}
+                        className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+          {recommendations.length === 0 && (
+            <div className="col-span-full text-center py-12">
+              <Lightbulb size={48} className="mx-auto text-gray-400 mb-4" />
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                Henüz tavsiye eklenmemiş
+              </p>
+              {isAdmin && (
+                <button
+                  onClick={() => setShowRecommendationModal(true)}
+                  className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700"
+                >
+                  İlk Tavsiyeyi Oluştur
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Blog Modal */}
       {showBlogModal && (
         <BlogModal
@@ -386,6 +486,22 @@ const BlogPage = ({ user }) => {
             setEditingBlog(null);
           }}
         />
+      )}
+
+      {/* Tavsiye Modal - Placeholder for now */}
+      {showRecommendationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md">
+            <h3 className="text-xl font-bold mb-4">Tavsiye Modal</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">Tavsiye modal içeriği eklenecek...</p>
+            <button
+              onClick={() => setShowRecommendationModal(false)}
+              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+            >
+              Kapat
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
