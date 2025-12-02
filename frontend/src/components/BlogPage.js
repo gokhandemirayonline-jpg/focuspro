@@ -349,6 +349,7 @@ const BlogModal = ({ blog, categories, onClose, onSave }) => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadMethod, setUploadMethod] = useState('file'); // 'file' or 'url'
 
   const handleFileSelect = async (e) => {
     const file = e.target.files[0];
