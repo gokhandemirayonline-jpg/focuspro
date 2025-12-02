@@ -347,6 +347,8 @@ const BlogModal = ({ blog, categories, onClose, onSave }) => {
     published: blog?.published || false
   });
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
