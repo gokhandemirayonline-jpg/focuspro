@@ -196,7 +196,7 @@ const StatisticsPage = ({ user }) => {
               <p className="text-sm opacity-80">Aktif: {statsData.partners?.active || 0}</p>
             </div>
 
-            <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setActiveTab('education')}>
+            <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
               <div className="flex items-center justify-between mb-2">
                 <GraduationCap size={32} className="opacity-80" />
                 <span className="text-3xl font-bold">{statsData.education?.watched_videos || 0}/{statsData.education?.total_videos || 0}</span>
