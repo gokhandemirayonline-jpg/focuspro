@@ -372,14 +372,17 @@ const BlogModal = ({ blog, categories, onClose, onSave }) => {
       setSelectedFile(file);
       
       const response = await uploadAPI.uploadFile(file);
-      // Backend zaten /uploads/filename.jpg döndürüyor, REACT_APP_BACKEND_URL eklemeye gerek yok
-      // Çünkü resimler API proxy üzerinden erişilebilir
       const imageUrl = response.data.url;
       
-      setFormData({ ...formData, cover_image: imageUrl });
+      console.log('Upload başarılı, URL:', imageUrl);
+      
+      // Functional update kullan - daha güvenilir
+      setFormData(prev => ({ ...prev, cover_image: imageUrl }));
+      
+      alert('✅ Resim başarıyla yüklendi!');
     } catch (error) {
       console.error('Dosya yükleme hatası:', error);
-      alert('Dosya yüklenirken hata oluştu');
+      alert('❌ Dosya yüklenirken hata oluştu: ' + (error.response?.data?.detail || error.message));
     } finally {
       setUploading(false);
     }
