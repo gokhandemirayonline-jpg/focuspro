@@ -302,7 +302,6 @@ const FocusProApp = () => {
     facebook_url: '',
     profile_photo: ''
   });
-  const [activeProfileTab, setActiveProfileTab] = useState('personal');
   const [passwordData, setPasswordData] = useState({
     current_password: '',
     new_password: '',
