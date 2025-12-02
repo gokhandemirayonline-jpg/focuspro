@@ -169,7 +169,7 @@ const StatisticsPage = ({ user }) => {
               <p className="text-sm opacity-80">{statsData.performance.level || 'Genel Performans'}</p>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setActiveTab('tasks')}>
+            <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
               <div className="flex items-center justify-between mb-2">
                 <CheckCircle size={32} className="opacity-80" />
                 <span className="text-3xl font-bold">{statsData.tasks?.total || 0}</span>
