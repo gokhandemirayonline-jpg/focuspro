@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, ChevronLeft, Edit, Trash2, Eye, Calendar, Upload, X } from 'lucide-react';
+import { Plus, Search, ChevronLeft, Edit, Trash2, Eye, Calendar, Upload, X, Lightbulb, FileText, ExternalLink } from 'lucide-react';
 import { blogAPI, uploadAPI } from '../services/api';
 
 const BlogPage = ({ user }) => {
+  const [activeTab, setActiveTab] = useState('blog'); // 'blog' or 'recommendations'
   const [blogs, setBlogs] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
   const [selectedBlog, setSelectedBlog] = useState(null);
   const [showBlogModal, setShowBlogModal] = useState(false);
+  const [showRecommendationModal, setShowRecommendationModal] = useState(false);
   const [editingBlog, setEditingBlog] = useState(null);
+  const [editingRecommendation, setEditingRecommendation] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
