@@ -2213,23 +2213,13 @@ const FocusProApp = () => {
           </button>
 
           <button
-            onClick={() => setCurrentPage('recommendations')}
-            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
-              currentPage === 'recommendations' ? 'bg-white/20' : 'hover:bg-white/10'
-            }`}
-          >
-            <Bookmark size={20} />
-            {sidebarOpen && <span>Tavsiyeler</span>}
-          </button>
-
-          <button
             onClick={() => setCurrentPage('blogs')}
             className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
               currentPage === 'blogs' ? 'bg-white/20' : 'hover:bg-white/10'
             }`}
           >
             <FileText size={20} />
-            {sidebarOpen && <span>Blog</span>}
+            {sidebarOpen && <span>Blog & Tavsiyeler</span>}
           </button>
 
           <button
