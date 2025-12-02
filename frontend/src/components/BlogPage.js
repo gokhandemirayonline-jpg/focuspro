@@ -177,24 +177,57 @@ const BlogPage = ({ user }) => {
     );
   }
 
-  // Blog Liste Görünümü
+  // Blog/Tavsiyeler Liste Görünümü
   return (
     <div>
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Blog</h2>
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Blog & Tavsiyeler</h2>
         {isAdmin && (
           <button
             onClick={() => {
-              setEditingBlog(null);
-              setShowBlogModal(true);
+              if (activeTab === 'blog') {
+                setEditingBlog(null);
+                setShowBlogModal(true);
+              } else {
+                setEditingRecommendation(null);
+                setShowRecommendationModal(true);
+              }
             }}
             className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700 self-start md:self-auto"
           >
             <Plus size={20} />
-            Yeni Blog
+            {activeTab === 'blog' ? 'Yeni Blog' : 'Yeni Tavsiye'}
           </button>
         )}
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex gap-4">
+          <button
+            onClick={() => setActiveTab('blog')}
+            className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors ${
+              activeTab === 'blog'
+                ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            <FileText size={20} />
+            Blog Yazıları
+          </button>
+          <button
+            onClick={() => setActiveTab('recommendations')}
+            className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors ${
+              activeTab === 'recommendations'
+                ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            <Lightbulb size={20} />
+            Tavsiyeler
+          </button>
+        </div>
       </div>
 
       {/* Arama & Filtreleme */}
