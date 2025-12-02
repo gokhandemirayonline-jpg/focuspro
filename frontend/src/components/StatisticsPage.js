@@ -403,7 +403,7 @@ const StatisticsPage = ({ user }) => {
                 {statsData.habits.month_completed || 0}/{statsData.habits.month_total || 0}
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Takip edilen g fcn say31s31: {statsData.habits.days_tracked || 0}
+                Takip edilen gün sayısı: {statsData.habits.days_tracked || 0}
               </p>
             </div>
           </div>
