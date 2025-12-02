@@ -5057,7 +5057,7 @@ const FocusProApp = () => {
                             <div className="text-6xl mb-4">📊</div>
                             <h3 className="text-xl font-bold text-gray-700 mb-2">Gap Analizi İçin Hazır Değilsiniz</h3>
                             <p className="text-gray-600 mb-4">
-                              Önce "Mevcut Durum Analizi" ve "İstenilen Karakter" sekmelerini tamamlayın
+                              Önce &quot;Mevcut Durum Analizi&quot; ve &quot;İstenilen Karakter&quot; sekmelerini tamamlayın
                             </p>
                             <div className="flex justify-center gap-4">
                               <button
