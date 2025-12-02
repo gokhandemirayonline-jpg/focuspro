@@ -9,7 +9,9 @@ const VideoLibraryPage = ({ user }) => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [videos, setVideos] = useState([]);
+  const [allVideos, setAllVideos] = useState([]);
   const [progress, setProgress] = useState({});
+  const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -20,9 +22,11 @@ const VideoLibraryPage = ({ user }) => {
 
   useEffect(() => {
     loadCategories();
+    loadAllVideos();
     if (user) {
       loadProgress();
     }
+    loadStatistics();
   }, [user]);
 
   const loadCategories = async () => {
