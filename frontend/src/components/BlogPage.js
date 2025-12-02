@@ -463,15 +463,41 @@ const BlogModal = ({ blog, categories, onClose, onSave }) => {
                 Kapak Görseli
               </label>
               
-              {/* Dosya Yükleme veya URL */}
+              {/* Tab Seçimi */}
+              <div className="flex gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => setUploadMethod('file')}
+                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+                    uploadMethod === 'file'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <Upload size={16} className="inline mr-2" />
+                  Dosya Yükle
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUploadMethod('url')}
+                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+                    uploadMethod === 'url'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  URL Gir
+                </button>
+              </div>
+              
               <div className="space-y-3">
-                {/* Dosya Yükleme Butonu */}
-                <div className="flex gap-2">
-                  <label className="flex-1 cursor-pointer">
-                    <div className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors bg-gray-50 dark:bg-gray-700">
-                      <Upload size={20} className="text-gray-500 dark:text-gray-400" />
+                {/* Dosya Yükleme */}
+                {uploadMethod === 'file' && (
+                  <label className="block cursor-pointer">
+                    <div className="flex items-center justify-center gap-2 px-4 py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors bg-gray-50 dark:bg-gray-700">
+                      <Upload size={24} className="text-gray-500 dark:text-gray-400" />
                       <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {uploading ? 'Yükleniyor...' : 'Dosya Seç'}
+                        {uploading ? 'Yükleniyor...' : 'Resim dosyası seçin veya buraya sürükleyin'}
                       </span>
                     </div>
                     <input
@@ -482,19 +508,18 @@ const BlogModal = ({ blog, categories, onClose, onSave }) => {
                       disabled={uploading}
                     />
                   </label>
-                  
-                  <span className="flex items-center text-gray-500 dark:text-gray-400">veya</span>
-                  
-                  {/* URL Input */}
+                )}
+                
+                {/* URL Input */}
+                {uploadMethod === 'url' && (
                   <input
                     type="url"
                     value={formData.cover_image}
                     onChange={(e) => setFormData({...formData, cover_image: e.target.value})}
-                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
-                    placeholder="URL girin..."
-                    disabled={uploading}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
+                    placeholder="https://example.com/image.jpg"
                   />
-                </div>
+                )}
                 
                 {/* Önizleme */}
                 {formData.cover_image && (
@@ -502,23 +527,30 @@ const BlogModal = ({ blog, categories, onClose, onSave }) => {
                     <img 
                       src={formData.cover_image} 
                       alt="Preview" 
-                      className="w-full h-48 object-cover rounded-lg"
+                      className="w-full h-56 object-cover rounded-lg border-2 border-gray-200 dark:border-gray-700"
                       onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/400x200?text=Resim+Yüklenemedi';
+                        e.target.src = 'https://via.placeholder.com/600x300?text=Resim+Yüklenemedi';
                       }}
                     />
                     <button
                       type="button"
                       onClick={handleRemoveImage}
-                      className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 shadow-lg"
+                      className="absolute top-3 right-3 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 shadow-lg transition-colors"
+                      title="Resmi kaldır"
                     >
-                      <X size={16} />
+                      <X size={18} />
                     </button>
+                    <div className="absolute bottom-3 left-3 bg-black/70 text-white px-3 py-1 rounded text-xs">
+                      Önizleme
+                    </div>
                   </div>
                 )}
                 
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Maksimum 5MB, JPG/PNG/GIF/WEBP formatları desteklenir
+                  {uploadMethod === 'file' 
+                    ? 'Maksimum 5MB, JPG/PNG/GIF/WEBP formatları desteklenir'
+                    : 'Resim URL\'sini girin (https://... ile başlamalı)'
+                  }
                 </p>
               </div>
             </div>
