@@ -318,4 +318,17 @@ export const statsAPI = {
   getHabits: (period = 'week', targetUserId = null) => api.get('/stats/habits', { params: { period, target_user_id: targetUserId } }),
 };
 
+// Upload API
+export const uploadAPI = {
+  uploadFile: async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+};
+
 export default api;
