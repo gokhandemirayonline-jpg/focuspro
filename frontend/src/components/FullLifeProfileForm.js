@@ -606,7 +606,7 @@ ${gapAnalysis ? '\n━━━━ GAP ANALİZİ & ROADMAP ━━━━\n' + gapAna
                   </button>
                   {(!currentState.physical || !futureState.physical) && (
                     <p className="text-sm text-red-500 mt-4">
-                      ⚠️ Önce "Şimdiki Ben" ve "5 Yıl Sonra Ben" bölümlerini doldurun
+                      ⚠️ Önce &quot;Şimdiki Ben&quot; ve &quot;5 Yıl Sonra Ben&quot; bölümlerini doldurun
                     </p>
                   )}
                 </div>
