@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, ChevronLeft, Edit, Trash2, Eye, Calendar } from 'lucide-react';
-import { blogAPI } from '../services/api';
+import { Plus, Search, ChevronLeft, Edit, Trash2, Eye, Calendar, Upload, X } from 'lucide-react';
+import { blogAPI, uploadAPI } from '../services/api';
 
 const BlogPage = ({ user }) => {
   const [blogs, setBlogs] = useState([]);
