@@ -7317,6 +7317,59 @@ END:VCALENDAR`;
       )}
 
     </div>
+    
+    {/* Mobile Bottom Navigation */}
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 safe-area-inset-bottom">
+      <div className="flex justify-around items-center h-16">
+        <button
+          onClick={() => setCurrentPage('dashboard')}
+          className={`flex flex-col items-center justify-center flex-1 h-full ${
+            currentPage === 'dashboard' ? 'text-purple-600' : 'text-gray-500'
+          }`}
+        >
+          <Home size={20} />
+          <span className="text-xs mt-1">Ana Sayfa</span>
+        </button>
+        
+        <button
+          onClick={() => setCurrentPage('calendar')}
+          className={`flex flex-col items-center justify-center flex-1 h-full ${
+            currentPage === 'calendar' ? 'text-purple-600' : 'text-gray-500'
+          }`}
+        >
+          <Calendar size={20} />
+          <span className="text-xs mt-1">Takvim</span>
+        </button>
+        
+        <button
+          onClick={() => setCurrentPage('agenda')}
+          className={`flex flex-col items-center justify-center flex-1 h-full ${
+            currentPage === 'agenda' ? 'text-purple-600' : 'text-gray-500'
+          }`}
+        >
+          <ListChecks size={20} />
+          <span className="text-xs mt-1">Ajanda</span>
+        </button>
+        
+        <button
+          onClick={() => setCurrentPage('videos')}
+          className={`flex flex-col items-center justify-center flex-1 h-full ${
+            currentPage === 'videos' ? 'text-purple-600' : 'text-gray-500'
+          }`}
+        >
+          <GraduationCap size={20} />
+          <span className="text-xs mt-1">Eğitim</span>
+        </button>
+        
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="flex flex-col items-center justify-center flex-1 h-full text-gray-500"
+        >
+          <Menu size={20} />
+          <span className="text-xs mt-1">Menü</span>
+        </button>
+      </div>
+    </div>
     </>
   );
 };
