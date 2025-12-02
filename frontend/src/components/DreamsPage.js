@@ -21,11 +21,7 @@ const DreamsPage = ({ user }) => {
     daily_hours: '',
   });
 
-  useEffect(() => {
-    loadAnalyses();
-  }, []);
-
-  async function loadAnalyses() {
+  const loadAnalyses = async () => {
     try {
       const response = await dreamPriorityAPI.getAll();
       setAnalyses(response.data);
@@ -35,7 +31,12 @@ const DreamsPage = ({ user }) => {
     } catch (error) {
       console.error('Error loading analyses:', error);
     }
-  }
+  };
+
+  useEffect(() => {
+    loadAnalyses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Bu analizi silmek istediğinize emin misiniz?')) return;
