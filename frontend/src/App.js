@@ -18,6 +18,7 @@ import HabitsPage from './components/HabitsPage';
 import DreamsPage from './components/DreamsPage';
 import VideoLibraryPage from './components/VideoLibraryPage';
 import StatisticsPage from './components/StatisticsPage';
+import BlogPage from './components/BlogPage';
 import './App.css';
 
 moment.locale('tr');
