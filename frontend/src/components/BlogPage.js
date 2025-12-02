@@ -350,6 +350,43 @@ const BlogModal = ({ blog, categories, onClose, onSave }) => {
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
 
+  const handleFileSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Dosya tipini kontrol et
+    if (!file.type.startsWith('image/')) {
+      alert('Sadece resim dosyaları yüklenebilir');
+      return;
+    }
+
+    // Dosya boyutunu kontrol et (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Dosya boyutu 5MB\'dan küçük olmalıdır');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setSelectedFile(file);
+      
+      const response = await uploadAPI.uploadFile(file);
+      const imageUrl = `${process.env.REACT_APP_BACKEND_URL}${response.data.url}`;
+      
+      setFormData({ ...formData, cover_image: imageUrl });
+    } catch (error) {
+      console.error('Dosya yükleme hatası:', error);
+      alert('Dosya yüklenirken hata oluştu');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData({ ...formData, cover_image: '' });
+    setSelectedFile(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
