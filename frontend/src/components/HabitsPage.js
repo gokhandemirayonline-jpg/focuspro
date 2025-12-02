@@ -129,6 +129,7 @@ const HabitsPage = ({ user }) => {
       window.removeEventListener('focus', handleFocus);
     };
   }, []); // Boş array - sadece component mount'ta çalışsın
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   // Seçilen güne göre tamamlanmaları yükle
   useEffect(() => {
