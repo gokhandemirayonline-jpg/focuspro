@@ -2140,7 +2140,7 @@ const FocusProApp = () => {
               </button>
             </div>
           ) : (
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-white/10 rounded-lg hidden md:block">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-white/10 rounded-lg">
               <Menu size={20} />
             </button>
           )}
