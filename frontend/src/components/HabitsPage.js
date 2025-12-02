@@ -147,16 +147,16 @@ const HabitsPage = ({ user }) => {
     loadSelectedDateCompletions();
   }, [selectedDate, habits]);
 
-  const loadHabits = async () => {
+  async function loadHabits() {
     try {
       const response = await habitAPI.getAll();
       setHabits(response.data);
     } catch (error) {
       console.error('Error loading habits:', error);
     }
-  };
+  }
 
-  const loadTodayCompletions = async () => {
+  async function loadTodayCompletions() {
     try {
       const today = getLocalDateString();
       const response = await habitAPI.getDateCompletions(today);
@@ -164,7 +164,7 @@ const HabitsPage = ({ user }) => {
     } catch (error) {
       console.error('Error loading completions:', error);
     }
-  };
+  }
 
   const loadStats = async () => {
     try {

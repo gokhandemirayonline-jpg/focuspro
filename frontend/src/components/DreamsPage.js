@@ -25,7 +25,7 @@ const DreamsPage = ({ user }) => {
     loadAnalyses();
   }, []);
 
-  const loadAnalyses = async () => {
+  async function loadAnalyses() {
     try {
       const response = await dreamPriorityAPI.getAll();
       setAnalyses(response.data);
@@ -35,7 +35,7 @@ const DreamsPage = ({ user }) => {
     } catch (error) {
       console.error('Error loading analyses:', error);
     }
-  };
+  }
 
   const handleDelete = async (id) => {
     if (!window.confirm('Bu analizi silmek istediğinize emin misiniz?')) return;
