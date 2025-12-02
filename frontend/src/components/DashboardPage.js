@@ -10,19 +10,19 @@ const DashboardPage = ({
   onNavigate 
 }) => {
   return (
-    <div>
-      <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Dashboard</h2>
+    <div className="w-full">
+      <h2 className="text-xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-6">Dashboard</h2>
       
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-6 mb-4 md:mb-8">
+        <div className="bg-white p-3 md:p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Toplam Görev</p>
-              <p className="text-3xl font-bold text-gray-800 mt-2">{stats.totalTasks}</p>
+              <p className="text-gray-500 text-xs md:text-sm">Toplam Görev</p>
+              <p className="text-xl md:text-3xl font-bold text-gray-800 mt-1 md:mt-2">{stats.totalTasks}</p>
             </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <ListChecks className="text-purple-600" size={24} />
+            <div className="w-8 h-8 md:w-12 md:h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <ListChecks className="text-purple-600" size={18} />
             </div>
           </div>
         </div>
