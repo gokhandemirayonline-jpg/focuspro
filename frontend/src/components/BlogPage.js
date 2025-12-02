@@ -371,7 +371,9 @@ const BlogModal = ({ blog, categories, onClose, onSave }) => {
       setSelectedFile(file);
       
       const response = await uploadAPI.uploadFile(file);
-      const imageUrl = `${process.env.REACT_APP_BACKEND_URL}${response.data.url}`;
+      // Backend zaten /uploads/filename.jpg döndürüyor, REACT_APP_BACKEND_URL eklemeye gerek yok
+      // Çünkü resimler API proxy üzerinden erişilebilir
+      const imageUrl = response.data.url;
       
       setFormData({ ...formData, cover_image: imageUrl });
     } catch (error) {
