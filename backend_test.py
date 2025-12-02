@@ -15,7 +15,7 @@ import sys
 from typing import Dict, Any
 
 # Backend URL from environment
-BACKEND_URL = "https://agent-learninghub.preview.emergentagent.com"
+BACKEND_URL = "https://mlmmanager-1.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class FocusProAPITester:
