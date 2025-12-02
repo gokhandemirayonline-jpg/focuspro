@@ -2466,7 +2466,7 @@ const FocusProApp = () => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto px-2 py-4 md:p-8 pb-20 md:pb-8 w-full">
+        <div className="flex-1 overflow-auto px-1 py-2 md:p-8 pb-20 md:pb-8 w-full">
           {/* DASHBOARD PAGE */}
           {currentPage === 'dashboard' && (
             <DashboardPage 
