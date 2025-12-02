@@ -4638,6 +4638,11 @@ async def upload_file(
 # Include the router in the main app
 app.include_router(api_router)
 
+# Mount static files for uploads
+upload_dir = Path("/app/backend/uploads")
+upload_dir.mkdir(exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(upload_dir)), name="uploads")
+
 @app.on_event("startup")
 async def startup_event():
     await init_default_admin()
