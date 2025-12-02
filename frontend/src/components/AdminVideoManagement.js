@@ -263,80 +263,72 @@ const VideoLibraryPage = ({ user }) => {
         )}
       </div>
 
-      {/* İstatistik Kartları */}
-      {statistics && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {/* Toplam Video */}
-          <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-6 text-white shadow-lg">
-            <div className="flex items-center justify-between mb-2">
-              <Play size={32} className="opacity-80" />
-              <span className="text-4xl font-bold">{allVideos.length}</span>
-            </div>
-            <h3 className="text-lg font-semibold">Toplam Video</h3>
-            <p className="text-sm opacity-80">Sistemdeki tüm videolar</p>
+      {/* İstatistik Kartları - Minimal */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-6">
+        {/* Toplam Video */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 mb-1">
+            <Play size={16} className="text-blue-600" />
+            <span className="text-xs text-gray-600 dark:text-gray-400">Toplam</span>
           </div>
-
-          {/* Toplam İzlenme */}
-          <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-xl p-6 text-white shadow-lg">
-            <div className="flex items-center justify-between mb-2">
-              <Eye size={32} className="opacity-80" />
-              <span className="text-4xl font-bold">
-                {Object.values(progress).reduce((sum, p) => sum + (p.view_count || 0), 0)}
-              </span>
-            </div>
-            <h3 className="text-lg font-semibold">Toplam İzlenme</h3>
-            <p className="text-sm opacity-80">Tüm video izlenmeleri</p>
-          </div>
-
-          {/* Tamamlanan Videolar */}
-          <div className="bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl p-6 text-white shadow-lg">
-            <div className="flex items-center justify-between mb-2">
-              <CheckCircle size={32} className="opacity-80" />
-              <span className="text-4xl font-bold">
-                {Object.values(progress).filter(p => p.watched).length}
-              </span>
-            </div>
-            <h3 className="text-lg font-semibold">Tamamlanan</h3>
-            <p className="text-sm opacity-80">Bitirilen videolar</p>
-          </div>
-
-          {/* Kategori Sayısı */}
-          <div className="bg-gradient-to-br from-orange-500 to-orange-700 rounded-xl p-6 text-white shadow-lg">
-            <div className="flex items-center justify-between mb-2">
-              <FolderOpen size={32} className="opacity-80" />
-              <span className="text-4xl font-bold">{categories.length}</span>
-            </div>
-            <h3 className="text-lg font-semibold">Kategori</h3>
-            <p className="text-sm opacity-80">Video kategorileri</p>
-          </div>
-
-          {/* Tamamlanma Oranı */}
-          <div className="bg-gradient-to-br from-pink-500 to-pink-700 rounded-xl p-6 text-white shadow-lg">
-            <div className="flex items-center justify-between mb-2">
-              <CheckCircle size={32} className="opacity-80" />
-              <span className="text-4xl font-bold">
-                {allVideos.length > 0 
-                  ? Math.round((Object.values(progress).filter(p => p.watched).length / allVideos.length) * 100)
-                  : 0}%
-              </span>
-            </div>
-            <h3 className="text-lg font-semibold">Tamamlanma Oranı</h3>
-            <p className="text-sm opacity-80">Ortalama ilerleme</p>
-          </div>
-
-          {/* En Çok İzlenen */}
-          <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl p-6 text-white shadow-lg">
-            <div className="flex items-center justify-between mb-2">
-              <Eye size={32} className="opacity-80" />
-              <span className="text-4xl font-bold">
-                {Math.max(...Object.values(progress).map(p => p.view_count || 0), 0)}
-              </span>
-            </div>
-            <h3 className="text-lg font-semibold">En Çok İzlenme</h3>
-            <p className="text-sm opacity-80">Tek video bazında</p>
-          </div>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{allVideos.length}</p>
         </div>
-      )}
+
+        {/* Kategori */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 mb-1">
+            <FolderOpen size={16} className="text-orange-600" />
+            <span className="text-xs text-gray-600 dark:text-gray-400">Kategori</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{categories.length}</p>
+        </div>
+
+        {/* Toplam İzlenme */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 mb-1">
+            <Eye size={16} className="text-green-600" />
+            <span className="text-xs text-gray-600 dark:text-gray-400">İzlenme</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {Object.values(progress).reduce((sum, p) => sum + (p.view_count || 0), 0)}
+          </p>
+        </div>
+
+        {/* Tamamlanan */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 mb-1">
+            <CheckCircle size={16} className="text-purple-600" />
+            <span className="text-xs text-gray-600 dark:text-gray-400">Tamamlanan</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {Object.values(progress).filter(p => p.watched).length}
+          </p>
+        </div>
+
+        {/* Tamamlanma Oranı */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 mb-1">
+            <CheckCircle size={16} className="text-pink-600" />
+            <span className="text-xs text-gray-600 dark:text-gray-400">Oran</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {allVideos.length > 0 
+              ? Math.round((Object.values(progress).filter(p => p.watched).length / allVideos.length) * 100)
+              : 0}%
+          </p>
+        </div>
+
+        {/* En Çok İzlenen */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 mb-1">
+            <Eye size={16} className="text-indigo-600" />
+            <span className="text-xs text-gray-600 dark:text-gray-400">En Fazla</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {Math.max(...Object.values(progress).map(p => p.view_count || 0), 0)}
+          </p>
+        </div>
+      </div>
 
       {/* Kategori Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
