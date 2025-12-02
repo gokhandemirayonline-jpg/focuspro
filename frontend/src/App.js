@@ -6150,16 +6150,6 @@ const FocusProApp = () => {
                     Aktivite Logları
                   </button>
                   <button
-                    onClick={() => setAdminTab('trainings')}
-                    className={`px-4 py-2 font-medium transition-all ${
-                      adminTab === 'trainings'
-                        ? 'text-purple-600 border-b-2 border-purple-600'
-                        : 'text-gray-600 hover:text-gray-800'
-                    }`}
-                  >
-                    Eğitim Yönetimi
-                  </button>
-                  <button
                     onClick={() => setAdminTab('videos')}
                     className={`px-4 py-2 font-medium transition-all ${
                       adminTab === 'videos'
