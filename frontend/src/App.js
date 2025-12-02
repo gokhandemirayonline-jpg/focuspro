@@ -43,7 +43,7 @@ const FocusProApp = () => {
   const [showPassword, setShowPassword] = useState(false);
   
   const [currentPage, setCurrentPage] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [agendaTab, setAgendaTab] = useState('tasks'); // tasks, prospects, goals, dreams
   
   const [currentDate, setCurrentDate] = useState(new Date());
