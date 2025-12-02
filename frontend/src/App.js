@@ -6572,6 +6572,11 @@ const FocusProApp = () => {
                   </div>
                 </div>
               )}
+
+              {/* Video Management Tab */}
+              {adminTab === 'videos' && (
+                <AdminVideoManagement user={currentUser} />
+              )}
             </div>
           )}
         </div>
