@@ -389,7 +389,7 @@ const BlogModal = ({ blog, categories, onClose, onSave }) => {
   };
 
   const handleRemoveImage = () => {
-    setFormData({ ...formData, cover_image: '' });
+    setFormData(prev => ({ ...prev, cover_image: '' }));
     setSelectedFile(null);
   };
 
