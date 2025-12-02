@@ -7271,7 +7271,7 @@ const FocusProApp = () => {
                   type="text"
                   value={newVideo.youtube_id}
                   onChange={(e) => setNewVideo({...newVideo, youtube_id: e.target.value})}
-                  placeholder="YouTube Video Linki (örn: https://youtube.com/watch?v=...)"
+                  placeholder={'YouTube Video Linki (örn: https://youtube.com/watch?v=...)'}
                   className="w-full px-4 py-2 border rounded-lg"
                 />
                 <p className="text-xs text-gray-500 mt-1">
