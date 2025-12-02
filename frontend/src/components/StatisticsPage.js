@@ -59,7 +59,7 @@ const StatisticsPage = ({ user }) => {
         statsAPI.getPartners('month', selectedUserId),
         statsAPI.getEducation('month', selectedUserId),
         statsAPI.getPerformance(selectedUserId),
-        statsAPI.getHabits(timePeriod, selectedUserId)
+        statsAPI.getHabits()
       ]);
 
       setStatsData({
