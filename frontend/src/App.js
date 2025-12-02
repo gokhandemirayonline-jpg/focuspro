@@ -22,6 +22,7 @@ import BlogPage from './components/BlogPage';
 import AdminVideoManagement from './components/AdminVideoManagement';
 import DashboardPage from './components/DashboardPage';
 import ProfilePage from './components/ProfilePage';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 import './App.css';
 
 moment.locale('tr');
