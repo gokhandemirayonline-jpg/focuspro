@@ -7371,6 +7371,9 @@ END:VCALENDAR`;
         </button>
       </div>
     </div>
+    
+    {/* PWA Install Prompt */}
+    <PWAInstallPrompt />
     </>
   );
 };
