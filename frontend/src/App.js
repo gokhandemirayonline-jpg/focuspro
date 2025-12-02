@@ -2324,7 +2324,7 @@ const FocusProApp = () => {
                         if (result.type === 'video') setCurrentPage('videos');
                         else if (result.type === 'prospect') setCurrentPage('prospects');
                         else if (result.type === 'partner') setCurrentPage('partners');
-                        else if (result.type === 'recommendation') setCurrentPage('recommendations');
+                        else if (result.type === 'recommendation') setCurrentPage('blogs');
                         else if (result.type === 'blog') setCurrentPage('blogs');
                         setShowSearchResults(false);
                         setSearchQuery('');
