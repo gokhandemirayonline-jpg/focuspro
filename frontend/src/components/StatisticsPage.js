@@ -160,7 +160,7 @@ const StatisticsPage = ({ user }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {statsData.performance && (
           <>
-            <div className="bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setActiveTab('performance')}>
+            <div className="bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
               <div className="flex items-center justify-between mb-2">
                 <Award size={32} className="opacity-80" />
                 <span className="text-3xl font-bold">{statsData.performance.performance_score}%</span>
