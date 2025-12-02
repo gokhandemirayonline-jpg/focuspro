@@ -7275,7 +7275,7 @@ const FocusProApp = () => {
                   className="w-full px-4 py-2 border rounded-lg"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  💡 YouTube video linkini yapıştırın veya sadece video ID'sini girin
+                  💡 YouTube video linkini yapıştırın veya sadece video ID&apos;sini girin
                 </p>
               </div>
               <textarea
