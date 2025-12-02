@@ -62,18 +62,14 @@ const VideoLibraryPage = ({ user }) => {
     }
   };
 
-  const loadStatistics = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/video-statistics`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
-      setStatistics(data);
-    } catch (error) {
-      console.error('İstatistik yükleme hatası:', error);
-    }
+  const loadStatistics = () => {
+    // İstatistikleri frontend'de hesapla
+    setStatistics({
+      totalVideos: allVideos.length,
+      totalViews: Object.values(progress).reduce((sum, p) => sum + (p.view_count || 0), 0),
+      completedVideos: Object.values(progress).filter(p => p.watched).length,
+      categories: categories.length
+    });
   };
 
   const loadProgress = async () => {
