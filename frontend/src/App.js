@@ -2293,20 +2293,20 @@ const FocusProApp = () => {
       </div>
 
       {/* Main Content */}
-      <div className={`flex-1 overflow-auto flex flex-col w-full ${sidebarOpen ? 'ml-64 md:ml-0' : 'ml-16 md:ml-20'} transition-all duration-300`}>
+      <div className="flex-1 overflow-auto flex flex-col w-full md:ml-0 transition-all duration-300">
         {/* Top Navbar - Arama ve Bildirimler */}
-        <div className="bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-30">
-          <div className="flex items-center gap-4 flex-1">
+        <div className="bg-white border-b border-gray-200 px-2 md:px-8 py-2 md:py-4 flex items-center justify-between sticky top-0 z-30">
+          <div className="flex items-center gap-2 md:gap-4 flex-1">
             {/* Search Bar */}
             <div className="relative flex-1 max-w-xl">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="text"
-                placeholder="Ara... (isim, video, kitap, blog)"
+                placeholder="Ara..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
                 onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
               
               {/* Search Results Dropdown */}
