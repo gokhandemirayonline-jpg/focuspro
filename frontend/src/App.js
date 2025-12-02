@@ -20,6 +20,8 @@ import VideoLibraryPage from './components/VideoLibraryPage';
 import StatisticsPage from './components/StatisticsPage';
 import BlogPage from './components/BlogPage';
 import AdminVideoManagement from './components/AdminVideoManagement';
+import DashboardPage from './components/DashboardPage';
+import ProfilePage from './components/ProfilePage';
 import './App.css';
 
 moment.locale('tr');
