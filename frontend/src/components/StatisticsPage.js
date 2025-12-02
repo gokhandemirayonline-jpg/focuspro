@@ -178,7 +178,7 @@ const StatisticsPage = ({ user }) => {
               <p className="text-sm opacity-80">Tamamlanma: {statsData.tasks?.completion_rate || 0}%</p>
             </div>
 
-            <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={() => setActiveTab('meetings')}>
+            <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
               <div className="flex items-center justify-between mb-2">
                 <Calendar size={32} className="opacity-80" />
                 <span className="text-3xl font-bold">{statsData.meetings?.total || 0}</span>
