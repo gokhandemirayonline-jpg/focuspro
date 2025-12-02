@@ -19,7 +19,7 @@ import hashlib
 from typing import Dict, Any
 
 # Backend URL
-BACKEND_URL = "https://mlmmanager-1.preview.emergentagent.com"
+BACKEND_URL = "https://focuspro-network.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class NewUserLoginTester:
