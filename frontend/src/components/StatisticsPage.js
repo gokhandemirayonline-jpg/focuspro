@@ -354,6 +354,62 @@ const StatisticsPage = ({ user }) => {
           </div>
         </div>
       )}
+
+      {/* Habit Statistics */}
+      {statsData.habits && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
+          <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Al31fkanl31k 30statistikleri</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* G fcnl fck oran */}
+            <div className="bg-gray-50 dark:bg-gray-900/40 rounded-lg p-4 flex flex-col gap-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Bug fcn Tamamlama Oran31</span>
+                <CheckCircle size={18} className="text-green-500" />
+              </div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {statsData.habits.daily_rate || 0}%
+              </div>
+            </div>
+
+            {/* Ayl fdk oran */}
+            <div className="bg-gray-50 dark:bg-gray-900/40 rounded-lg p-4 flex flex-col gap-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Bu Ay Ortalama</span>
+                <TrendingUp size={18} className="text-purple-500" />
+              </div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {statsData.habits.monthly_rate || 0}%
+              </div>
+            </div>
+
+            {/* Bug fcn tamamlanan */}
+            <div className="bg-gray-50 dark:bg-gray-900/40 rounded-lg p-4 flex flex-col gap-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Bug fcn Tamamlanan</span>
+                <Calendar size={18} className="text-blue-500" />
+              </div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {statsData.habits.today_completed || 0}/{statsData.habits.total_habits || 0}
+              </div>
+            </div>
+
+            {/* Bu ay toplam */}
+            <div className="bg-gray-50 dark:bg-gray-900/40 rounded-lg p-4 flex flex-col gap-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Bu Ay Toplam</span>
+                <BarChart3 size={18} className="text-orange-500" />
+              </div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {statsData.habits.month_completed || 0}/{statsData.habits.month_total || 0}
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Takip edilen g fcn say31s31: {statsData.habits.days_tracked || 0}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
