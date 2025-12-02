@@ -7319,56 +7319,130 @@ END:VCALENDAR`;
 
     </div>
     
-    {/* Mobile Bottom Navigation */}
+    {/* Mobile Bottom Navigation - Scrollable */}
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 safe-area-inset-bottom">
-      <div className="flex justify-around items-center h-16">
+      <div className="flex items-center h-16 overflow-x-auto hide-scrollbar px-2 gap-1">
         <button
           onClick={() => setCurrentPage('dashboard')}
-          className={`flex flex-col items-center justify-center flex-1 h-full ${
-            currentPage === 'dashboard' ? 'text-purple-600' : 'text-gray-500'
+          className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
+            currentPage === 'dashboard' ? 'text-purple-600 bg-purple-50' : 'text-gray-500'
           }`}
         >
           <Home size={20} />
-          <span className="text-xs mt-1">Ana Sayfa</span>
+          <span className="text-[10px] mt-1">Ana Sayfa</span>
         </button>
         
         <button
           onClick={() => setCurrentPage('calendar')}
-          className={`flex flex-col items-center justify-center flex-1 h-full ${
-            currentPage === 'calendar' ? 'text-purple-600' : 'text-gray-500'
+          className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
+            currentPage === 'calendar' ? 'text-purple-600 bg-purple-50' : 'text-gray-500'
           }`}
         >
           <Calendar size={20} />
-          <span className="text-xs mt-1">Takvim</span>
+          <span className="text-[10px] mt-1">Takvim</span>
         </button>
         
         <button
           onClick={() => setCurrentPage('agenda')}
-          className={`flex flex-col items-center justify-center flex-1 h-full ${
-            currentPage === 'agenda' ? 'text-purple-600' : 'text-gray-500'
+          className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
+            currentPage === 'agenda' ? 'text-purple-600 bg-purple-50' : 'text-gray-500'
           }`}
         >
           <ListChecks size={20} />
-          <span className="text-xs mt-1">Ajanda</span>
+          <span className="text-[10px] mt-1">Ajanda</span>
         </button>
         
         <button
           onClick={() => setCurrentPage('videos')}
-          className={`flex flex-col items-center justify-center flex-1 h-full ${
-            currentPage === 'videos' ? 'text-purple-600' : 'text-gray-500'
+          className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
+            currentPage === 'videos' ? 'text-purple-600 bg-purple-50' : 'text-gray-500'
           }`}
         >
           <GraduationCap size={20} />
-          <span className="text-xs mt-1">Eğitim</span>
+          <span className="text-[10px] mt-1">Eğitim</span>
         </button>
         
         <button
-          onClick={() => setSidebarOpen(true)}
-          className="flex flex-col items-center justify-center flex-1 h-full text-gray-500"
+          onClick={() => setCurrentPage('prospects')}
+          className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
+            currentPage === 'prospects' ? 'text-purple-600 bg-purple-50' : 'text-gray-500'
+          }`}
         >
-          <Menu size={20} />
-          <span className="text-xs mt-1">Menü</span>
+          <UserPlus size={20} />
+          <span className="text-[10px] mt-1">Adaylar</span>
         </button>
+        
+        <button
+          onClick={() => setCurrentPage('partners')}
+          className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
+            currentPage === 'partners' ? 'text-purple-600 bg-purple-50' : 'text-gray-500'
+          }`}
+        >
+          <Users size={20} />
+          <span className="text-[10px] mt-1">Partnerler</span>
+        </button>
+        
+        <button
+          onClick={() => setCurrentPage('events')}
+          className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
+            currentPage === 'events' ? 'text-purple-600 bg-purple-50' : 'text-gray-500'
+          }`}
+        >
+          <CalendarDays size={20} />
+          <span className="text-[10px] mt-1">Etkinlikler</span>
+        </button>
+        
+        <button
+          onClick={() => setCurrentPage('blogs')}
+          className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
+            currentPage === 'blogs' ? 'text-purple-600 bg-purple-50' : 'text-gray-500'
+          }`}
+        >
+          <Book size={20} />
+          <span className="text-[10px] mt-1">Blog</span>
+        </button>
+        
+        <button
+          onClick={() => setCurrentPage('statistics')}
+          className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
+            currentPage === 'statistics' ? 'text-purple-600 bg-purple-50' : 'text-gray-500'
+          }`}
+        >
+          <BarChart3 size={20} />
+          <span className="text-[10px] mt-1">İstatistik</span>
+        </button>
+        
+        <button
+          onClick={() => setCurrentPage('inbox')}
+          className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
+            currentPage === 'inbox' ? 'text-purple-600 bg-purple-50' : 'text-gray-500'
+          }`}
+        >
+          <MessageSquare size={20} />
+          <span className="text-[10px] mt-1">Mesajlar</span>
+        </button>
+        
+        <button
+          onClick={() => setCurrentPage('profile')}
+          className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
+            currentPage === 'profile' ? 'text-purple-600 bg-purple-50' : 'text-gray-500'
+          }`}
+        >
+          <User size={20} />
+          <span className="text-[10px] mt-1">Profil</span>
+        </button>
+        
+        {currentUser?.role === 'admin' && (
+          <button
+            onClick={() => setCurrentPage('admin')}
+            className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
+              currentPage === 'admin' ? 'text-purple-600 bg-purple-50' : 'text-gray-500'
+            }`}
+          >
+            <Shield size={20} />
+            <span className="text-[10px] mt-1">Admin</span>
+          </button>
+        )}
       </div>
     </div>
     
