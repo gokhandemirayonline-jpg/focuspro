@@ -123,6 +123,25 @@
             </div>
         </a>
         <script>
+            // Hide emergent badge on mobile
+            (function() {
+                function checkMobile() {
+                    var badge = document.getElementById('emergent-badge');
+                    if (badge && window.innerWidth <= 768) {
+                        badge.style.display = 'none';
+                    } else if (badge) {
+                        badge.style.display = 'flex';
+                    }
+                }
+                window.addEventListener('load', checkMobile);
+                window.addEventListener('resize', checkMobile);
+                // Check immediately and after short delay
+                checkMobile();
+                setTimeout(checkMobile, 100);
+                setTimeout(checkMobile, 500);
+            })();
+        </script>
+        <script>
             !(function (t, e) {
                 var o, n, p, r;
                 e.__SV ||
