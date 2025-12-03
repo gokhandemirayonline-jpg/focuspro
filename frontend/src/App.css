@@ -609,3 +609,10 @@ button, a, input, select, textarea {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Hide Emergent badge on mobile to not overlap bottom navigation */
+@media (max-width: 768px) {
+  #emergent-badge {
+    display: none !important;
+  }
+}
