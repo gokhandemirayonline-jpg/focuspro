@@ -3237,87 +3237,95 @@ const FocusProApp = () => {
 
           {/* AGENDA PAGE */}
           {currentPage === 'agenda' && (
-            <div className="p-6">
-              <h1 className="text-3xl font-bold text-gray-800 mb-6">Ajanda</h1>
+            <div className="w-full">
+              <h1 className="text-xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-6 px-1">Ajanda</h1>
               
-              {/* Tabs */}
-              <div className="mb-6 flex gap-1 border-b border-gray-200">
-                <button
-                  onClick={() => setAgendaTab('tasks')}
-                  className={`px-4 py-2 font-semibold transition-all ${
-                    agendaTab === 'tasks' 
-                      ? 'text-purple-600 border-b-2 border-purple-600' 
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                >
-                  <ListChecks className="inline mr-2" size={20} />
-                  Görevler
-                </button>
-                <button
-                  onClick={() => setAgendaTab('prospects')}
-                  className={`px-4 py-2 font-semibold transition-all ${
-                    agendaTab === 'prospects' 
-                      ? 'text-purple-600 border-b-2 border-purple-600' 
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                >
-                  <UserPlus className="inline mr-2" size={20} />
-                  İsim Listesi
-                </button>
-                <button
-                  onClick={() => setAgendaTab('goals')}
-                  className={`px-4 py-2 font-semibold transition-all ${
-                    agendaTab === 'goals' 
-                      ? 'text-purple-600 border-b-2 border-purple-600' 
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                >
-                  <Target className="inline mr-2" size={20} />
-                  Hedefler
-                </button>
-                <button
-                  onClick={() => setAgendaTab('habits')}
-                  className={`px-4 py-2 font-semibold transition-all ${
-                    agendaTab === 'habits' 
-                      ? 'text-purple-600 border-b-2 border-purple-600' 
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                >
-                  <CheckCircle2 className="inline mr-2" size={20} />
-                  Günlük Alışkanlıklar
-                </button>
-                <button
-                  onClick={() => setAgendaTab('dreams')}
-                  className={`px-4 py-2 font-semibold transition-all ${
-                    agendaTab === 'dreams' 
-                      ? 'text-purple-600 border-b-2 border-purple-600' 
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                >
-                  <MessageSquare className="inline mr-2" size={20} />
-                  Hayaller
-                </button>
-                <button
-                  onClick={() => setAgendaTab('character')}
-                  className={`px-4 py-2 font-semibold transition-all ${
-                    agendaTab === 'character' 
-                      ? 'text-purple-600 border-b-2 border-purple-600' 
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                >
-                  <MessageSquare className="inline mr-2" size={20} />
-                  Karakter Analizi
-                </button>
-                <button
-                  onClick={() => setAgendaTab('lifeprofile')}
-                  className={`px-4 py-2 font-semibold transition-all ${
-                    agendaTab === 'lifeprofile' 
-                      ? 'text-blue-600 border-b-2 border-blue-600' 
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                >
-                  <Star className="inline mr-2" size={20} />
-                  Tam Yaşam Tablosu
+              {/* Tabs - Horizontal Scrollable */}
+              <div className="mb-4 md:mb-6 relative">
+                <div className="overflow-x-auto hide-scrollbar">
+                  <div className="flex gap-1 min-w-max pb-2 px-1 border-b border-gray-200">
+                    <button
+                      onClick={() => setAgendaTab('tasks')}
+                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                        agendaTab === 'tasks' 
+                          ? 'bg-purple-100 text-purple-700' 
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <ListChecks size={16} />
+                      Görevler
+                    </button>
+                    <button
+                      onClick={() => setAgendaTab('prospects')}
+                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                        agendaTab === 'prospects' 
+                          ? 'bg-purple-100 text-purple-700' 
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <UserPlus size={16} />
+                      İsim Listesi
+                    </button>
+                    <button
+                      onClick={() => setAgendaTab('goals')}
+                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                        agendaTab === 'goals' 
+                          ? 'bg-purple-100 text-purple-700' 
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Target size={16} />
+                      Hedefler
+                    </button>
+                    <button
+                      onClick={() => setAgendaTab('habits')}
+                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                        agendaTab === 'habits' 
+                          ? 'bg-purple-100 text-purple-700' 
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <CheckCircle2 size={16} />
+                      Alışkanlıklar
+                    </button>
+                    <button
+                      onClick={() => setAgendaTab('dreams')}
+                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                        agendaTab === 'dreams' 
+                          ? 'bg-purple-100 text-purple-700' 
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Star size={16} />
+                      Hayaller
+                    </button>
+                    <button
+                      onClick={() => setAgendaTab('character')}
+                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                        agendaTab === 'character' 
+                          ? 'bg-purple-100 text-purple-700' 
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <User size={16} />
+                      Karakter
+                    </button>
+                    <button
+                      onClick={() => setAgendaTab('lifeprofile')}
+                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                        agendaTab === 'lifeprofile' 
+                          ? 'bg-blue-100 text-blue-700' 
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Activity size={16} />
+                      Yaşam Tablosu
+                    </button>
+                  </div>
+                </div>
+                {/* Scroll indicator gradient */}
+                <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none md:hidden"></div>
+              </div>
                 </button>
               </div>
 
