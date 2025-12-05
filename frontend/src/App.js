@@ -3326,16 +3326,14 @@ const FocusProApp = () => {
                 {/* Scroll indicator gradient */}
                 <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none md:hidden"></div>
               </div>
-                </button>
-              </div>
 
               {/* Tab Content */}
-              <div className="mt-6">
+              <div className="px-1">
                 {agendaTab === 'tasks' && (
                   <div>
                     {/* TASKS CONTENT - Will be moved here */}
-                    <div className="mb-6 flex items-center justify-between">
-                      <h2 className="text-2xl font-bold text-gray-800">Görevler</h2>
+                    <div className="mb-4 md:mb-6 flex items-center justify-between">
+                      <h2 className="text-lg md:text-2xl font-bold text-gray-800">Görevler</h2>
                       <button
                         onClick={() => {
                           setShowTaskModal(true);
