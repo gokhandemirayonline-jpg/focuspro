@@ -3237,12 +3237,12 @@ const FocusProApp = () => {
 
           {/* AGENDA PAGE */}
           {currentPage === 'agenda' && (
-            <div className="w-full">
+            <div className="w-full overflow-x-hidden">
               <h1 className="text-xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-6 px-1">Ajanda</h1>
               
-              {/* Tabs - Horizontal Scrollable */}
+              {/* Tabs - Horizontal Scrollable - ONLY THIS SCROLLS */}
               <div className="mb-4 md:mb-6 relative">
-                <div className="overflow-x-auto hide-scrollbar">
+                <div className="overflow-x-auto hide-scrollbar touch-pan-x" style={{WebkitOverflowScrolling: 'touch'}}>
                   <div className="flex gap-1 min-w-max pb-2 px-1 border-b border-gray-200">
                     <button
                       onClick={() => setAgendaTab('tasks')}
@@ -3327,8 +3327,8 @@ const FocusProApp = () => {
                 <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none md:hidden"></div>
               </div>
 
-              {/* Tab Content */}
-              <div className="px-1">
+              {/* Tab Content - FIXED, NO HORIZONTAL SCROLL */}
+              <div className="px-1 overflow-x-hidden">
                 {agendaTab === 'tasks' && (
                   <div>
                     {/* TASKS CONTENT - Will be moved here */}
