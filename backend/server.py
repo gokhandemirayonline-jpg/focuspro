@@ -16,7 +16,7 @@ import base64
 import uuid
 
 # Load environment variables
-load_dotenv("/app/backend/.env")
+load_dotenv(".env")
 
 from models import (
     UserCreate, UserLogin, User, UserResponse, UserUpdate, UserAdminUpdate, ChangePassword,
@@ -4603,7 +4603,7 @@ async def upload_file(
             raise HTTPException(status_code=400, detail="Dosya boyutu 5MB'dan büyük olamaz")
         
         # Upload klasörünü oluştur
-        upload_dir = Path("/app/backend/uploads")
+        upload_dir = Path("uploads")
         upload_dir.mkdir(exist_ok=True)
         
         # Benzersiz dosya adı oluştur
@@ -4640,7 +4640,7 @@ async def upload_file(
 app.include_router(api_router)
 
 # Mount static files for uploads
-upload_dir = Path("/app/backend/uploads")
+upload_dir = Path("uploads")
 upload_dir.mkdir(exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(upload_dir)), name="uploads")
 
