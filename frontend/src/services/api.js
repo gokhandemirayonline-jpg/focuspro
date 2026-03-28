@@ -8,9 +8,6 @@ const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
-    'Cache-Control': 'no-cache, no-store, must-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0',
   },
 });
 
@@ -27,7 +24,7 @@ api.interceptors.request.use((config) => {
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (name, email, password, role) => api.post('/auth/register', { name, email, password, role }),
-  getMe: () => api.get('/auth/me'),
+  getMe: () => api.get(`/auth/me?t=${new Date().getTime()}`),
   updateProfile: (profileData) => api.put('/auth/profile', profileData),
   changePassword: (passwordData) => api.post('/auth/change-password', passwordData),
 };
