@@ -664,123 +664,146 @@ const VideoLibraryPage = ({ user }) => {
             {/* Custom Progress Bar */}
             <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
               {/* Kontrol Butonları ve Süre Bilgisi */}
-              <div className="flex items-center gap-4 mb-2">
-                {/* Custom Controls - Sol taraf */}
-                <div className="flex gap-2">
-                  {/* Play/Pause Button */}
-                  <button
-                    onClick={() => {
-                      if (player) {
-                        if (isPlaying) {
-                          player.pauseVideo();
-                        } else {
-                          player.playVideo();
+              <div className="flex items-center justify-between mb-2">
+                {/* Sol Taraf - Kontroller ve Bilgiler */}
+                <div className="flex items-center gap-4 border-r border-transparent overflow-x-auto pb-1">
+                  {/* Custom Controls - Sol taraf */}
+                  <div className="flex gap-2 shrink-0">
+                    {/* Play/Pause Button */}
+                    <button
+                      onClick={() => {
+                        if (player) {
+                          if (isPlaying) {
+                            player.pauseVideo();
+                          } else {
+                            player.playVideo();
+                          }
                         }
-                      }
-                    }}
-                    className="bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white p-2 rounded-lg transition-colors"
-                    title={isPlaying ? 'Duraklat' : 'Oynat'}
-                  >
-                    {isPlaying ? (
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-                      </svg>
-                    ) : (
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                      </svg>
-                    )}
-                  </button>
+                      }}
+                      className="bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white p-2 rounded-lg transition-colors"
+                      title={isPlaying ? 'Duraklat' : 'Oynat'}
+                    >
+                      {isPlaying ? (
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z"/>
+                        </svg>
+                      )}
+                    </button>
 
-                  {/* Speed Control */}
-                  <button
-                    onClick={() => {
-                      if (player && player.setPlaybackRate) {
-                        let newSpeed;
-                        if (playbackSpeed === 1) {
-                          newSpeed = 1.5;
-                        } else if (playbackSpeed === 1.5) {
-                          newSpeed = 2;
-                        } else {
-                          newSpeed = 1;
+                    {/* Speed Control */}
+                    <button
+                      onClick={() => {
+                        if (player && player.setPlaybackRate) {
+                          let newSpeed;
+                          if (playbackSpeed === 1) {
+                            newSpeed = 1.5;
+                          } else if (playbackSpeed === 1.5) {
+                            newSpeed = 2;
+                          } else {
+                            newSpeed = 1;
+                          }
+                          player.setPlaybackRate(newSpeed);
+                          setPlaybackSpeed(newSpeed);
                         }
-                        player.setPlaybackRate(newSpeed);
-                        setPlaybackSpeed(newSpeed);
-                      }
-                    }}
-                    className="bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-bold transition-colors"
-                  >
-                    {playbackSpeed === 1 ? '▶ 1x' : playbackSpeed === 1.5 ? '⚡ 1.5x' : '⚡⚡ 2x'}
-                  </button>
+                      }}
+                      className="bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-bold transition-colors"
+                    >
+                      {playbackSpeed === 1 ? '▶ 1x' : playbackSpeed === 1.5 ? '⚡ 1.5x' : '⚡⚡ 2x'}
+                    </button>
 
-                  {/* Fullscreen Button */}
-                  <button
-                    onClick={() => {
-                      if (player && player.getIframe) {
-                        const iframe = player.getIframe();
-                        if (iframe.requestFullscreen) {
-                          iframe.requestFullscreen();
-                        } else if (iframe.webkitRequestFullscreen) {
-                          iframe.webkitRequestFullscreen();
+                    {/* Fullscreen Button */}
+                    <button
+                      onClick={() => {
+                        if (player && player.getIframe) {
+                          const iframe = player.getIframe();
+                          if (iframe.requestFullscreen) {
+                            iframe.requestFullscreen();
+                          } else if (iframe.webkitRequestFullscreen) {
+                            iframe.webkitRequestFullscreen();
+                          }
                         }
-                      }
-                    }}
-                    className="bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white p-2 rounded-lg transition-colors"
-                    title="Tam Ekran"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                    </svg>
-                  </button>
+                      }}
+                      className="bg-gray-900 dark:bg-gray-700 hover:bg-black dark:hover:bg-gray-600 text-white p-2 rounded-lg transition-colors"
+                      title="Tam Ekran"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Süre Bilgisi ve Meta Data */}
+                  <div className="flex items-center gap-3 text-sm shrink-0">
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">
+                      {Math.floor(currentTime / 60)}:{String(Math.floor(currentTime % 60)).padStart(2, '0')}
+                    </span>
+                    <span className="text-gray-500 dark:text-gray-400">/</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {Math.floor(duration / 60)}:{String(Math.floor(duration % 60)).padStart(2, '0')}
+                    </span>
+                    
+                    {/* İzleme Yüzdesi */}
+                    <div className="flex items-center gap-2 ml-4">
+                      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 hidden sm:block">
+                        İzleme İlerlemesi:
+                      </div>
+                      <div className="bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                        {duration > 0 ? Math.floor((currentTime / duration) * 100) : 0}%
+                      </div>
+                    </div>
+                    
+                    {/* Oynatma Durumu */}
+                    <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+                      isPlaying 
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' 
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                    }`}>
+                      {isPlaying ? (
+                        <>
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          <span className="hidden sm:inline">Oynatılıyor</span>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                          <span className="hidden sm:inline">Duraklatıldı</span>
+                        </>
+                      )}
+                    </div>
+                    
+                    {/* İzlenme Sayısı - Oynatma durumundan sonra */}
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hidden sm:flex">
+                      <Eye size={14} />
+                      <span>İzlenme:</span>
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">
+                        {selectedVideo.view_count || 0} kez
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Süre Bilgisi */}
-                <div className="flex items-center gap-3 text-sm">
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">
-                    {Math.floor(currentTime / 60)}:{String(Math.floor(currentTime % 60)).padStart(2, '0')}
-                  </span>
-                  <span className="text-gray-500 dark:text-gray-400">/</span>
-                  <span className="text-gray-600 dark:text-gray-400">
-                    {Math.floor(duration / 60)}:{String(Math.floor(duration % 60)).padStart(2, '0')}
-                  </span>
-                  
-                  {/* İzleme Yüzdesi */}
-                  <div className="flex items-center gap-2 ml-4">
-                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                      İzleme İlerlemesi:
-                    </div>
-                    <div className="bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                      {duration > 0 ? Math.floor((currentTime / duration) * 100) : 0}%
-                    </div>
-                  </div>
-                  
-                  {/* Oynatma Durumu */}
-                  <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-                    isPlaying 
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' 
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                  }`}>
-                    {isPlaying ? (
-                      <>
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        Oynatılıyor
-                      </>
-                    ) : (
-                      <>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                        Duraklatıldı
-                      </>
-                    )}
-                  </div>
-                  
-                  {/* İzlenme Sayısı - Oynatma durumundan sonra */}
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                    <Eye size={14} />
-                    <span>İzlenme:</span>
-                    <span className="font-semibold text-gray-700 dark:text-gray-300">
-                      {selectedVideo.view_count || 0} kez
-                    </span>
-                  </div>
+                {/* Sağ Taraf - Kapat Butonu */}
+                <div className="flex items-center pl-4 ml-auto border-l border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => {
+                      if (videoCompleted && comment.trim().length > 0) {
+                        if (!window.confirm('Video tamamlanmadı. Çıkmak istediğinizden emin misiniz?')) {
+                          return;
+                        }
+                      }
+                      setSelectedVideo(null);
+                    }}
+                    className="flex items-center gap-1.5 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white px-4 py-2 rounded-lg font-medium transition-colors border border-red-200 hover:border-red-500 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-600 dark:hover:text-white"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Kapat
+                  </button>
                 </div>
               </div>
               
@@ -938,22 +961,9 @@ const VideoLibraryPage = ({ user }) => {
                     }}
                     className="flex-1 px-6 py-3 rounded-lg font-medium bg-green-600 hover:bg-green-700 text-white transition-colors"
                   >
-                    Tamam
+                    Tamamlandı (Kapat)
                   </button>
                 )}
-                <button
-                  onClick={() => {
-                    if (videoCompleted && comment.trim().length > 0) {
-                      if (!window.confirm('Video tamamlanmadı. Çıkmak istediğinizden emin misiniz?')) {
-                        return;
-                      }
-                    }
-                    setSelectedVideo(null);
-                  }}
-                  className="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                >
-                  Kapat
-                </button>
               </div>
             </div>
           </div>
