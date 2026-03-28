@@ -222,7 +222,7 @@ const VideoLibraryPage = ({ user }) => {
         </DndContext>
 
         {videos.length === 0 && (
-          <div className="text-center py-12">
+          <div className="col-span-full text-center py-12">
             <FolderOpen size={48} className="mx-auto text-gray-400 mb-4" />
             <p className="text-gray-500 dark:text-gray-400 mb-4">
               Bu kategoride henüz video yok
@@ -237,6 +237,29 @@ const VideoLibraryPage = ({ user }) => {
             )}
           </div>
         )}
+
+        <VideoModal
+          isOpen={showVideoModal}
+          onClose={() => setShowVideoModal(false)}
+          editingVideo={editingVideo}
+          categoryId={selectedCategory?.id}
+          categories={categories}
+          onSave={async (data) => {
+            try {
+              if (editingVideo) {
+                await videoAPI.update(editingVideo.id, data);
+              } else {
+                await videoAPI.create(data);
+              }
+              if (selectedCategory) await loadVideos(selectedCategory.id);
+              await loadAllVideos();
+              setShowVideoModal(false);
+            } catch (e) { 
+              console.error(e);
+              alert('Video kaydedilirken hata oluştu.'); 
+            }
+          }}
+        />
       </div>
     );
   }
