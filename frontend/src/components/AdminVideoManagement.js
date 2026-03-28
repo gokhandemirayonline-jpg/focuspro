@@ -438,34 +438,49 @@ const VideoLibraryPage = ({ user }) => {
         )}
       </div>
 
-      {/* Modals - Placeholder */}
-      {showCategoryModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">Kategori Modal (Yapım aşamasında)</h3>
-            <button
-              onClick={() => setShowCategoryModal(false)}
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg"
-            >
-              Kapat
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Modals */}
+      <CategoryModal
+        isOpen={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        editingCategory={editingCategory}
+        onSave={async (data) => {
+          try {
+            if (editingCategory) {
+              await videoCategoryAPI.update(editingCategory.id, data);
+            } else {
+              await videoCategoryAPI.create(data);
+            }
+            await loadCategories();
+            setShowCategoryModal(false);
+          } catch (e) { 
+            console.error(e);
+            alert('Kategori kaydedilirken hata oluştu.'); 
+          }
+        }}
+      />
 
-      {showVideoModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">Video Modal (Yapım aşamasında)</h3>
-            <button
-              onClick={() => setShowVideoModal(false)}
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg"
-            >
-              Kapat
-            </button>
-          </div>
-        </div>
-      )}
+      <VideoModal
+        isOpen={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+        editingVideo={editingVideo}
+        categoryId={selectedCategory?.id}
+        categories={categories}
+        onSave={async (data) => {
+          try {
+            if (editingVideo) {
+              await videoAPI.update(editingVideo.id, data);
+            } else {
+              await videoAPI.create(data);
+            }
+            if (selectedCategory) await loadVideos(selectedCategory.id);
+            await loadAllVideos();
+            setShowVideoModal(false);
+          } catch (e) { 
+            console.error(e);
+            alert('Video kaydedilirken hata oluştu.'); 
+          }
+        }}
+      />
     </div>
   );
 };
@@ -579,6 +594,199 @@ const SortableVideoCard = ({ video, isUnlocked, progress, isAdmin, onEdit, onDel
               </button>
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CategoryModal = ({ isOpen, onClose, onSave, editingCategory }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    icon: '📚'
+  });
+
+  useEffect(() => {
+    if (editingCategory) {
+      setFormData({
+        name: editingCategory.name || '',
+        description: editingCategory.description || '',
+        icon: editingCategory.icon || '📚'
+      });
+    } else {
+      setFormData({ name: '', description: '', icon: '📚' });
+    }
+  }, [editingCategory, isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full">
+        <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+          {editingCategory ? 'Kategori Düzenle' : 'Yeni Kategori Ekle'}
+        </h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori Adı</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none"
+              placeholder="Örn: Başlangıç Eğitimleri"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Açıklama</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none"
+              rows="3"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">İkon (Emoji)</label>
+            <input
+              type="text"
+              value={formData.icon}
+              onChange={(e) => setFormData({...formData, icon: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none"
+              placeholder="📚"
+            />
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 mt-6">
+          <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg dark:text-gray-300 dark:hover:bg-gray-700">İptal</button>
+          <button onClick={() => onSave(formData)} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">Kaydet</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const VideoModal = ({ isOpen, onClose, onSave, editingVideo, categoryId, categories }) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    youtube_id: '',
+    description: '',
+    duration: '',
+    category: '',
+    category_id: categoryId || '',
+    level: 'Başlangıç'
+  });
+
+  useEffect(() => {
+    if (editingVideo) {
+      setFormData({
+        title: editingVideo.title || '',
+        youtube_id: editingVideo.youtube_id || '',
+        description: editingVideo.description || '',
+        duration: editingVideo.duration || '',
+        category: editingVideo.category || '',
+        category_id: editingVideo.category_id || categoryId || '',
+        level: editingVideo.level || 'Başlangıç'
+      });
+    } else {
+      setFormData({
+        title: '',
+        youtube_id: '',
+        description: '',
+        duration: '',
+        category: categories.find(c => c.id === categoryId)?.name || '',
+        category_id: categoryId || '',
+        level: 'Başlangıç'
+      });
+    }
+  }, [editingVideo, isOpen, categoryId, categories]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+          {editingVideo ? 'Video Düzenle' : 'Yeni Video Ekle'}
+        </h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Video Başlığı</label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({...formData, title: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">YouTube Video ID (veya Link)</label>
+            <input
+              type="text"
+              value={formData.youtube_id}
+              onChange={(e) => {
+                let val = e.target.value;
+                if (val.includes('v=')) { val = val.split('v=')[1].split('&')[0]; }
+                else if (val.includes('youtu.be/')) { val = val.split('youtu.be/')[1].split('?')[0]; }
+                setFormData({...formData, youtube_id: val});
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none"
+              placeholder="Örn: dQw4w9WgXcQ"
+            />
+            <p className="text-xs text-gray-500 mt-1">Örnek ID: <b>dQw4w9WgXcQ</b> (Tüm YouTube linkini yapıştırabilirsiniz)</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori</label>
+            <select
+              value={formData.category_id}
+              onChange={(e) => {
+                const cat = categories.find(c => c.id === e.target.value);
+                setFormData({...formData, category_id: e.target.value, category: cat ? cat.name : ''});
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none"
+            >
+              <option value="">Kategori Seçin</option>
+              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Süre</label>
+              <input
+                type="text"
+                value={formData.duration}
+                onChange={(e) => setFormData({...formData, duration: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none"
+                placeholder="Örn: 12:30"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Seviye</label>
+              <select
+                value={formData.level}
+                onChange={(e) => setFormData({...formData, level: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none"
+              >
+                <option value="Başlangıç">Başlangıç</option>
+                <option value="Orta">Orta</option>
+                <option value="İleri">İleri</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Açıklama</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none"
+              rows="3"
+            />
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 mt-6">
+          <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg dark:text-gray-300 dark:hover:bg-gray-700">İptal</button>
+          <button onClick={() => onSave(formData)} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">Kaydet</button>
         </div>
       </div>
     </div>

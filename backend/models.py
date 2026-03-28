@@ -94,6 +94,7 @@ class UserResponse(BaseModel):
 class VideoCategoryBase(BaseModel):
     name: str
     description: str = ""
+    icon: str = "📚"
     order: int = 0
 
 class VideoCategoryCreate(VideoCategoryBase):
