@@ -418,8 +418,12 @@ const FocusProApp = () => {
         setIsLoggedIn(true);
       }
     } catch (error) {
-      console.log('No auto login');
-      localStorage.removeItem('token');
+      console.log('Auto login failed:', error.message);
+      // Sadece yetkilendirme hatası (401) alırsak veya token geçersizse sil, 
+      // Sunucu hatası veya internet gitmesinde silme!
+      if (error.response && error.response.status === 401) {
+        localStorage.removeItem('token');
+      }
     }
   };
 
