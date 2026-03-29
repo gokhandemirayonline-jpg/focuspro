@@ -119,6 +119,7 @@ const FocusProApp = () => {
   const [userActivities, setUserActivities] = useState(null);
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
   const [bulkEmailData, setBulkEmailData] = useState({ subject: '', message: '' });
+  const [statsPreselectedUser, setStatsPreselectedUser] = useState(null); // admin kullanıcıya bastığında istatistik sayfasına aktar
   
   // Message/Inbox states
   const [messages, setMessages] = useState([]);
@@ -4808,7 +4809,7 @@ const FocusProApp = () => {
 
           {/* STATISTICS PAGE */}
           {currentPage === 'statistics' && (
-            <StatisticsPage user={currentUser} />
+            <StatisticsPage user={currentUser} preSelectUserId={statsPreselectedUser} onClearPreselect={() => setStatsPreselectedUser(null)} />
           )}
 
           {/* BLOGS PAGE */}
@@ -5474,67 +5475,125 @@ const FocusProApp = () => {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İsim</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ekleyen</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kayıt Tarihi</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {getFilteredUsers().map(user => (
-                        <tr key={user.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-4">
-                            <input
-                              type="checkbox"
-                              checked={selectedUsers.includes(user.id)}
-                              onChange={() => toggleUserSelection(user.id)}
-                              className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
-                            />
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-purple-600">
-                            #{formatUserNumber(user.user_number)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleConfig(user.role).color}`}>
-                              {getRoleConfig(user.role).label}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {new Date(user.created_at).toLocaleDateString('tr-TR')}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm flex gap-2">
-                            <button
-                              onClick={() => viewUserDetails(user)}
-                              className="text-green-600 hover:text-green-700"
-                              title="Detayları Gör"
-                            >
-                              <Eye size={16} />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setEditingUser(user);
-                                setNewUser({ 
-                                  ...user, 
-                                  user_number: user.user_number !== undefined ? String(user.user_number) : '',
-                                  permissions: user.permissions || []
-                                });
-                                setShowUserModal(true);
-                              }}
-                              className="text-blue-600 hover:text-blue-700"
-                              title="Düzenle"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button
-                              onClick={() => deleteUser(user.id)}
-                              className="text-red-600 hover:text-red-700"
-                              title="Sil"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                      {(() => {
+                        const filteredUsers = getFilteredUsers();
+                        // Ekleyene göre grupla
+                        const grouped = {};
+                        filteredUsers.forEach(u => {
+                          const creatorId = u.created_by || '__admin__';
+                          if (!grouped[creatorId]) grouped[creatorId] = [];
+                          grouped[creatorId].push(u);
+                        });
+
+                        const rows = [];
+                        Object.entries(grouped).forEach(([creatorId, groupUsers]) => {
+                          const creatorUser = filteredUsers.find(u => u.id === creatorId);
+                          const creatorLabel = creatorUser ? creatorUser.name : (creatorId === '__admin__' ? 'Admin (Sistem)' : 'Bilinmiyor');
+
+                          if (Object.keys(grouped).length > 1) {
+                            // Grup başlığı - sadece birden fazla grup varsa göster
+                            rows.push(
+                              <tr key={`group-${creatorId}`}>
+                                <td colSpan={8} className="px-6 py-2 bg-purple-50 border-t border-purple-100">
+                                  <span className="text-xs font-bold text-purple-600 uppercase tracking-wide">
+                                    👤 {creatorLabel} tarafından eklendi ({groupUsers.length} kullanıcı)
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          }
+
+                          groupUsers.forEach(user => {
+                            rows.push(
+                              <tr key={user.id} className="hover:bg-gray-50">
+                                <td className="px-4 py-4">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedUsers.includes(user.id)}
+                                    onChange={() => toggleUserSelection(user.id)}
+                                    className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                                  />
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-purple-600">
+                                  #{formatUserNumber(user.user_number)}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleConfig(user.role).color}`}>
+                                    {getRoleConfig(user.role).label}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {user.created_by
+                                    ? (() => {
+                                        const cr = filteredUsers.find(u => u.id === user.created_by);
+                                        return cr ? (
+                                          <span className="inline-flex items-center gap-1 text-purple-600">
+                                            <span className="w-2 h-2 rounded-full bg-purple-400 inline-block"></span>
+                                            {cr.name}
+                                          </span>
+                                        ) : <span className="text-gray-400 text-xs">Bilinmiyor</span>;
+                                      })()
+                                    : <span className="text-gray-400 text-xs">Admin</span>
+                                  }
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                  {new Date(user.created_at).toLocaleDateString('tr-TR')}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm flex gap-2">
+                                  <button
+                                    onClick={() => {
+                                      setStatsPreselectedUser(user.id);
+                                      setCurrentPage('statistics');
+                                    }}
+                                    className="text-indigo-600 hover:text-indigo-800"
+                                    title="İstatistikleri Gör"
+                                  >
+                                    <BarChart3 size={16} />
+                                  </button>
+                                  <button
+                                    onClick={() => viewUserDetails(user)}
+                                    className="text-green-600 hover:text-green-700"
+                                    title="Detayları Gör"
+                                  >
+                                    <Eye size={16} />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setEditingUser(user);
+                                      setNewUser({
+                                        ...user,
+                                        user_number: user.user_number !== undefined ? String(user.user_number) : '',
+                                        permissions: user.permissions || []
+                                      });
+                                      setShowUserModal(true);
+                                    }}
+                                    className="text-blue-600 hover:text-blue-700"
+                                    title="Düzenle"
+                                  >
+                                    <Edit size={16} />
+                                  </button>
+                                  <button
+                                    onClick={() => deleteUser(user.id)}
+                                    className="text-red-600 hover:text-red-700"
+                                    title="Sil"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          });
+                        });
+                        return rows;
+                      })()}
                     </tbody>
                   </table>
                 </div>

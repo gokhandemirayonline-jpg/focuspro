@@ -11,13 +11,21 @@ import { statsAPI, partnerAPI } from '../services/api';
 
 const COLORS = ['#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444'];
 
-const StatisticsPage = ({ user }) => {
+const StatisticsPage = ({ user, preSelectUserId, onClearPreselect }) => {
   const [timePeriod, setTimePeriod] = useState('week');
   const [loading, setLoading] = useState(true);
-  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedUserId, setSelectedUserId] = useState(preSelectUserId || null);
   const [users, setUsers] = useState([]);
   const [myPartners, setMyPartners] = useState([]); // normal user'in partnerleri
   const [viewMode, setViewMode] = useState('self'); // 'self' | user_id | partner:<partner_id>
+
+  // Dışarıdan preselect gelirse uygula
+  useEffect(() => {
+    if (preSelectUserId) {
+      setSelectedUserId(preSelectUserId);
+      if (onClearPreselect) onClearPreselect();
+    }
+  }, [preSelectUserId]);
   const [statsData, setStatsData] = useState({
     overview: null,
     tasks: null,
