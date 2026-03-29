@@ -410,11 +410,18 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 # ============= USER MANAGEMENT (ADMIN) =============
 @api_router.get("/users", response_model=List[UserResponse])
 async def get_users(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] != 'admin':
-        raise HTTPException(status_code=403, detail="Admin access required")
+    if current_user['role'] == 'admin':
+        # Admin - tüm kullanıcıları gör
+        users = await db.users.find({}, {"_id": 0, "password": 0}).to_list(1000)
+    elif current_user['role'] == 'manager':
+        # Manager - sadece kendisinin eklediği kullanıcıları gör
+        users = await db.users.find(
+            {"created_by": current_user['id']},
+            {"_id": 0, "password": 0}
+        ).to_list(1000)
+    else:
+        raise HTTPException(status_code=403, detail="Erişim reddedildi")
     
-    users = await db.users.find({}, {"_id": 0, "password": 0}).to_list(1000)
-    # User'larda user_number yoksa 0 olarak ayarla
     for user in users:
         if 'user_number' not in user:
             user['user_number'] = 0
@@ -444,6 +451,8 @@ async def create_user(user_data: UserCreate, current_user: dict = Depends(get_cu
         raise HTTPException(status_code=400, detail=f"Bu ID numarası ({user_number}) zaten kullanımda")
     
     user_dict = user_data.model_dump()
+    # Oluşturanı kaydet
+    user_dict['created_by'] = current_user['id']
     # Şifre boş bırakıldıysa hash'leme - kullanıcı Şifre Belirle ile kendi şifresini koyacak
     if user_dict.get('password'):
         user_dict['password'] = hash_password(user_dict['password'])
@@ -455,6 +464,7 @@ async def create_user(user_data: UserCreate, current_user: dict = Depends(get_cu
     
     doc = user_obj.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
+    doc['created_by'] = current_user['id']
     
     await db.users.insert_one(doc)
     

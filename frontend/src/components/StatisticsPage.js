@@ -27,9 +27,11 @@ const StatisticsPage = ({ user }) => {
   });
 
   const isAdmin = user?.role === 'admin';
+  const isManager = user?.role === 'manager';
+  const canSeeOtherUsers = isAdmin || isManager;
 
   useEffect(() => {
-    if (isAdmin) {
+    if (canSeeOtherUsers) {
       loadUsers();
     }
     loadAllStats();
@@ -43,7 +45,7 @@ const StatisticsPage = ({ user }) => {
         }
       });
       const data = await response.json();
-      setUsers(data);
+      setUsers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Kullanıcılar yüklenirken hata:', error);
     }
@@ -105,8 +107,10 @@ const StatisticsPage = ({ user }) => {
             {selectedUserId 
               ? `${users.find(u => u.id === selectedUserId)?.name || 'Kullanıcı'} - Kişisel performans verileri`
               : isAdmin 
-                ? 'Sistem geneli performans ve analiz verileri' 
-                : 'Kişisel performans ve analiz verileri'
+                ? 'Sistem geneli performans ve analiz verileri'
+                : isManager
+                  ? 'Ekibinizdeki kullanıcıların performans verileri'
+                  : 'Kişisel performans ve analiz verileri'
             }
           </p>
         </div>
@@ -130,16 +134,17 @@ const StatisticsPage = ({ user }) => {
 
       {/* Controls */}
       <div className="mb-6 flex gap-3 flex-wrap">
-        {isAdmin && (
+        {canSeeOtherUsers && users.length > 0 && (
           <select
             value={selectedUserId || ''}
             onChange={(e) => setSelectedUserId(e.target.value || null)}
             className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
           >
-            <option value="">🌐 Sistem Geneli</option>
+            {isAdmin && <option value="">🌐 Sistem Geneli</option>}
+            {isManager && <option value="">👤 Kendi Verilerim</option>}
             {users.map(u => (
               <option key={u.id} value={u.id}>
-                👤 {u.name} ({u.user_number ? String(u.user_number).padStart(2, '0') : u.id})
+                👤 {u.name} ({u.user_number ? String(u.user_number) : u.id.slice(0,6)})
               </option>
             ))}
           </select>
