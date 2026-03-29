@@ -7,7 +7,7 @@ import {
   TrendingUp, Users, CheckCircle, Calendar, GraduationCap,
   DollarSign, Target, Download, RefreshCw, Award, BarChart3
 } from 'lucide-react';
-import { statsAPI } from '../services/api';
+import { statsAPI, partnerAPI } from '../services/api';
 
 const COLORS = ['#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444'];
 
@@ -16,6 +16,8 @@ const StatisticsPage = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [users, setUsers] = useState([]);
+  const [myPartners, setMyPartners] = useState([]); // normal user'in partnerleri
+  const [viewMode, setViewMode] = useState('self'); // 'self' | user_id | partner:<partner_id>
   const [statsData, setStatsData] = useState({
     overview: null,
     tasks: null,
@@ -33,9 +35,21 @@ const StatisticsPage = ({ user }) => {
   useEffect(() => {
     if (canSeeOtherUsers) {
       loadUsers();
+    } else {
+      // Normal kullanıcı - kendi partnerlerini yükle
+      loadMyPartners();
     }
     loadAllStats();
   }, [timePeriod, selectedUserId]);
+
+  const loadMyPartners = async () => {
+    try {
+      const res = await partnerAPI.getAll();
+      setMyPartners(Array.isArray(res.data) ? res.data : []);
+    } catch (error) {
+      console.error('Partnerler yüklenemedi:', error);
+    }
+  };
 
   const loadUsers = async () => {
     try {
@@ -54,13 +68,18 @@ const StatisticsPage = ({ user }) => {
   const loadAllStats = async () => {
     try {
       setLoading(true);
+      // selectedUserId bir partnerden geliyorsa istatistikleri o partner sahibinin gözünden yükle
+      const effectiveUserId = selectedUserId && selectedUserId.startsWith('partner:')
+        ? null  // partner'in kendi istatistikleri yok - placeholder gösterilecek
+        : selectedUserId;
+
       const [overview, tasks, meetings, partners, education, performance, habits] = await Promise.all([
-        statsAPI.getOverview(selectedUserId),
-        statsAPI.getTasks(timePeriod, selectedUserId),
-        statsAPI.getMeetings(timePeriod, selectedUserId),
-        statsAPI.getPartners('month', selectedUserId),
-        statsAPI.getEducation('month', selectedUserId),
-        statsAPI.getPerformance(selectedUserId),
+        statsAPI.getOverview(effectiveUserId),
+        statsAPI.getTasks(timePeriod, effectiveUserId),
+        statsAPI.getMeetings(timePeriod, effectiveUserId),
+        statsAPI.getPartners('month', effectiveUserId),
+        statsAPI.getEducation('month', effectiveUserId),
+        statsAPI.getPerformance(effectiveUserId),
         statsAPI.getHabits()
       ]);
 
@@ -104,13 +123,20 @@ const StatisticsPage = ({ user }) => {
             İstatistikler & Analitik
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {selectedUserId 
-              ? `${users.find(u => u.id === selectedUserId)?.name || 'Kullanıcı'} - Kişisel performans verileri`
-              : isAdmin 
+            {selectedUserId
+              ? (() => {
+                  const foundUser = users.find(u => u.id === selectedUserId);
+                  const foundPartner = myPartners.find(p => p.id === selectedUserId);
+                  const name = foundUser?.name || foundPartner?.name || 'Kullanıcı';
+                  return `${name} - Kişisel performans verileri`;
+                })()
+              : isAdmin
                 ? 'Sistem geneli performans ve analiz verileri'
                 : isManager
                   ? 'Ekibinizdeki kullanıcıların performans verileri'
-                  : 'Kişisel performans ve analiz verileri'
+                  : myPartners.length > 0
+                    ? 'Kendi verileriniz veya partnerinizi seçin'
+                    : 'Kişisel performans ve analiz verileri'
             }
           </p>
         </div>
@@ -133,7 +159,8 @@ const StatisticsPage = ({ user }) => {
       </div>
 
       {/* Controls */}
-      <div className="mb-6 flex gap-3 flex-wrap">
+      <div className="mb-6 flex gap-3 flex-wrap items-center">
+        {/* Admin & Manager: tüm kullanıcıları göster */}
         {canSeeOtherUsers && users.length > 0 && (
           <select
             value={selectedUserId || ''}
@@ -145,6 +172,22 @@ const StatisticsPage = ({ user }) => {
             {users.map(u => (
               <option key={u.id} value={u.id}>
                 👤 {u.name} ({u.user_number ? String(u.user_number) : u.id.slice(0,6)})
+              </option>
+            ))}
+          </select>
+        )}
+
+        {/* Normal kullanıcı: partnerleri göster */}
+        {!canSeeOtherUsers && myPartners.length > 0 && (
+          <select
+            value={selectedUserId || ''}
+            onChange={(e) => setSelectedUserId(e.target.value || null)}
+            className="px-4 py-2 border border-green-300 dark:border-green-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500"
+          >
+            <option value="">👤 Kendi Verilerim</option>
+            {myPartners.map(p => (
+              <option key={p.id} value={p.id}>
+                🤝 {p.name} ({p.rank || 'Partner'})
               </option>
             ))}
           </select>

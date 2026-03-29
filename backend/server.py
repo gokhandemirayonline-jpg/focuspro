@@ -1345,7 +1345,12 @@ async def delete_prospect(prospect_id: str, current_user: dict = Depends(get_cur
 # ============= PARTNER ENDPOINTS =============
 @api_router.get("/partners", response_model=List[Partner])
 async def get_partners(current_user: dict = Depends(get_current_user)):
-    partners = await db.partners.find({"user_id": current_user['id']}, {"_id": 0}).to_list(1000)
+    if current_user.get('role') == 'admin':
+        # Admin - tüm partnerleri görür
+        partners = await db.partners.find({}, {"_id": 0}).to_list(1000)
+    else:
+        # Normal kullanıcı - sadece kendi parnerlerini görür
+        partners = await db.partners.find({"user_id": current_user['id']}, {"_id": 0}).to_list(1000)
     return partners
 
 @api_router.post("/partners", response_model=Partner)
