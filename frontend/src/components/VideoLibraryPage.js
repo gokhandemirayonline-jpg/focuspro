@@ -341,11 +341,21 @@ const VideoLibraryPage = ({ user }) => {
 
     // Player'ı oluştur
     const initPlayer = () => {
+      // Create element forcefully and safely attached to our container Ref independently of React tree lifecycle
+      if (playerContainerRef.current) {
+        playerContainerRef.current.innerHTML = ''; // Temizle
+        const targetDiv = document.createElement('div');
+        targetDiv.id = `youtube-player-${selectedVideo.id}`;
+        targetDiv.style.width = '100%';
+        targetDiv.style.height = '100%';
+        playerContainerRef.current.appendChild(targetDiv);
+      }
+
       if (window.YT && window.YT.Player) {
         playerRef.current = new window.YT.Player(`youtube-player-${selectedVideo.id}`, {
           videoId: selectedVideo.youtube_id,
           playerVars: {
-            autoplay: 0,  // Autoplay kapalı - kullanıcı tıklaması ile başlatılacak
+            autoplay: 1,  // 1 yapalım ki otomatik başlasın
             controls: 0, // YouTube kontrollerini tamamen kapat
             disablekb: videoProgress[selectedVideo.id]?.watched ? 0 : 1,  // Tamamlanmış videoda klavye aktif
             modestbranding: 1, // YouTube logosunu minimize et
@@ -379,10 +389,12 @@ const VideoLibraryPage = ({ user }) => {
               
               setLastValidTime(startTime);
               
-              // Video hazır, otomatik başlat (browser policy izin verirse)
+              // Güçlendirilmiş otomatik oynatma
               setTimeout(() => {
-                event.target.playVideo();
-              }, 500);
+                if (event.target && typeof event.target.playVideo === 'function') {
+                  event.target.playVideo();
+                }
+              }, 100);
               
               // Her saniye kontrol et - ileri sarma engelle + progress güncelle
               let previousTime = startTime;
@@ -573,9 +585,7 @@ const VideoLibraryPage = ({ user }) => {
             {/* Video */}
             <div className="aspect-video bg-black relative">
               <style>{`
-                /* TÜM YOUTUBE UI ELEMENTLERINI GİZLE - SADECE VİDEO GÖSTER */
-                
-                /* Tüm YouTube native kontrollerini gizle */
+                /* ALL YOUTUBE UI ELEMENTS HIDE */
                 #youtube-player-${selectedVideo.id} .ytp-chrome-bottom,
                 #youtube-player-${selectedVideo.id} .ytp-chrome-top,
                 #youtube-player-${selectedVideo.id} .ytp-chrome-controls,
@@ -586,9 +596,10 @@ const VideoLibraryPage = ({ user }) => {
                   display: none !important;
                   opacity: 0 !important;
                   visibility: hidden !important;
+                  pointer-events: none !important;
                 }
                 
-                /* YouTube branding, logo, watermark - HEPSİNİ GİZLE */
+                /* Logo and watermarks hide */
                 #youtube-player-${selectedVideo.id} .ytp-youtube-button,
                 #youtube-player-${selectedVideo.id} .ytp-watermark,
                 #youtube-player-${selectedVideo.id} .ytp-chrome-top-buttons,
@@ -602,11 +613,12 @@ const VideoLibraryPage = ({ user }) => {
                   display: none !important;
                   opacity: 0 !important;
                   visibility: hidden !important;
+                  pointer-events: none !important;
                   width: 0 !important;
                   height: 0 !important;
                 }
                 
-                /* Share butonunu ve tüm action butonlarını gizle */
+                /* Share and extra action buttons hide */
                 #youtube-player-${selectedVideo.id} .ytp-button[aria-label*="Share"],
                 #youtube-player-${selectedVideo.id} .ytp-button[aria-label*="Paylaş"],
                 #youtube-player-${selectedVideo.id} .ytp-share-button,
@@ -619,7 +631,7 @@ const VideoLibraryPage = ({ user }) => {
                   visibility: hidden !important;
                 }
                 
-                /* Annotations, cards, end screens - HEPSİNİ GİZLE */
+                /* Adverts and hover overlays hide */
                 #youtube-player-${selectedVideo.id} .annotation,
                 #youtube-player-${selectedVideo.id} .ytp-pause-overlay,
                 #youtube-player-${selectedVideo.id} .ytp-ce-element,
@@ -632,13 +644,12 @@ const VideoLibraryPage = ({ user }) => {
                   visibility: hidden !important;
                 }
                 
-                /* Tüm YouTube linklerini ve butonlarını gizle */
+                /* Clickable YouTube links intercept */
                 #youtube-player-${selectedVideo.id} a[class*="ytp"],
                 #youtube-player-${selectedVideo.id} button[class*="ytp"]:not(.ytp-large-play-button),
                 #youtube-player-${selectedVideo.id} a[href*="youtube.com"],
                 #youtube-player-${selectedVideo.id} [class*="ytp-button"] {
                   display: none !important;
-                  opacity: 0 !important;
                   pointer-events: none !important;
                 }
                 
@@ -652,6 +663,8 @@ const VideoLibraryPage = ({ user }) => {
                 /* IFrame pointer events - sadece videoya izin ver */
                 #youtube-player-${selectedVideo.id} iframe {
                   pointer-events: none !important;
+                  width: 100% !important;
+                  height: 100% !important;
                 }
                 
                 #youtube-player-${selectedVideo.id} .html5-video-player {
@@ -663,10 +676,14 @@ const VideoLibraryPage = ({ user }) => {
                 #youtube-player-${selectedVideo.id} {
                   position: relative;
                   overflow: hidden;
+                  width: 100%;
+                  height: 100%;
                 }
               `}</style>
               
-              <div id={`youtube-player-${selectedVideo.id}`} className="w-full h-full"></div>
+              <div ref={playerContainerRef} className="w-full h-full relative overflow-hidden bg-black flex justify-center items-center">
+                 {/* YouTube Player dynamically mounts here */}
+              </div>
               
               {/* İleri Sarma Uyarısı - Overlay'ler kaldırıldı */}
               <div className="absolute top-4 left-4 bg-red-600/90 text-white px-4 py-2 rounded-lg text-sm font-medium backdrop-blur-sm opacity-0 z-30" id="seek-warning">
