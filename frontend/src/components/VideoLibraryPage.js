@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Play, Lock, CheckCircle, Clock, Eye, GripVertical } from 'lucide-react';
 import { videoCategoryAPI, videoAPI, progressAPI } from '../services/api';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -143,6 +143,8 @@ const VideoLibraryPage = ({ user }) => {
   const [player, setPlayer] = useState(null);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [lastValidTime, setLastValidTime] = useState(0);
+  const playerRef = useRef(null);
+  const playerContainerRef = useRef(null);
 
   // Drag & Drop sensors
   const sensors = useSensors(
@@ -474,13 +476,17 @@ const VideoLibraryPage = ({ user }) => {
     };
 
     // API hazırsa hemen başlat, değilse bekle
-    if (window.YT && window.YT.Player) {
-      initPlayer();
-    } else {
-      window.onYouTubeIframeAPIReady = initPlayer;
-    }
+    // setTimeout gerekli: React önce modal'ı renderlamalı ki playerContainerRef DOM'a bağlansın
+    const startTimer = setTimeout(() => {
+      if (window.YT && window.YT.Player) {
+        initPlayer();
+      } else {
+        window.onYouTubeIframeAPIReady = initPlayer;
+      }
+    }, 100);
 
     return () => {
+      clearTimeout(startTimer);
       if (playerRef.current) {
         if (playerRef.current._seekCheckInterval) {
           clearInterval(playerRef.current._seekCheckInterval);
@@ -488,11 +494,15 @@ const VideoLibraryPage = ({ user }) => {
         try {
           playerRef.current.destroy();
         } catch (e) {
-          console.log("Cleanup hatası atlandı");
+          // YouTube player zaten temizlenmiş olabilir
         }
         playerRef.current = null;
       }
       setPlayer(null);
+      // Container'ı da temizle
+      if (playerContainerRef.current) {
+        playerContainerRef.current.innerHTML = '';
+      }
     };
   }, [selectedVideo]);
 
