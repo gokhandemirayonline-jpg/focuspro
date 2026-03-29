@@ -6625,7 +6625,7 @@ const FocusProApp = () => {
                     {groups.map(group => (
                       <div key={group} className="mb-3">
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">{group}</p>
-                        <div className="grid grid-cols-1 gap-1.5">
+                        <div className="grid grid-cols-2 gap-1.5">
                           {ALL_PERMS.filter(p => p.group === group).map(perm => (
                             <label
                               key={perm.key}
