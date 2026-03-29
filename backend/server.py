@@ -104,6 +104,28 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         raise HTTPException(status_code=401, detail="Could not validate credentials")
 
 
+# Rol yardımcı fonksiyonları
+ROLE_LABELS = {
+    "admin": "Admin",
+    "manager": "Yönetici",
+    "user": "Normal Kullanıcı"
+}
+
+def is_admin(current_user: dict) -> bool:
+    return current_user.get('role') == 'admin'
+
+def is_manager_or_above(current_user: dict) -> bool:
+    return current_user.get('role') in ('admin', 'manager')
+
+def require_admin(current_user: dict):
+    if not is_admin(current_user):
+        raise HTTPException(status_code=403, detail="Bu işlem için Admin yetkisi gereklidir")
+
+def require_manager_or_above(current_user: dict):
+    if not is_manager_or_above(current_user):
+        raise HTTPException(status_code=403, detail="Bu işlem için en az Yönetici yetkisi gereklidir")
+
+
 # Initialize default admin user
 async def init_default_admin():
     admin = await db.users.find_one({"email": "admin@focuspro.com"}, {"_id": 0})

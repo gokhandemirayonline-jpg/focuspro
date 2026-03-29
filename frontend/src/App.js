@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Home, Calendar, Users, GraduationCap, User, Play, Lock, Check, Shield, Plus, Trash2, Target, ListChecks, MessageSquare, BarChart3, LogOut, Eye, EyeOff, TrendingUp, Clock, CheckCircle2, Menu, X, Edit, ChevronLeft, ChevronRight, CalendarDays, UserPlus, Bell, Search, Book, Film, Bookmark, FileText, Mail, Send, Download, Activity, Award, MapPin, Share2, Star } from 'lucide-react';
+
+// Rol sabitleri
+const ROLE_CONFIG = {
+  admin:   { label: 'Admin',            color: 'bg-purple-100 text-purple-700', level: 3 },
+  manager: { label: 'Yönetici',         color: 'bg-amber-100 text-amber-700',   level: 2 },
+  user:    { label: 'Normal Kullanıcı',  color: 'bg-gray-100 text-gray-600',     level: 1 },
+};
+const getRoleConfig = (role) => ROLE_CONFIG[role] || ROLE_CONFIG['user'];
+const isAdminOrManager = (role) => role === 'admin' || role === 'manager';
 import { authAPI, userAPI, videoCategoryAPI, videoAPI, progressAPI, meetingAPI, taskAPI, goalAPI, reasonAPI, prospectCategoryAPI, prospectAPI, partnerAPI, habitAPI, eventAPI, eventRegistrationAPI, notificationAPI, recommendationAPI, blogAPI, searchAPI, fileAPI, messageAPI, statisticsAPI, activityLogAPI, learningPathAPI, badgeAPI, characterAnalysisAPI, futureCharacterAPI, fullLifeProfileAPI, dreamPriorityAPI } from './services/api';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import * as XLSX from 'xlsx';
@@ -500,9 +509,9 @@ const FocusProApp = () => {
         loadRecommendations(),
         loadBlogs(),
         loadMessages(),
-        currentUser?.role === 'admin' ? loadUsers() : Promise.resolve(),
-        currentUser?.role === 'admin' ? loadStatistics() : Promise.resolve(),
-        currentUser?.role === 'admin' ? loadVideoStatistics() : Promise.resolve(),
+        isAdminOrManager(currentUser?.role) ? loadUsers() : Promise.resolve(),
+        isAdminOrManager(currentUser?.role) ? loadStatistics() : Promise.resolve(),
+        isAdminOrManager(currentUser?.role) ? loadVideoStatistics() : Promise.resolve(),
         currentUser?.role === 'admin' ? loadActivityLogs() : Promise.resolve()
       ]);
     } catch (error) {
@@ -538,7 +547,7 @@ const FocusProApp = () => {
   };
 
   const loadVideoStatistics = async () => {
-    if (currentUser?.role !== 'admin') return;
+    if (!isAdminOrManager(currentUser?.role)) return;
     
     try {
       const response = await videoAPI.getStatistics();
@@ -1003,7 +1012,7 @@ const FocusProApp = () => {
         'ID': formatUserNumber(user.user_number),
         'İsim': user.name,
         'Email': user.email,
-        'Rol': user.role === 'admin' ? 'Admin' : 'Kullanıcı',
+        'Rol': getRoleConfig(user.role).label,
         'Kayıt Tarihi': new Date(user.created_at).toLocaleDateString('tr-TR'),
         'Hedef Sayısı': user.goals_count || 0,
         'Partner Sayısı': user.partners_count || 0,
@@ -1044,7 +1053,7 @@ const FocusProApp = () => {
         formatUserNumber(user.user_number),
         user.name,
         user.email,
-        user.role === 'admin' ? 'Admin' : 'Kullanıcı',
+        getRoleConfig(user.role).label,
         new Date(user.created_at).toLocaleDateString('tr-TR'),
         user.total_activity || 0
       ]);
@@ -2382,7 +2391,7 @@ const FocusProApp = () => {
             {sidebarOpen && <span>İstatistikler</span>}
           </button>
 
-          {currentUser?.role === 'admin' && (
+          {isAdminOrManager(currentUser?.role) && (
             <button
               onClick={() => setCurrentPage('admin')}
               className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
@@ -5329,7 +5338,8 @@ const FocusProApp = () => {
                     >
                       <option value="all">Tümü</option>
                       <option value="admin">Admin</option>
-                      <option value="user">Kullanıcı</option>
+                      <option value="manager">Yönetici</option>
+                      <option value="user">Normal Kullanıcı</option>
                     </select>
                   </div>
                   <div>
@@ -5436,10 +5446,8 @@ const FocusProApp = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'
-                            }`}>
-                              {user.role === 'admin' ? 'Admin' : 'Kullanıcı'}
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleConfig(user.role).color}`}>
+                              {getRoleConfig(user.role).label}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
@@ -6560,8 +6568,9 @@ const FocusProApp = () => {
                   onChange={(e) => setNewUser({...newUser, role: e.target.value})}
                   className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500"
                 >
-                  <option value="user">Kullanıcı</option>
-                  <option value="admin">Admin</option>
+                  <option value="user">🟢 Normal Kullanıcı</option>
+                  <option value="manager">🟡 Yönetici</option>
+                  <option value="admin">🔴 Admin</option>
                 </select>
               </div>
               <div className="flex gap-3">
@@ -6619,10 +6628,8 @@ const FocusProApp = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-sm text-gray-600">Rol:</span>
-                  <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
-                    selectedUserDetail.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'
-                  }`}>
-                    {selectedUserDetail.role === 'admin' ? 'Admin' : 'Kullanıcı'}
+                  <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getRoleConfig(selectedUserDetail.role).color}`}>
+                    {getRoleConfig(selectedUserDetail.role).label}
                   </span>
                 </div>
                 <div>
@@ -7592,7 +7599,7 @@ END:VCALENDAR`;
           <span className="text-[10px] mt-1">Profil</span>
         </button>
         
-        {currentUser?.role === 'admin' && (
+        {isAdminOrManager(currentUser?.role) && (
           <button
             onClick={() => setCurrentPage('admin')}
             className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
