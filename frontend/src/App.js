@@ -163,6 +163,7 @@ const FocusProApp = () => {
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [showProspectModal, setShowProspectModal] = useState(false);
   const [showPartnerModal, setShowPartnerModal] = useState(false);
+  const [selectedPartnerDetail, setSelectedPartnerDetail] = useState(null); // partner kartına tıklandığında detay modalı
   const [showUserModal, setShowUserModal] = useState(false);
   const [showHabitModal, setShowHabitModal] = useState(false);
   const [editingHabit, setEditingHabit] = useState(null);
@@ -2757,10 +2758,17 @@ const FocusProApp = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {partners.map(partner => (
-                  <div key={partner.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <div
+                    key={partner.id}
+                    className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 cursor-pointer hover:shadow-md hover:border-purple-200 transition-all duration-200 group"
+                    onClick={() => {
+                      setSelectedPartner(partner);
+                      setShowPartnerDetailModal(true);
+                    }}
+                  >
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-lg font-bold text-gray-800">{partner.name}</h3>
+                        <h3 className="text-lg font-bold text-gray-800 group-hover:text-purple-700 transition-colors">{partner.name}</h3>
                         <p className="text-sm text-gray-600">{partner.rank}</p>
                       </div>
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -2771,13 +2779,13 @@ const FocusProApp = () => {
                     </div>
 
                     <div className="space-y-2 text-sm text-gray-600 mb-4">
-                      <p>📞 {partner.phone}</p>
-                      <p>📧 {partner.email}</p>
-                      <p>📅 Katılım: {partner.join_date}</p>
-                      <p>📊 Performans: {partner.performance}</p>
+                      {partner.phone && <p>📞 {partner.phone}</p>}
+                      {partner.email && <p>📧 {partner.email}</p>}
+                      {partner.join_date && <p>📅 Katılım: {partner.join_date}</p>}
+                      {partner.performance && <p>📊 Performans: {partner.performance}</p>}
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2" onClick={e => e.stopPropagation()}>
                       <button
                         onClick={() => {
                           setEditingPartner(partner);
@@ -6514,6 +6522,162 @@ const FocusProApp = () => {
       )}
 
       {/* Partner Modal */}
+      {/* ===== PARTNER DETAIL MODAL ===== */}
+      {showPartnerDetailModal && selectedPartner && (() => {
+        const p = selectedPartner;
+        // Bu partner tarafindan referans gösterilen prospects (partner_id eşleşiyor)
+        const linkedProspects = prospects.filter(pr => pr.partner_id === p.id);
+
+        return (
+          <div
+            className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-sm"
+            onClick={() => setShowPartnerDetailModal(false)}
+          >
+            <div
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-t-2xl p-6 text-white">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl font-bold">
+                      {p.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold">{p.name}</h2>
+                      <p className="text-purple-200 mt-0.5">{p.rank || 'Partner'}</p>
+                      <span className={`mt-1 inline-block px-3 py-0.5 rounded-full text-xs font-semibold ${
+                        p.status === 'active' ? 'bg-green-400/30 text-green-100' : 'bg-gray-400/30 text-gray-100'
+                      }`}>
+                        {p.status === 'active' ? '🟢 Aktif' : '⚫ Pasif'}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowPartnerDetailModal(false)}
+                    className="text-white/70 hover:text-white transition-colors"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* İletişim Bilgileri */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">İletişim Bilgileri</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {p.phone && (
+                      <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-3">
+                        <span className="text-xl">📞</span>
+                        <div>
+                          <p className="text-xs text-gray-500">Telefon</p>
+                          <p className="text-sm font-medium text-gray-800">{p.phone}</p>
+                        </div>
+                      </div>
+                    )}
+                    {p.email && (
+                      <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-3">
+                        <span className="text-xl">📧</span>
+                        <div>
+                          <p className="text-xs text-gray-500">Email</p>
+                          <p className="text-sm font-medium text-gray-800 truncate">{p.email}</p>
+                        </div>
+                      </div>
+                    )}
+                    {p.join_date && (
+                      <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-3">
+                        <span className="text-xl">📅</span>
+                        <div>
+                          <p className="text-xs text-gray-500">Katılım Tarihi</p>
+                          <p className="text-sm font-medium text-gray-800">{p.join_date}</p>
+                        </div>
+                      </div>
+                    )}
+                    {p.performance && (
+                      <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-3">
+                        <span className="text-xl">📊</span>
+                        <div>
+                          <p className="text-xs text-gray-500">Performans</p>
+                          <p className="text-sm font-medium text-gray-800">{p.performance}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Eklediği Kişiler */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                    Eklediği Kişiler
+                    <span className="ml-2 bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-bold">
+                      {linkedProspects.length}
+                    </span>
+                  </h3>
+                  {linkedProspects.length === 0 ? (
+                    <div className="bg-gray-50 rounded-xl p-6 text-center">
+                      <p className="text-gray-400 text-sm">Bu partner henüz kimse eklenmemiş</p>
+                      <p className="text-gray-300 text-xs mt-1">Kişi eklerken bu partner'ı seçebilirsiniz</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {linkedProspects.map(pr => (
+                        <div key={pr.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-purple-50 transition-colors">
+                          <div className="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold text-sm">
+                            {pr.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-800 truncate">{pr.name}</p>
+                            <p className="text-xs text-gray-500 truncate">{pr.phone || pr.email || '—'}</p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {[1,2,3,4,5].map(s => (
+                              <span key={s} className={`text-xs ${s <= (pr.rating || 0) ? 'text-yellow-400' : 'text-gray-300'}`}>★</span>
+                            ))}
+                          </div>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${
+                            pr.status === 'converted' ? 'bg-green-100 text-green-700' :
+                            pr.status === 'interested' ? 'bg-blue-100 text-blue-700' :
+                            pr.status === 'contacted' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-gray-100 text-gray-600'
+                          }`}>
+                            {pr.status === 'converted' ? 'Dönüştü' :
+                             pr.status === 'interested' ? 'İlgili' :
+                             pr.status === 'contacted' ? 'İletişim' : 'Yeni'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Aksiyon Butonları */}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => {
+                      setShowPartnerDetailModal(false);
+                      setEditingPartner(p);
+                      setNewPartner(p);
+                      setShowPartnerModal(true);
+                    }}
+                    className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    ✏️ Düzenle
+                  </button>
+                  <button
+                    onClick={() => setShowPartnerDetailModal(false)}
+                    className="flex-1 border border-gray-200 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    Kapat
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {showPartnerModal && (
         <div 
           className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"

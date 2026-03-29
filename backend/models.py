@@ -548,6 +548,7 @@ class ProspectBase(BaseModel):
     category_id: str = ""  # Kategori ID
     rating: int = 0  # 0-5 yıldız puanlama
     custom_fields: dict = {}  # Dynamic custom fields data
+    partner_id: str = ""  # Hangi partner referans etti
 
 class ProspectCreate(ProspectBase):
     pass
