@@ -138,7 +138,11 @@ const FocusProApp = () => {
   const [eventParticipationData, setEventParticipationData] = useState([]);
   
   // Admin Panel tab state
-  const [adminTab, setAdminTab] = useState('users'); // users, trainings, logs
+  const [adminTab, setAdminTab] = useState('users'); // users, trainings, logs, badges
+  const [badges, setBadges] = useState([]);
+  const [showBadgeModal, setShowBadgeModal] = useState(false);
+  const [editingBadge, setEditingBadge] = useState(null);
+  const [badgeForm, setBadgeForm] = useState({ name: '', description: '', icon: '', criteria: '' });
   
   // Activity Log states
   const [activityLogs, setActivityLogs] = useState([]);
@@ -1071,6 +1075,39 @@ const FocusProApp = () => {
       alert('PDF dosyası indirildi!');
     } catch (error) {
       alert('PDF dosyası oluşturulamadı!');
+    }
+  };
+
+  // Badge functions
+  const loadBadges = async () => {
+    try {
+      const res = await badgeAPI.getAll();
+      setBadges(res.data || []);
+    } catch (error) {
+      console.error('Rozetler yüklenemedi:', error);
+    }
+  };
+
+  const saveBadge = async () => {
+    if (!badgeForm.name || !badgeForm.icon) {
+      alert('İsim ve ikon zorunludur!');
+      return;
+    }
+    try {
+      await badgeAPI.update(editingBadge.id, {
+        name: badgeForm.name,
+        description: badgeForm.description,
+        icon: badgeForm.icon,
+        criteria: badgeForm.criteria,
+        type: editingBadge.type,
+        reward_type: editingBadge.reward_type
+      });
+      await loadBadges();
+      setShowBadgeModal(false);
+      setEditingBadge(null);
+    } catch (error) {
+      console.error('Rozet güncellenemedi:', error);
+      alert('Rozet güncellenirken bir hata oluştu!');
     }
   };
 
@@ -5308,6 +5345,16 @@ const FocusProApp = () => {
                   >
                     Video Yönetimi
                   </button>
+                  <button
+                    onClick={() => { setAdminTab('badges'); loadBadges(); }}
+                    className={`px-4 py-2 font-medium transition-all ${
+                      adminTab === 'badges'
+                        ? 'text-purple-600 border-b-2 border-purple-600'
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    🏅 Rozet Yönetimi
+                  </button>
                 </div>
               </div>
 
@@ -5719,13 +5766,166 @@ const FocusProApp = () => {
               {adminTab === 'videos' && (
                 <AdminVideoManagement user={currentUser} />
               )}
+
+              {/* Badges Management Tab */}
+              {adminTab === 'badges' && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <div className="flex items-center gap-2 mb-6">
+                    <span className="text-2xl">🏅</span>
+                    <h3 className="text-xl font-bold text-gray-800">Rozet Yönetimi</h3>
+                    <span className="ml-auto text-sm text-gray-400">{badges.length} rozet</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {badges.map(badge => (
+                      <div
+                        key={badge.id}
+                        className="relative border border-gray-100 rounded-xl p-4 hover:shadow-md hover:border-purple-200 transition-all group"
+                      >
+                        {/* Badge type pill */}
+                        <span className={`absolute top-3 right-3 text-xs px-2 py-0.5 rounded-full font-medium ${
+                          badge.type === 'auto'
+                            ? 'bg-blue-100 text-blue-600'
+                            : 'bg-amber-100 text-amber-600'
+                        }`}>
+                          {badge.type === 'auto' ? 'Otomatik' : 'Manuel'}
+                        </span>
+
+                        {/* Icon + Name */}
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-4xl">{badge.icon}</span>
+                          <div>
+                            <p className="font-bold text-gray-800 text-sm">{badge.name}</p>
+                            <p className="text-xs text-gray-400">{badge.reward_type}</p>
+                          </div>
+                        </div>
+
+                        {/* Description */}
+                        <p className="text-sm text-gray-600 mb-1">{badge.description}</p>
+                        {badge.criteria && (
+                          <p className="text-xs text-gray-400 italic">📍 {badge.criteria}</p>
+                        )}
+
+                        {/* Edit button */}
+                        <button
+                          onClick={() => {
+                            setEditingBadge(badge);
+                            setBadgeForm({
+                              name: badge.name,
+                              description: badge.description,
+                              icon: badge.icon,
+                              criteria: badge.criteria || ''
+                            });
+                            setShowBadgeModal(true);
+                          }}
+                          className="mt-3 w-full text-sm py-1.5 rounded-lg border border-purple-200 text-purple-600 hover:bg-purple-50 transition-all"
+                        >
+                          ✏️ Düzenle
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
 
       {/* MODALS */}
-      
+
+      {/* Badge Edit Modal */}
+      {showBadgeModal && editingBadge && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          onClick={() => setShowBadgeModal(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl w-full max-w-md p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">{badgeForm.icon || editingBadge.icon}</span>
+                <h3 className="text-lg font-bold text-gray-800">Rozet Düzenle</h3>
+              </div>
+              <button onClick={() => setShowBadgeModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Icon */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">İkon (Emoji)</label>
+                <input
+                  type="text"
+                  value={badgeForm.icon}
+                  onChange={(e) => setBadgeForm({ ...badgeForm, icon: e.target.value })}
+                  className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 text-2xl"
+                  placeholder="🏆"
+                  maxLength={4}
+                />
+              </div>
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">İsim</label>
+                <input
+                  type="text"
+                  value={badgeForm.name}
+                  onChange={(e) => setBadgeForm({ ...badgeForm, name: e.target.value })}
+                  className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                  placeholder="Rozet ismi"
+                />
+              </div>
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
+                <input
+                  type="text"
+                  value={badgeForm.description}
+                  onChange={(e) => setBadgeForm({ ...badgeForm, description: e.target.value })}
+                  className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                  placeholder="Rozet nasıl kazanılır?"
+                />
+              </div>
+              {/* Criteria */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Kriter (isteğe bağlı)</label>
+                <input
+                  type="text"
+                  value={badgeForm.criteria}
+                  onChange={(e) => setBadgeForm({ ...badgeForm, criteria: e.target.value })}
+                  className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                  placeholder="Hangi koşul sağlandığında verilir?"
+                />
+              </div>
+              {/* Read-only info */}
+              <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-500 space-y-1">
+                <p><span className="font-medium">Tür:</span> {editingBadge.type === 'auto' ? 'Otomatik' : 'Manuel'}</p>
+                <p><span className="font-medium">Ödül Tipi:</span> {editingBadge.reward_type}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={saveBadge}
+                className="flex-1 bg-purple-600 text-white py-2.5 rounded-lg hover:bg-purple-700 font-medium"
+              >
+                Kaydet
+              </button>
+              <button
+                onClick={() => setShowBadgeModal(false)}
+                className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50"
+              >
+                İptal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Meeting Modal */}
       {showMeetingModal && (
         <div 
