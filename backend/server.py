@@ -413,14 +413,12 @@ async def get_users(current_user: dict = Depends(get_current_user)):
     if current_user['role'] == 'admin':
         # Admin - tüm kullanıcıları gör
         users = await db.users.find({}, {"_id": 0, "password": 0}).to_list(1000)
-    elif current_user['role'] == 'manager':
-        # Manager - sadece kendisinin eklediği kullanıcıları gör
+    else:
+        # Manager ve User - sadece kendisinin eklediği kullanıcıları gör
         users = await db.users.find(
             {"created_by": current_user['id']},
             {"_id": 0, "password": 0}
         ).to_list(1000)
-    else:
-        raise HTTPException(status_code=403, detail="Erişim reddedildi")
     
     for user in users:
         if 'user_number' not in user:
@@ -429,19 +427,35 @@ async def get_users(current_user: dict = Depends(get_current_user)):
 
 @api_router.post("/users", response_model=UserResponse)
 async def create_user(user_data: UserCreate, current_user: dict = Depends(get_current_user)):
+    # Sadece admin'ler başka admin veya manager oluşturabilir
+    if current_user['role'] != 'admin' and user_data.role in ['admin', 'manager']:
+        raise HTTPException(status_code=403, detail="Sadece normal kullanıcı yetkisiyle kişi ekleyebilirsiniz")
+    
+    # Kullanıcılar sadece user rolünde kişi ekleyebilmeli (eğer UI override etmediyse)
     if current_user['role'] != 'admin':
-        raise HTTPException(status_code=403, detail="Admin access required")
+        user_data.role = 'user'
     
     # Email çakışma kontrolü
     existing_email = await db.users.find_one({"email": user_data.email}, {"_id": 0})
     if existing_email:
         raise HTTPException(status_code=400, detail="Bu email adresi zaten kayıtlı")
     
-    # user_number zorunlu ve 8 haneli olmalı
-    if user_data.user_number is None:
-        raise HTTPException(status_code=400, detail="ID numarası zorunludur")
+    # user_number zorunlu ve 8 haneli olmalı. Eğer gelmemişse otomatik oluştur (özellikle takım üyeleri eklerken)
+    import random
+    if user_data.user_number is None or user_data.user_number == '':
+        while True:
+            new_number = random.randint(10000000, 99999999)
+            existing_number = await db.users.find_one({"user_number": new_number}, {"_id": 0})
+            if not existing_number:
+                user_data.user_number = new_number
+                break
     
     user_number = user_data.user_number
+    try:
+        user_number = int(user_number)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="ID numarası geçerli bir sayı olmalıdır")
+    
     if not (10000000 <= user_number <= 99999999):
         raise HTTPException(status_code=400, detail="ID numarası 8 haneli olmalıdır (10000000-99999999)")
     

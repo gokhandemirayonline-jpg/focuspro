@@ -164,6 +164,7 @@ const FocusProApp = () => {
   const [showProspectModal, setShowProspectModal] = useState(false);
   const [showPartnerModal, setShowPartnerModal] = useState(false);
   const [selectedPartnerDetail, setSelectedPartnerDetail] = useState(null); // partner kartına tıklandığında detay modalı
+  const [expandedUserPartners, setExpandedUserPartners] = useState({}); // admin panelinde açık olan kullanıcı partner satırları
   const [showUserModal, setShowUserModal] = useState(false);
   const [showHabitModal, setShowHabitModal] = useState(false);
   const [editingHabit, setEditingHabit] = useState(null);
@@ -515,7 +516,7 @@ const FocusProApp = () => {
         loadRecommendations(),
         loadBlogs(),
         loadMessages(),
-        isAdminOrManager(currentUser?.role) ? loadUsers() : Promise.resolve(),
+        loadUsers(),
         isAdminOrManager(currentUser?.role) ? loadStatistics() : Promise.resolve(),
         isAdminOrManager(currentUser?.role) ? loadVideoStatistics() : Promise.resolve(),
         currentUser?.role === 'admin' ? loadActivityLogs() : Promise.resolve()
@@ -1867,24 +1868,23 @@ const FocusProApp = () => {
     });
   };
 
-  const viewUserDetails = async (user) => {
-    setSelectedUserDetail(user);
+  const viewUserDetails = async (user_param) => {
+    setSelectedUserDetail(user_param);
     setShowUserDetailModal(true);
     
     // Load user activities
     try {
-      const [goalsRes, partnersRes, prospectsRes, reasonsRes] = await Promise.all([
+      const [goalsRes, prospectsRes, reasonsRes] = await Promise.all([
         goalAPI.getAll(),
-        partnerAPI.getAll(),
         prospectAPI.getAll(),
         reasonAPI.getAll()
       ]);
       
       setUserActivities({
-        goals: goalsRes.data.filter(g => g.user_id === user.id),
-        partners: partnersRes.data.filter(p => p.user_id === user.id),
-        prospects: prospectsRes.data.filter(p => p.user_id === user.id),
-        reasons: reasonsRes.data.filter(r => r.user_id === user.id)
+        goals: goalsRes.data.filter(g => g.user_id === user_param.id),
+        partners: users.filter(u => u.created_by === user_param.id),
+        prospects: prospectsRes.data.filter(p => p.user_id === user_param.id),
+        reasons: reasonsRes.data.filter(r => r.user_id === user_param.id)
       });
     } catch (error) {
       console.error('Kullanıcı aktiviteleri yüklenemedi:', error);
@@ -2358,13 +2358,13 @@ const FocusProApp = () => {
           </button>
 
           <button
-            onClick={() => setCurrentPage('partners')}
+            onClick={() => setCurrentPage('team')}
             className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
-              currentPage === 'partners' ? 'bg-white/20' : 'hover:bg-white/10'
+              currentPage === 'team' ? 'bg-white/20' : 'hover:bg-white/10'
             }`}
           >
             <Users size={20} />
-            {sidebarOpen && <span>Partnerler</span>}
+            {sidebarOpen && <span>Ekibim</span>}
           </button>
 
           <button
@@ -2738,26 +2738,26 @@ const FocusProApp = () => {
             </div>
           )}
 
-          {/* PARTNERS PAGE */}
-          {currentPage === 'partners' && (
+          {/* EKIBIM PAGE */}
+          {currentPage === 'team' && (
             <div>
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold text-gray-800">Partnerler</h2>
+                <h2 className="text-3xl font-bold text-gray-800">Ekibim</h2>
                 <button
                   onClick={() => {
-                    setShowPartnerModal(true);
-                    setEditingPartner(null);
-                    setNewPartner({ name: '', phone: '', email: '', rank: '', join_date: '', performance: '', status: 'active' });
+                    setShowUserModal(true);
+                    setEditingUser(null);
+                    setNewUser({ name: '', email: '', user_number: '', role: 'user', permissions: [] });
                   }}
                   className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
                 >
                   <Plus size={20} />
-                  Yeni Partner
+                  Kişi Ekle
                 </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {partners.map(partner => (
+                {users.filter(u => u.created_by === currentUser?.id).map(partner => (
                   <div
                     key={partner.id}
                     className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 cursor-pointer hover:shadow-md hover:border-purple-200 transition-all duration-200 group"
@@ -2769,7 +2769,7 @@ const FocusProApp = () => {
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <h3 className="text-lg font-bold text-gray-800 group-hover:text-purple-700 transition-colors">{partner.name}</h3>
-                        <p className="text-sm text-gray-600">{partner.rank}</p>
+                        <p className="text-sm text-gray-600">{partner.career_title || (partner.role === 'manager' ? 'Yönetici' : 'Kullanıcı')}</p>
                       </div>
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         partner.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
@@ -2781,23 +2781,34 @@ const FocusProApp = () => {
                     <div className="space-y-2 text-sm text-gray-600 mb-4">
                       {partner.phone && <p>📞 {partner.phone}</p>}
                       {partner.email && <p>📧 {partner.email}</p>}
-                      {partner.join_date && <p>📅 Katılım: {partner.join_date}</p>}
-                      {partner.performance && <p>📊 Performans: {partner.performance}</p>}
+                      <p>🆔 ID: {partner.user_number}</p>
                     </div>
 
                     <div className="flex gap-2" onClick={e => e.stopPropagation()}>
                       <button
                         onClick={() => {
-                          setEditingPartner(partner);
-                          setNewPartner(partner);
-                          setShowPartnerModal(true);
+                          setEditingUser(partner);
+                          setNewUser({ ...partner, password: '' });
+                          setShowUserModal(true);
                         }}
                         className="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm hover:bg-blue-700"
                       >
                         Düzenle
                       </button>
                       <button
-                        onClick={() => deletePartner(partner.id)}
+                        onClick={async () => {
+                          if (window.confirm('Bu ağ üyesini silmek istediğinize emin misiniz?')) {
+                            try {
+                              await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/users/${partner.id}`, {
+                                method: 'DELETE',
+                                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                              });
+                              loadUsers();
+                            } catch (e) {
+                              console.error(e);
+                            }
+                          }
+                        }}
                         className="px-4 bg-red-600 text-white py-2 rounded-lg text-sm hover:bg-red-700"
                       >
                         <Trash2 size={16} />
@@ -2805,9 +2816,9 @@ const FocusProApp = () => {
                     </div>
                   </div>
                 ))}
-                {partners.length === 0 && (
+                {users.filter(u => u.created_by === currentUser?.id).length === 0 && (
                   <div className="col-span-3 text-center py-12 text-gray-500">
-                    Henüz partner eklenmemiş
+                    Henüz ekibinizde kimse yok. Sağ üstten Kişi Ekle butonunu kullanarak ekibinizi kurabilirsiniz.
                   </div>
                 )}
               </div>
@@ -5325,14 +5336,14 @@ const FocusProApp = () => {
               <div className="mb-6 border-b border-gray-200">
                 <div className="flex gap-4">
                   <button
-                    onClick={() => setAdminTab('users')}
+                    onClick={() => { setAdminTab('users'); loadPartners(); }}
                     className={`px-4 py-2 font-medium transition-all ${
                       adminTab === 'users'
                         ? 'text-purple-600 border-b-2 border-purple-600'
                         : 'text-gray-600 hover:text-gray-800'
                     }`}
                   >
-                    Kullanıcı Yönetimi
+                    Kullanıcı & Partnerler
                   </button>
                   <button
                     onClick={() => setAdminTab('logs')}
@@ -5480,11 +5491,11 @@ const FocusProApp = () => {
                           />
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID No</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İsim</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İsim & Partnerler</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email / İletişim</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol / Rütbe</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ekleyen</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kayıt Tarihi</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarih</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
                       </tr>
                     </thead>
@@ -5505,7 +5516,6 @@ const FocusProApp = () => {
                           const creatorLabel = creatorUser ? creatorUser.name : (creatorId === '__admin__' ? 'Admin (Sistem)' : 'Bilinmiyor');
 
                           if (Object.keys(grouped).length > 1) {
-                            // Grup başlığı - sadece birden fazla grup varsa göster
                             rows.push(
                               <tr key={`group-${creatorId}`}>
                                 <td colSpan={8} className="px-6 py-2 bg-purple-50 border-t border-purple-100">
@@ -5518,6 +5528,10 @@ const FocusProApp = () => {
                           }
 
                           groupUsers.forEach(user => {
+                            // Bu kullanıcının partnerlerini bul
+                            const userPartners = partners.filter(p => p.user_id === user.id);
+                            const isExpanded = expandedUserPartners[user.id];
+
                             rows.push(
                               <tr key={user.id} className="hover:bg-gray-50">
                                 <td className="px-4 py-4">
@@ -5531,7 +5545,28 @@ const FocusProApp = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-purple-600">
                                   #{formatUserNumber(user.user_number)}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="flex items-center gap-2">
+                                    {userPartners.length > 0 && (
+                                      <button
+                                        onClick={() => setExpandedUserPartners(prev => ({...prev, [user.id]: !prev[user.id]}))}
+                                        className="text-purple-400 hover:text-purple-600 transition-colors"
+                                        title={isExpanded ? 'Gizle' : `${userPartners.length} partner göster`}
+                                      >
+                                        {isExpanded
+                                          ? <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="18 15 12 9 6 15"/></svg>
+                                          : <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                        }
+                                      </button>
+                                    )}
+                                    <span className="text-sm font-medium text-gray-900">{user.name}</span>
+                                    {userPartners.length > 0 && (
+                                      <span className="ml-1 bg-purple-100 text-purple-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
+                                        {userPartners.length}
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleConfig(user.role).color}`}>
@@ -5598,6 +5633,46 @@ const FocusProApp = () => {
                                 </td>
                               </tr>
                             );
+
+                            // Eğer açıksa partnerlerini göster
+                            if (isExpanded && userPartners.length > 0) {
+                              userPartners.forEach(partner => {
+                                rows.push(
+                                  <tr
+                                    key={`partner-${partner.id}`}
+                                    className="bg-purple-50/50 hover:bg-purple-50 cursor-pointer"
+                                    onClick={() => { setSelectedPartner(partner); setShowPartnerDetailModal(true); }}
+                                  >
+                                    <td className="px-4 py-3"></td>
+                                    <td className="px-6 py-3">
+                                      <span className="text-xs text-purple-400 font-medium">Partner</span>
+                                    </td>
+                                    <td className="px-6 py-3">
+                                      <div className="flex items-center gap-2 pl-5">
+                                        <span className="w-2 h-2 rounded-full bg-purple-300 flex-shrink-0"></span>
+                                        <span className="text-sm font-medium text-purple-800">{partner.name}</span>
+                                        <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                                          partner.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                                        }`}>
+                                          {partner.status === 'active' ? 'Aktif' : 'Pasif'}
+                                        </span>
+                                      </div>
+                                    </td>
+                                    <td className="px-6 py-3 text-sm text-gray-500">{partner.email || partner.phone || '—'}</td>
+                                    <td className="px-6 py-3">
+                                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                                        {partner.rank || 'Partner'}
+                                      </span>
+                                    </td>
+                                    <td className="px-6 py-3 text-xs text-gray-400">{user.name}</td>
+                                    <td className="px-6 py-3 text-sm text-gray-500">{partner.join_date || '—'}</td>
+                                    <td className="px-6 py-3">
+                                      <span className="text-xs text-purple-400 italic">Detay için tıkla →</span>
+                                    </td>
+                                  </tr>
+                                );
+                              });
+                            }
                           });
                         });
                         return rows;
@@ -6951,11 +7026,11 @@ const FocusProApp = () => {
                   className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500"
                 />
               </div>
-              {/* ID Numarası - Her zaman göster (yeni: zorunlu, düzenle: opsiyonel) */}
+              {/* ID Numarası - Opsiyonel (Boş bırakılırsa otomatik atanır) */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  ID Numarası {!editingUser && <span className="text-red-500">*</span>}
-                  {editingUser && <span className="text-xs text-gray-400 ml-1">(değiştirmek için yazın)</span>}
+                  ID Numarası
+                  <span className="text-xs text-gray-400 ml-1">(boş bırakılırsa otomatik atanır)</span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-purple-500 font-bold text-sm">#</span>
@@ -6967,7 +7042,7 @@ const FocusProApp = () => {
                       const val = e.target.value.replace(/\D/g, '');
                       setNewUser({...newUser, user_number: val});
                     }}
-                    placeholder="8 haneli numara (ör: 12345678)"
+                    placeholder="8 haneli numara"
                     className={`w-full pl-8 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 font-mono tracking-widest ${
                       newUser.user_number && newUser.user_number.length > 0 && newUser.user_number.length !== 8
                         ? 'border-red-300 bg-red-50'
@@ -6983,22 +7058,24 @@ const FocusProApp = () => {
                 {newUser.user_number && String(newUser.user_number).length === 8 && (
                   <p className="text-xs text-emerald-600 mt-1">✓ ID: {newUser.user_number}</p>
                 )}
-                {!editingUser && (
-                  <p className="text-xs text-gray-400 mt-1">Kullanıcı bu ID ile Şifre Belirle ekranından giriş yapacak</p>
-                )}
+                <p className="text-xs text-gray-400 mt-1">Kullanıcı bu ID ile Şifre Belirle ekranından giriş yapacak</p>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Rol</label>
-                <select
-                  value={newUser.role}
-                  onChange={(e) => setNewUser({...newUser, role: e.target.value})}
-                  className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="user">🟢 Normal Kullanıcı</option>
-                  <option value="manager">🟡 Yönetici</option>
-                  <option value="admin">🔴 Admin</option>
-                </select>
-              </div>
+
+              {/* Sadece Admin yetkisi olanlar rol seçebilir */}
+              {currentUser?.role === 'admin' && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Rol</label>
+                  <select
+                    value={newUser.role}
+                    onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                    className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="user">🟢 Normal Kullanıcı</option>
+                    <option value="manager">🟡 Yönetici</option>
+                    <option value="admin">🔴 Admin</option>
+                  </select>
+                </div>
+              )}
 
               {/* YETKİNLİK ATAMA - Sadece Yönetici rolü seçilince göster */}
               {newUser.role === 'manager' && (() => {
@@ -8045,13 +8122,13 @@ END:VCALENDAR`;
         </button>
         
         <button
-          onClick={() => setCurrentPage('partners')}
+          onClick={() => setCurrentPage('team')}
           className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
-            currentPage === 'partners' ? 'text-purple-600 bg-purple-50' : 'text-gray-500'
+            currentPage === 'team' ? 'text-purple-600 bg-purple-50' : 'text-gray-500'
           }`}
         >
           <Users size={20} />
-          <span className="text-[10px] mt-1">Partnerler</span>
+          <span className="text-[10px] mt-1">Ekibim</span>
         </button>
         
         <button

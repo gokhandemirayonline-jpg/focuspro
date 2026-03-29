@@ -15,9 +15,8 @@ const StatisticsPage = ({ user, preSelectUserId, onClearPreselect }) => {
   const [timePeriod, setTimePeriod] = useState('week');
   const [loading, setLoading] = useState(true);
   const [selectedUserId, setSelectedUserId] = useState(preSelectUserId || null);
-  const [users, setUsers] = useState([]);
-  const [myPartners, setMyPartners] = useState([]); // normal user'in partnerleri
-  const [viewMode, setViewMode] = useState('self'); // 'self' | user_id | partner:<partner_id>
+  const [myTeam, setMyTeam] = useState([]); // currentUser'ın doğrudan eklediği kişiler
+  const [allSystemUsers, setAllSystemUsers] = useState([]); // Sadece Admin için tüm liste (eğer gerekirse)
 
   // Dışarıdan preselect gelirse uygula
   useEffect(() => {
@@ -37,27 +36,11 @@ const StatisticsPage = ({ user, preSelectUserId, onClearPreselect }) => {
   });
 
   const isAdmin = user?.role === 'admin';
-  const isManager = user?.role === 'manager';
-  const canSeeOtherUsers = isAdmin || isManager;
 
   useEffect(() => {
-    if (canSeeOtherUsers) {
-      loadUsers();
-    } else {
-      // Normal kullanıcı - kendi partnerlerini yükle
-      loadMyPartners();
-    }
+    loadUsers();
     loadAllStats();
   }, [timePeriod, selectedUserId]);
-
-  const loadMyPartners = async () => {
-    try {
-      const res = await partnerAPI.getAll();
-      setMyPartners(Array.isArray(res.data) ? res.data : []);
-    } catch (error) {
-      console.error('Partnerler yüklenemedi:', error);
-    }
-  };
 
   const loadUsers = async () => {
     try {
@@ -67,19 +50,23 @@ const StatisticsPage = ({ user, preSelectUserId, onClearPreselect }) => {
         }
       });
       const data = await response.json();
-      setUsers(Array.isArray(data) ? data : []);
+      const usersList = Array.isArray(data) ? data : [];
+      setAllSystemUsers(usersList);
+      
+      // Herhangi bir rol için, "Ekibim" => o kişinin kendisinin yarattığı kullanıcılar
+      const team = usersList.filter(u => u.created_by === user.id);
+      setMyTeam(team);
     } catch (error) {
       console.error('Kullanıcılar yüklenirken hata:', error);
     }
   };
 
+
+
   const loadAllStats = async () => {
     try {
       setLoading(true);
-      // selectedUserId bir partnerden geliyorsa istatistikleri o partner sahibinin gözünden yükle
-      const effectiveUserId = selectedUserId && selectedUserId.startsWith('partner:')
-        ? null  // partner'in kendi istatistikleri yok - placeholder gösterilecek
-        : selectedUserId;
+      const effectiveUserId = selectedUserId;
 
       const [overview, tasks, meetings, partners, education, performance, habits] = await Promise.all([
         statsAPI.getOverview(effectiveUserId),
@@ -133,18 +120,15 @@ const StatisticsPage = ({ user, preSelectUserId, onClearPreselect }) => {
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             {selectedUserId
               ? (() => {
-                  const foundUser = users.find(u => u.id === selectedUserId);
-                  const foundPartner = myPartners.find(p => p.id === selectedUserId);
-                  const name = foundUser?.name || foundPartner?.name || 'Kullanıcı';
-                  return `${name} - Kişisel performans verileri`;
+                  const foundUser = allSystemUsers.find(u => u.id === selectedUserId);
+                  const name = foundUser?.name || 'Kullanıcı';
+                  return `${name} - Başarı metrikleri`;
                 })()
               : isAdmin
-                ? 'Sistem geneli performans ve analiz verileri'
-                : isManager
-                  ? 'Ekibinizdeki kullanıcıların performans verileri'
-                  : myPartners.length > 0
-                    ? 'Kendi verileriniz veya partnerinizi seçin'
-                    : 'Kişisel performans ve analiz verileri'
+                ? 'Sistem geneli performans verileri'
+                : myTeam.length > 0
+                  ? 'Kendi verileriniz veya ekibinizden birini seçin'
+                  : 'Kişisel performans ve analiz verileri'
             }
           </p>
         </div>
@@ -168,38 +152,20 @@ const StatisticsPage = ({ user, preSelectUserId, onClearPreselect }) => {
 
       {/* Controls */}
       <div className="mb-6 flex gap-3 flex-wrap items-center">
-        {/* Admin & Manager: tüm kullanıcıları göster */}
-        {canSeeOtherUsers && users.length > 0 && (
-          <select
-            value={selectedUserId || ''}
-            onChange={(e) => setSelectedUserId(e.target.value || null)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
-          >
-            {isAdmin && <option value="">🌐 Sistem Geneli</option>}
-            {isManager && <option value="">👤 Kendi Verilerim</option>}
-            {users.map(u => (
-              <option key={u.id} value={u.id}>
-                👤 {u.name} ({u.user_number ? String(u.user_number) : u.id.slice(0,6)})
-              </option>
-            ))}
-          </select>
-        )}
-
-        {/* Normal kullanıcı: partnerleri göster */}
-        {!canSeeOtherUsers && myPartners.length > 0 && (
-          <select
-            value={selectedUserId || ''}
-            onChange={(e) => setSelectedUserId(e.target.value || null)}
-            className="px-4 py-2 border border-green-300 dark:border-green-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500"
-          >
-            <option value="">👤 Kendi Verilerim</option>
-            {myPartners.map(p => (
-              <option key={p.id} value={p.id}>
-                🤝 {p.name} ({p.rank || 'Partner'})
-              </option>
-            ))}
-          </select>
-        )}
+        {/* Admin & Manager & User: Kendi Takımını / İstatistiklerini Gör */}
+        <select
+          value={selectedUserId || ''}
+          onChange={(e) => setSelectedUserId(e.target.value || null)}
+          className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500"
+        >
+          {isAdmin && <option value="">🌐 Sistem Geneli Özeti</option>}
+          <option value={isAdmin ? user.id : ""}>👤 Kendi Verilerim</option>
+          {myTeam.map(u => (
+            <option key={u.id} value={u.id}>
+              🤝 {u.name} ({u.role === 'manager' ? 'Yönetici' : 'Kullanıcı'})
+            </option>
+          ))}
+        </select>
         <select
           value={timePeriod}
           onChange={(e) => setTimePeriod(e.target.value)}
