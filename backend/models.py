@@ -5,10 +5,23 @@ import uuid
 
 
 # User Models
+ALL_PERMISSIONS = [
+    {"key": "users_view",        "label": "Kullanıcıları Görüntüle",      "icon": "👥", "group": "Kullanıcı Yönetimi"},
+    {"key": "users_manage",      "label": "Kullanıcı Ekle/Düzenle",     "icon": "⚙️", "group": "Kullanıcı Yönetimi"},
+    {"key": "statistics_view",  "label": "İstatistikleri Görüntüle",  "icon": "📊", "group": "Raporlama"},
+    {"key": "reports_download", "label": "Rapor İndir",               "icon": "📥", "group": "Raporlama"},
+    {"key": "videos_manage",    "label": "Video Yönetimi",           "icon": "🎥", "group": "İçerik"},
+    {"key": "blogs_manage",     "label": "Blog Yönetimi",            "icon": "📝", "group": "İçerik"},
+    {"key": "habits_manage",    "label": "Alışkanlık Yönetimi",      "icon": "📦", "group": "İçerik"},
+    {"key": "events_manage",    "label": "Etkinlik Yönetimi",        "icon": "📅", "group": "İçerik"},
+    {"key": "badges_manage",    "label": "Rozet Yönetimi",           "icon": "🏅", "group": "Kullanıcı Yönetimi"},
+    {"key": "notifications_send","label": "Bildirim Gönder",         "icon": "🔔", "group": "Kullanıcı Yönetimi"},
+]
+
 class UserBase(BaseModel):
     name: str
     email: str
-    role: str = "user"  # user or admin
+    role: str = "user"  # user, manager or admin
     
     # Profil bilgileri
     profile_photo: str = ""  # Base64 encoded image
@@ -27,6 +40,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str = ""   # Admin oluştururken boş, kullanıcı kendisi belirler
     user_number: Optional[int] = None  # Admin tarafından set edilir - 8 haneli
+    permissions: List[str] = []  # Manager için yetkinlikler
 
 class UserLogin(BaseModel):
     email_or_id: str  # Email veya ID numarası
@@ -51,6 +65,7 @@ class UserAdminUpdate(BaseModel):
     password: Optional[str] = None
     role: Optional[str] = None
     user_number: Optional[int] = None
+    permissions: Optional[List[str]] = None
     career_title: Optional[str] = None
     phone: Optional[str] = None
     city: Optional[str] = None
@@ -71,6 +86,7 @@ class User(UserBase):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     password: str  # Password field for database storage
     user_number: int = Field(default=0)  # ID numarası
+    permissions: List[str] = Field(default=[])  # Manager yetkinlikleri
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class UserResponse(BaseModel):
@@ -79,6 +95,7 @@ class UserResponse(BaseModel):
     email: str
     role: str
     user_number: int
+    permissions: List[str] = []
     created_at: datetime
     profile_photo: str = ""
     career_title: str = ""

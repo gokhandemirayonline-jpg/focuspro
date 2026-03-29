@@ -1665,11 +1665,12 @@ const FocusProApp = () => {
     
     try {
       if (editingUser) {
-        // Düzenlemede isim, email, rol ve ID güncellenebilir
+        // Düzenlemede isim, email, rol, ID ve yetkinlikler güncellenebilir
         const updateData = {
           name: newUser.name,
           email: newUser.email,
-          role: newUser.role
+          role: newUser.role,
+          permissions: newUser.role === 'manager' ? (newUser.permissions || []) : []
         };
         // ID numarası değiştiyse ekle
         if (newUser.user_number) {
@@ -1689,13 +1690,14 @@ const FocusProApp = () => {
           name: newUser.name,
           email: newUser.email,
           user_number: parseInt(newUser.user_number, 10),
-          role: newUser.role
+          role: newUser.role,
+          permissions: newUser.role === 'manager' ? (newUser.permissions || []) : []
         });
         alert(`Kullanıcı başarıyla eklendi!\nKullanıcı ID ${newUser.user_number} ile giriş yaparak Şifre Belirle butonuyla şifresini oluşturabilir.`);
       }
       
       await loadUsers();
-      setNewUser({ name: '', email: '', user_number: '', role: 'user' });
+      setNewUser({ name: '', email: '', user_number: '', role: 'user', permissions: [] });
       setEditingUser(null);
       setShowUserModal(false);
     } catch (error) {
@@ -5318,7 +5320,7 @@ const FocusProApp = () => {
                     onClick={() => {
                       setShowUserModal(true);
                       setEditingUser(null);
-                      setNewUser({ name: '', email: '', user_number: '', role: 'user' });
+                      setNewUser({ name: '', email: '', user_number: '', role: 'user', permissions: [] });
                     }}
                     className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
                   >
@@ -5466,7 +5468,8 @@ const FocusProApp = () => {
                                 setEditingUser(user);
                                 setNewUser({ 
                                   ...user, 
-                                  user_number: user.user_number !== undefined ? String(user.user_number) : '' 
+                                  user_number: user.user_number !== undefined ? String(user.user_number) : '',
+                                  permissions: user.permissions || []
                                 });
                                 setShowUserModal(true);
                               }}
@@ -6573,6 +6576,85 @@ const FocusProApp = () => {
                   <option value="admin">🔴 Admin</option>
                 </select>
               </div>
+
+              {/* YETKİNLİK ATAMA - Sadece Yönetici rolü seçilince göster */}
+              {newUser.role === 'manager' && (() => {
+                const ALL_PERMS = [
+                  { key: 'users_view',         label: 'Kullanıcıları Görüntüle',    icon: '👥', group: 'Kullanıcı Yönetimi' },
+                  { key: 'users_manage',       label: 'Kullanıcı Ekle/Düzenle',   icon: '⚙️', group: 'Kullanıcı Yönetimi' },
+                  { key: 'badges_manage',      label: 'Rozet Yönetimi',            icon: '🏅', group: 'Kullanıcı Yönetimi' },
+                  { key: 'notifications_send', label: 'Bildirim Gönder',           icon: '🔔', group: 'Kullanıcı Yönetimi' },
+                  { key: 'statistics_view',    label: 'İstatistikleri Görüntüle',  icon: '📊', group: 'Raporlama' },
+                  { key: 'reports_download',   label: 'Rapor İndir',               icon: '📥', group: 'Raporlama' },
+                  { key: 'videos_manage',      label: 'Video Yönetimi',            icon: '🎥', group: 'İçerik' },
+                  { key: 'blogs_manage',       label: 'Blog Yönetimi',             icon: '📝', group: 'İçerik' },
+                  { key: 'habits_manage',      label: 'Alışkanlık Yönetimi',       icon: '📦', group: 'İçerik' },
+                  { key: 'events_manage',      label: 'Etkinlik Yönetimi',         icon: '📅', group: 'İçerik' },
+                ];
+                const groups = [...new Set(ALL_PERMS.map(p => p.group))];
+                const currentPerms = newUser.permissions || [];
+                const togglePerm = (key) => {
+                  const updated = currentPerms.includes(key)
+                    ? currentPerms.filter(k => k !== key)
+                    : [...currentPerms, key];
+                  setNewUser({ ...newUser, permissions: updated });
+                };
+                const toggleAll = () => {
+                  setNewUser({
+                    ...newUser,
+                    permissions: currentPerms.length === ALL_PERMS.length ? [] : ALL_PERMS.map(p => p.key)
+                  });
+                };
+                return (
+                  <div className="border border-amber-200 rounded-xl bg-amber-50 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-amber-700 font-bold text-sm">🛡️ Yönetici Yetkinlikleri</span>
+                        <span className="bg-amber-200 text-amber-800 text-xs px-2 py-0.5 rounded-full font-semibold">
+                          {currentPerms.length}/{ALL_PERMS.length} aktif
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={toggleAll}
+                        className="text-xs text-amber-600 hover:text-amber-900 font-semibold underline"
+                      >
+                        {currentPerms.length === ALL_PERMS.length ? 'Tümünü Kaldır' : 'Tümünü Seç'}
+                      </button>
+                    </div>
+                    {groups.map(group => (
+                      <div key={group} className="mb-3">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">{group}</p>
+                        <div className="grid grid-cols-1 gap-1.5">
+                          {ALL_PERMS.filter(p => p.group === group).map(perm => (
+                            <label
+                              key={perm.key}
+                              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-all select-none ${
+                                currentPerms.includes(perm.key)
+                                  ? 'bg-amber-200 border border-amber-400 shadow-sm'
+                                  : 'bg-white border border-gray-200 hover:border-amber-300 hover:bg-amber-50'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={currentPerms.includes(perm.key)}
+                                onChange={() => togglePerm(perm.key)}
+                                className="w-4 h-4 accent-amber-500 rounded"
+                              />
+                              <span className="text-base leading-none">{perm.icon}</span>
+                              <span className="text-sm font-medium text-gray-700">{perm.label}</span>
+                              {currentPerms.includes(perm.key) && (
+                                <span className="ml-auto text-amber-600 text-xs font-bold">✓</span>
+                              )}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+
               <div className="flex gap-3">
                 <button
                   onClick={addOrUpdateUser}

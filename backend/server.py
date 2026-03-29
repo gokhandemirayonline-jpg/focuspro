@@ -282,6 +282,13 @@ async def root():
     return {"message": "Focus Pro API", "version": "1.0"}
 
 
+# ============= PERMISSIONS =============
+@api_router.get("/permissions")
+async def get_all_permissions(current_user: dict = Depends(get_current_user)):
+    """Tüm mevcut yetkinlikleri döndür"""
+    require_admin(current_user)
+    return {"permissions": ALL_PERMISSIONS}
+
 # ============= AUTH ENDPOINTS =============
 @api_router.post("/auth/register", response_model=UserResponse)
 async def register(user_data: UserCreate):
