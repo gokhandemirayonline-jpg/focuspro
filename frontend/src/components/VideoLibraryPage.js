@@ -159,9 +159,9 @@ const VideoLibraryPage = ({ user }) => {
     loadData();
   }, []);
 
-  const loadData = async () => {
+  const loadData = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const [categoriesRes, videosRes, progressRes] = await Promise.all([
         videoCategoryAPI.getAll(),
         videoAPI.getAll(),
@@ -284,14 +284,27 @@ const VideoLibraryPage = ({ user }) => {
       console.error('View count artırma hatası:', error);
     }
     
+    // Önce mevcut player'ı temizle (eğer varsa)
+    if (playerRef.current) {
+      if (playerRef.current._seekCheckInterval) {
+        clearInterval(playerRef.current._seekCheckInterval);
+      }
+      try { playerRef.current.destroy(); } catch(e) {}
+      playerRef.current = null;
+    }
+    if (playerContainerRef.current) {
+      playerContainerRef.current.innerHTML = '';
+    }
+    setPlayer(null);
+
     setSelectedVideo(video);
     setVideoCompleted(false);
     setComment('');
     setShowCommentSection(false);
     setPlaybackSpeed(1);
     
-    // Progress'i yeniden yükle (view_count güncellenmiş olacak)
-    loadData();
+    // Arka planda veriyi yenile - loading ekranı GÖSTERME (modal kapanmasın)
+    loadData(false);
   };
 
   const handleVideoComplete = async () => {
@@ -830,10 +843,26 @@ const VideoLibraryPage = ({ user }) => {
                 <div className="flex items-center pl-4 ml-auto border-l border-gray-200 dark:border-gray-700">
                   <button
                     onClick={() => {
-                      if (videoCompleted && comment.trim().length > 0) {
-                        if (!window.confirm('Video tamamlanmadı. Çıkmak istediğinizden emin misiniz?')) {
-                          return;
-                        }
+                      // Kapatmadan önce mevcut ilerlemeyi kaydet
+                      if (playerRef.current && selectedVideo && duration > 0) {
+                        try {
+                          const ct = playerRef.current.getCurrentTime();
+                          const wp = Math.floor((ct / duration) * 100);
+                          if (wp > 0 && wp < 100) {
+                            progressAPI.updateProgress(selectedVideo.id, {
+                              watch_percentage: wp,
+                              watched: false
+                            }).catch(() => {});
+                            setVideoProgress(prev => ({
+                              ...prev,
+                              [selectedVideo.id]: {
+                                ...(prev[selectedVideo.id] || {}),
+                                watch_percentage: wp,
+                                watched: false
+                              }
+                            }));
+                          }
+                        } catch(e) {}
                       }
                       setSelectedVideo(null);
                     }}
