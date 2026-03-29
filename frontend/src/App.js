@@ -2478,6 +2478,7 @@ const FocusProApp = () => {
               dailyHabits={dailyHabits}
               tasks={tasks}
               meetings={meetings}
+              currentUser={currentUser}
               onUpdateHabit={updateHabit}
               onNavigate={setCurrentPage}
             />
