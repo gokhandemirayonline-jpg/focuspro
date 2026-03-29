@@ -7546,6 +7546,14 @@ END:VCALENDAR`;
             <span className="text-[10px] mt-1">Admin</span>
           </button>
         )}
+
+        <button
+          onClick={handleLogout}
+          className="flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg text-red-400 hover:bg-red-50 transition-colors"
+        >
+          <LogOut size={20} />
+          <span className="text-[10px] mt-1">Çıkış</span>
+        </button>
       </div>
     </div>
     
