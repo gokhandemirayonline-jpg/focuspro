@@ -455,6 +455,15 @@ async def update_user(user_id: str, user_data: UserAdminUpdate, current_user: di
         if value is not None:
             if field == 'password' and value:  # Only hash if password is provided and not empty
                 update_data[field] = hash_password(value)
+            elif field == 'user_number':
+                # user_number güncelleniyorsa çakışma kontrolü yap
+                if value != user.get('user_number'):
+                    if not (10000000 <= value <= 99999999):
+                        raise HTTPException(status_code=400, detail="ID numarası 8 haneli olmalıdır (10000000-99999999)")
+                    existing_number = await db.users.find_one({"user_number": value, "id": {"$ne": user_id}}, {"_id": 0})
+                    if existing_number:
+                        raise HTTPException(status_code=400, detail=f"Bu ID numarası ({value}) zaten kullanımda")
+                update_data[field] = value
             else:
                 update_data[field] = value
     

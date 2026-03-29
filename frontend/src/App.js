@@ -1656,12 +1656,22 @@ const FocusProApp = () => {
     
     try {
       if (editingUser) {
-        // Düzenlemede sadece isim, email, rol güncellenir
+        // Düzenlemede isim, email, rol ve ID güncellenebilir
         const updateData = {
           name: newUser.name,
           email: newUser.email,
           role: newUser.role
         };
+        // ID numarası değiştiyse ekle
+        if (newUser.user_number) {
+          const idNum = parseInt(newUser.user_number, 10);
+          if (!isNaN(idNum) && newUser.user_number.length === 8) {
+            updateData.user_number = idNum;
+          } else if (newUser.user_number.length > 0 && newUser.user_number.length !== 8) {
+            alert('ID numarası tam olarak 8 haneli olmalıdır!');
+            return;
+          }
+        }
         await userAPI.update(editingUser.id, updateData);
         alert('Kullanıcı başarıyla güncellendi!');
       } else {
@@ -5446,7 +5456,10 @@ const FocusProApp = () => {
                             <button
                               onClick={() => {
                                 setEditingUser(user);
-                                setNewUser({ ...user, password: '' });
+                                setNewUser({ 
+                                  ...user, 
+                                  user_number: user.user_number !== undefined ? String(user.user_number) : '' 
+                                });
                                 setShowUserModal(true);
                               }}
                               className="text-blue-600 hover:text-blue-700"
@@ -6504,34 +6517,42 @@ const FocusProApp = () => {
                   className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500"
                 />
               </div>
-              {!editingUser && (
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">ID Numarası <span className="text-red-500">*</span></label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-purple-500 font-bold text-sm">#</span>
-                    <input
-                      type="text"
-                      maxLength={8}
-                      value={newUser.user_number}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '');
-                        setNewUser({...newUser, user_number: val});
-                      }}
-                      placeholder="8 haneli numara (ör: 12345678)"
-                      className={`w-full pl-8 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 font-mono tracking-widest ${
-                        newUser.user_number && newUser.user_number.length !== 8 ? 'border-red-300 bg-red-50' : ''
-                      }`}
-                    />
-                  </div>
-                  {newUser.user_number && newUser.user_number.length !== 8 && (
-                    <p className="text-xs text-red-500 mt-1">{newUser.user_number.length}/8 hane girildi</p>
-                  )}
-                  {newUser.user_number && newUser.user_number.length === 8 && (
-                    <p className="text-xs text-emerald-600 mt-1">✓ ID hazır: {newUser.user_number}</p>
-                  )}
-                  <p className="text-xs text-gray-400 mt-1">Kullanıcı bu ID ile giriş yaparak şifresini belirleyecek</p>
+              {/* ID Numarası - Her zaman göster (yeni: zorunlu, düzenle: opsiyonel) */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  ID Numarası {!editingUser && <span className="text-red-500">*</span>}
+                  {editingUser && <span className="text-xs text-gray-400 ml-1">(değiştirmek için yazın)</span>}
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-purple-500 font-bold text-sm">#</span>
+                  <input
+                    type="text"
+                    maxLength={8}
+                    value={newUser.user_number || ''}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      setNewUser({...newUser, user_number: val});
+                    }}
+                    placeholder="8 haneli numara (ör: 12345678)"
+                    className={`w-full pl-8 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 font-mono tracking-widest ${
+                      newUser.user_number && newUser.user_number.length > 0 && newUser.user_number.length !== 8
+                        ? 'border-red-300 bg-red-50'
+                        : newUser.user_number && newUser.user_number.length === 8
+                        ? 'border-emerald-300'
+                        : ''
+                    }`}
+                  />
                 </div>
-              )}
+                {newUser.user_number && newUser.user_number.length > 0 && newUser.user_number.length !== 8 && (
+                  <p className="text-xs text-red-500 mt-1">{String(newUser.user_number).length}/8 hane girildi</p>
+                )}
+                {newUser.user_number && String(newUser.user_number).length === 8 && (
+                  <p className="text-xs text-emerald-600 mt-1">✓ ID: {newUser.user_number}</p>
+                )}
+                {!editingUser && (
+                  <p className="text-xs text-gray-400 mt-1">Kullanıcı bu ID ile Şifre Belirle ekranından giriş yapacak</p>
+                )}
+              </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Rol</label>
                 <select

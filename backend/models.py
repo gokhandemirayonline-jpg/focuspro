@@ -50,6 +50,7 @@ class UserAdminUpdate(BaseModel):
     email: Optional[str] = None
     password: Optional[str] = None
     role: Optional[str] = None
+    user_number: Optional[int] = None
     career_title: Optional[str] = None
     phone: Optional[str] = None
     city: Optional[str] = None
