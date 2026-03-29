@@ -25,7 +25,8 @@ class UserBase(BaseModel):
     facebook_url: str = ""
 
 class UserCreate(UserBase):
-    password: str
+    password: str = ""   # Admin oluştururken boş, kullanıcı kendisi belirler
+    user_number: Optional[int] = None  # Admin tarafından set edilir - 8 haneli
 
 class UserLogin(BaseModel):
     email_or_id: str  # Email veya ID numarası

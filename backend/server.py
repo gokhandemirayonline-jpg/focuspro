@@ -396,19 +396,49 @@ async def create_user(user_data: UserCreate, current_user: dict = Depends(get_cu
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin access required")
     
-    existing_user = await db.users.find_one({"email": user_data.email}, {"_id": 0})
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+    # Email çakışma kontrolü
+    existing_email = await db.users.find_one({"email": user_data.email}, {"_id": 0})
+    if existing_email:
+        raise HTTPException(status_code=400, detail="Bu email adresi zaten kayıtlı")
+    
+    # user_number zorunlu ve 8 haneli olmalı
+    if user_data.user_number is None:
+        raise HTTPException(status_code=400, detail="ID numarası zorunludur")
+    
+    user_number = user_data.user_number
+    if not (10000000 <= user_number <= 99999999):
+        raise HTTPException(status_code=400, detail="ID numarası 8 haneli olmalıdır (10000000-99999999)")
+    
+    # user_number çakışma kontrolü
+    existing_number = await db.users.find_one({"user_number": user_number}, {"_id": 0})
+    if existing_number:
+        raise HTTPException(status_code=400, detail=f"Bu ID numarası ({user_number}) zaten kullanımda")
     
     user_dict = user_data.model_dump()
-    user_dict['password'] = hash_password(user_dict['password'])
+    # Şifre boş bırakıldıysa hash'leme - kullanıcı Şifre Belirle ile kendi şifresini koyacak
+    if user_dict.get('password'):
+        user_dict['password'] = hash_password(user_dict['password'])
+    else:
+        user_dict['password'] = ""  # Şifre henüz belirlenmedi
+    
+    user_dict['user_number'] = user_number
     user_obj = User(**user_dict)
     
     doc = user_obj.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     
     await db.users.insert_one(doc)
+    
+    # Admin bildirimi
+    await notify_admin(
+        title="Yeni Kullanıcı Eklendi",
+        message=f"{user_data.name} ({user_data.email}) sisteme eklendi. ID: {user_number}",
+        notification_type="user"
+    )
+    
     return UserResponse(**doc)
+
+
 
 @api_router.put("/users/{user_id}", response_model=UserResponse)
 async def update_user(user_id: str, user_data: UserAdminUpdate, current_user: dict = Depends(get_current_user)):

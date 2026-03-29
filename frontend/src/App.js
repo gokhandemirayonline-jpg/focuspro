@@ -1641,36 +1641,42 @@ const FocusProApp = () => {
       return;
     }
     
-    // Yeni kullanıcı oluştururken şifre zorunlu
-    if (!editingUser && !newUser.password) {
-      alert('Yeni kullanıcı için şifre zorunludur!');
-      return;
+    // Yeni kullanıcı oluştururken 8 haneli ID zorunlu
+    if (!editingUser) {
+      if (!newUser.user_number) {
+        alert('ID numarası zorunludur!');
+        return;
+      }
+      const idNum = parseInt(newUser.user_number, 10);
+      if (isNaN(idNum) || newUser.user_number.length !== 8) {
+        alert('ID numarası tam olarak 8 haneli olmalıdır!');
+        return;
+      }
     }
     
     try {
       if (editingUser) {
-        // Düzenleme: sadece dolu alanları gönder
+        // Düzenlemede sadece isim, email, rol güncellenir
         const updateData = {
           name: newUser.name,
           email: newUser.email,
           role: newUser.role
         };
-        
-        // Şifre doldurulduysa ekle
-        if (newUser.password && newUser.password.trim() !== '') {
-          updateData.password = newUser.password;
-        }
-        
         await userAPI.update(editingUser.id, updateData);
         alert('Kullanıcı başarıyla güncellendi!');
       } else {
-        // Yeni kullanıcı: tüm bilgileri gönder
-        await userAPI.create(newUser);
-        alert('Kullanıcı başarıyla oluşturuldu!');
+        // Yeni kullanıcı: ID numarasıyla ekle, şifresiz
+        await userAPI.create({
+          name: newUser.name,
+          email: newUser.email,
+          user_number: parseInt(newUser.user_number, 10),
+          role: newUser.role
+        });
+        alert(`Kullanıcı başarıyla eklendi!\nKullanıcı ID ${newUser.user_number} ile giriş yaparak Şifre Belirle butonuyla şifresini oluşturabilir.`);
       }
       
       await loadUsers();
-      setNewUser({ name: '', email: '', password: '', role: 'user' });
+      setNewUser({ name: '', email: '', user_number: '', role: 'user' });
       setEditingUser(null);
       setShowUserModal(false);
     } catch (error) {
@@ -5293,7 +5299,7 @@ const FocusProApp = () => {
                     onClick={() => {
                       setShowUserModal(true);
                       setEditingUser(null);
-                      setNewUser({ name: '', email: '', password: '', role: 'user' });
+                      setNewUser({ name: '', email: '', user_number: '', role: 'user' });
                     }}
                     className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
                   >
@@ -6478,35 +6484,65 @@ const FocusProApp = () => {
               {editingUser ? 'Kullanıcı Düzenle' : 'Yeni Kullanıcı'}
             </h3>
             <div className="space-y-4">
-              <input
-                type="text"
-                value={newUser.name}
-                onChange={(e) => setNewUser({...newUser, name: e.target.value})}
-                placeholder="İsim"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <input
-                type="email"
-                value={newUser.email}
-                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                placeholder="Email"
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <input
-                type="password"
-                value={newUser.password}
-                onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                placeholder={editingUser ? "Şifre (boş bırakın değiştirmemek için)" : "Şifre"}
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <select
-                value={newUser.role}
-                onChange={(e) => setNewUser({...newUser, role: e.target.value})}
-                className="w-full px-4 py-2 border rounded-lg"
-              >
-                <option value="user">Kullanıcı</option>
-                <option value="admin">Admin</option>
-              </select>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">İsim Soyisim</label>
+                <input
+                  type="text"
+                  value={newUser.name}
+                  onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                  placeholder="Ad Soyad"
+                  className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                  placeholder="ornek@mail.com"
+                  className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              {!editingUser && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">ID Numarası <span className="text-red-500">*</span></label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-purple-500 font-bold text-sm">#</span>
+                    <input
+                      type="text"
+                      maxLength={8}
+                      value={newUser.user_number}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        setNewUser({...newUser, user_number: val});
+                      }}
+                      placeholder="8 haneli numara (ör: 12345678)"
+                      className={`w-full pl-8 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 font-mono tracking-widest ${
+                        newUser.user_number && newUser.user_number.length !== 8 ? 'border-red-300 bg-red-50' : ''
+                      }`}
+                    />
+                  </div>
+                  {newUser.user_number && newUser.user_number.length !== 8 && (
+                    <p className="text-xs text-red-500 mt-1">{newUser.user_number.length}/8 hane girildi</p>
+                  )}
+                  {newUser.user_number && newUser.user_number.length === 8 && (
+                    <p className="text-xs text-emerald-600 mt-1">✓ ID hazır: {newUser.user_number}</p>
+                  )}
+                  <p className="text-xs text-gray-400 mt-1">Kullanıcı bu ID ile giriş yaparak şifresini belirleyecek</p>
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Rol</label>
+                <select
+                  value={newUser.role}
+                  onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                  className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="user">Kullanıcı</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
               <div className="flex gap-3">
                 <button
                   onClick={addOrUpdateUser}
