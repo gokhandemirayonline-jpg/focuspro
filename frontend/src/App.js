@@ -38,10 +38,11 @@ const FocusProApp = () => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-  const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '', role: 'user' });
-  const [showRegister, setShowRegister] = useState(false);
+  const [loginForm, setLoginForm] = useState({ userId: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
+  const [showSetPassword, setShowSetPassword] = useState(false);
+  const [setPasswordForm, setSetPasswordForm] = useState({ userId: '', password: '', confirmPassword: '' });
+  const [setPasswordSuccess, setSetPasswordSuccess] = useState('');
   
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -430,33 +431,46 @@ const FocusProApp = () => {
   const handleLogin = async () => {
     try {
       const response = await authAPI.login({
-        email_or_id: loginForm.email,
+        email_or_id: loginForm.userId,
         password: loginForm.password
       });
       const { access_token, user } = response.data;
-      
       localStorage.setItem('token', access_token);
       setCurrentUser(user);
       setIsLoggedIn(true);
-      setLoginForm({ email: '', password: '' });
+      setLoginForm({ userId: '', password: '' });
     } catch (error) {
-      alert('Email/ID veya şifre hatalı!');
+      alert('ID numerası veya şifre hatalı!');
     }
   };
 
-  const handleRegister = async () => {
-    if (!registerForm.name || !registerForm.email || !registerForm.password) {
+  const handleSetPassword = async () => {
+    if (!setPasswordForm.userId || !setPasswordForm.password || !setPasswordForm.confirmPassword) {
       alert('Tüm alanları doldurun!');
       return;
     }
-    
+    if (setPasswordForm.password !== setPasswordForm.confirmPassword) {
+      alert('Şifreler eşleşmiyor!');
+      return;
+    }
+    if (setPasswordForm.password.length < 6) {
+      alert('Şifre en az 6 karakter olmalıdır!');
+      return;
+    }
     try {
-      await authAPI.register(registerForm.name, registerForm.email, registerForm.password, registerForm.role);
-      setRegisterForm({ name: '', email: '', password: '', role: 'user' });
-      setShowRegister(false);
-      alert('Kayıt başarılı! Giriş yapabilirsiniz.');
+      const response = await authAPI.setPassword(
+        parseInt(setPasswordForm.userId, 10),
+        setPasswordForm.password
+      );
+      const name = response.data.name;
+      setSetPasswordSuccess(`Merhaba ${name}! Şifreniz başarıyla belirlendi.`);
+      setSetPasswordForm({ userId: '', password: '', confirmPassword: '' });
+      setTimeout(() => {
+        setShowSetPassword(false);
+        setSetPasswordSuccess('');
+      }, 3000);
     } catch (error) {
-      alert(error.response?.data?.detail || 'Kayıt başarısız!');
+      alert(error.response?.data?.detail || 'Şifre belirlenemedi. ID numarasını kontrol edin.');
     }
   };
 
@@ -2004,34 +2018,18 @@ const FocusProApp = () => {
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen flex flex-col lg:flex-row bg-gray-50">
-        
+
         {/* Left Side - Branding Hero */}
         <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative overflow-hidden">
-          {/* Background gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-purple-700 via-indigo-700 to-violet-900"></div>
-          
-          {/* Animated decorative elements */}
           <div className="absolute top-20 right-20 w-72 h-72 bg-white/5 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-32 left-16 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl" style={{animation: 'pulse 4s ease-in-out infinite'}}></div>
           <div className="absolute top-1/3 right-1/4 w-4 h-4 bg-yellow-400/60 rounded-full animate-ping" style={{animationDuration: '3s'}}></div>
           <div className="absolute top-2/3 right-1/3 w-3 h-3 bg-cyan-400/50 rounded-full animate-ping" style={{animationDuration: '4s', animationDelay: '1s'}}></div>
           <div className="absolute bottom-1/4 left-1/4 w-2 h-2 bg-pink-400/60 rounded-full animate-ping" style={{animationDuration: '5s', animationDelay: '2s'}}></div>
-          <div className="absolute top-1/4 left-1/3 w-5 h-5 bg-amber-300/30 rounded-full animate-pulse" style={{animationDuration: '6s'}}></div>
-          
-          {/* Grid pattern */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-            backgroundSize: '40px 40px'
-          }}></div>
+          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
 
-          {/* Diagonal lines decoration */}
-          <div className="absolute inset-0 opacity-[0.02]" style={{
-            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 80px, white 80px, white 81px)'
-          }}></div>
-
-          {/* Content */}
           <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 w-full">
-            {/* Top - Logo */}
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white/10 backdrop-blur-sm p-2 ring-2 ring-white/20 shadow-xl">
                 <img src="/focuspro-logo.png" alt="FocusPro" className="w-full h-full object-contain" />
@@ -2044,68 +2042,39 @@ const FocusProApp = () => {
               </div>
             </div>
 
-            {/* Middle - Main message */}
             <div className="max-w-lg">
               <h2 className="text-4xl xl:text-5xl font-extrabold text-white leading-tight mb-6">
                 Hedeflerinize
                 <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300">
-                  Odaklanın
-                </span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300">Odaklanın</span>
               </h2>
               <p className="text-purple-100/70 text-lg leading-relaxed mb-10">
-                Profesyonel gelişiminizi takip edin, eğitim videoları ile becerilerinizi geliştirin, 
+                Profesyonel gelişiminizi takip edin, eğitim videoları ile becerilerinizi geliştirin,
                 görevlerinizi yönetin ve hedeflerinize adım adım ulaşın.
               </p>
-
-              {/* Feature pills */}
-              <div className="grid grid-cols-2 gap-3 mb-10">
-                <div className="flex items-center gap-3 bg-white/8 backdrop-blur-sm rounded-xl p-3.5 border border-white/10">
-                  <div className="w-9 h-9 bg-emerald-400/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <GraduationCap size={18} className="text-emerald-300" />
+              <div className="grid grid-cols-2 gap-3">
+                {[{icon: <GraduationCap size={18} className="text-emerald-300" />, bg: 'bg-emerald-400/20', title: 'Eğitim Videoları', sub: 'Sıralı izleme'},
+                  {icon: <Target size={18} className="text-blue-300" />, bg: 'bg-blue-400/20', title: 'Hedef Takibi', sub: 'Görev ve ajanda'},
+                  {icon: <Calendar size={18} className="text-amber-300" />, bg: 'bg-amber-400/20', title: 'Takvim', sub: 'Görüşme planlama'},
+                  {icon: <Users size={18} className="text-pink-300" />, bg: 'bg-pink-400/20', title: 'Partner Ağı', sub: 'Ekip yönetimi'}
+                ].map((f, i) => (
+                  <div key={i} className="flex items-center gap-3 bg-white/8 backdrop-blur-sm rounded-xl p-3.5 border border-white/10">
+                    <div className={`w-9 h-9 ${f.bg} rounded-lg flex items-center justify-center flex-shrink-0`}>{f.icon}</div>
+                    <div>
+                      <p className="text-white text-sm font-semibold">{f.title}</p>
+                      <p className="text-purple-200/50 text-xs">{f.sub}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-white text-sm font-semibold">Eğitim Videoları</p>
-                    <p className="text-purple-200/50 text-xs">Sıralı izleme sistemi</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 bg-white/8 backdrop-blur-sm rounded-xl p-3.5 border border-white/10">
-                  <div className="w-9 h-9 bg-blue-400/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Target size={18} className="text-blue-300" />
-                  </div>
-                  <div>
-                    <p className="text-white text-sm font-semibold">Hedef Takibi</p>
-                    <p className="text-purple-200/50 text-xs">Görev ve ajanda</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 bg-white/8 backdrop-blur-sm rounded-xl p-3.5 border border-white/10">
-                  <div className="w-9 h-9 bg-amber-400/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Calendar size={18} className="text-amber-300" />
-                  </div>
-                  <div>
-                    <p className="text-white text-sm font-semibold">Takvim</p>
-                    <p className="text-purple-200/50 text-xs">Görüşme planlama</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 bg-white/8 backdrop-blur-sm rounded-xl p-3.5 border border-white/10">
-                  <div className="w-9 h-9 bg-pink-400/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Users size={18} className="text-pink-300" />
-                  </div>
-                  <div>
-                    <p className="text-white text-sm font-semibold">Partner Ağı</p>
-                    <p className="text-purple-200/50 text-xs">Ekip yönetimi</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
-            {/* Bottom - Quote */}
             <div className="border-t border-white/10 pt-6">
               <div className="flex items-start gap-3">
                 <div className="w-1 h-12 bg-gradient-to-b from-amber-400 to-purple-400 rounded-full flex-shrink-0 mt-1"></div>
                 <div>
                   <p className="text-purple-100/60 italic text-sm leading-relaxed">
-                    "Başarı, her gün tekrarlanan küçük çabaların toplamıdır."
+                    &quot;Başarı, her gün tekrarlanan küçük çabaların toplamıdır.&quot;
                   </p>
                   <p className="text-purple-200/40 text-xs mt-1.5 font-medium">— Robert Collier</p>
                 </div>
@@ -2114,59 +2083,49 @@ const FocusProApp = () => {
           </div>
         </div>
 
-        {/* Right Side - Login Form */}
+        {/* Right Side - Form */}
         <div className="flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-12 min-h-screen lg:min-h-0">
           <div className="w-full max-w-md">
-            
-            {/* Mobile Logo - Only visible on small screens */}
+
+            {/* Mobile Logo */}
             <div className="lg:hidden text-center mb-8">
               <div className="flex items-center justify-center gap-3 mb-3">
                 <div className="w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br from-purple-600 to-indigo-600 p-2 shadow-lg">
                   <img src="/focuspro-logo.png" alt="FocusPro" className="w-full h-full object-contain" />
                 </div>
-                <h1 className="text-2xl font-extrabold text-gray-800">
-                  Focus<span className="text-purple-600">Pro</span>
-                </h1>
+                <h1 className="text-2xl font-extrabold text-gray-800">Focus<span className="text-purple-600">Pro</span></h1>
               </div>
               <p className="text-gray-500 text-sm">Kişisel Gelişim Platformu</p>
             </div>
 
             {/* Form Card */}
             <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-6 sm:p-8">
-              
-              {!showRegister ? (
+
+              {!showSetPassword ? (
                 <>
-                  {/* Login Header */}
                   <div className="mb-6">
                     <h2 className="text-2xl font-bold text-gray-800">Hoş Geldiniz 👋</h2>
-                    <p className="text-gray-500 text-sm mt-1">Hesabınıza giriş yapın</p>
+                    <p className="text-gray-500 text-sm mt-1">ID numaranızla giriş yapın</p>
                   </div>
-
-                  {/* Login Form */}
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email veya ID Numarası</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">ID Numaranız</label>
                       <div className="relative">
-                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                          <Mail size={18} />
-                        </div>
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">#</span>
                         <input
                           type="text"
-                          value={loginForm.email}
-                          onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
+                          value={loginForm.userId}
+                          onChange={(e) => setLoginForm({...loginForm, userId: e.target.value})}
                           onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                          className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-300 focus:bg-white transition-all text-sm"
-                          placeholder="email@example.com veya ID (örn: 01)"
+                          className="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-300 focus:bg-white transition-all text-sm"
+                          placeholder="Örn: 1, 2, 15"
                         />
                       </div>
                     </div>
-
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1.5">Şifre</label>
                       <div className="relative">
-                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                          <Lock size={18} />
-                        </div>
+                        <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
                           type={showPassword ? 'text' : 'password'}
                           value={loginForm.password}
@@ -2175,135 +2134,89 @@ const FocusProApp = () => {
                           className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-300 focus:bg-white transition-all text-sm"
                           placeholder="••••••••"
                         />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
-                        >
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">
                           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                       </div>
                     </div>
-
-                    <button
-                      onClick={handleLogin}
-                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 text-sm"
-                    >
+                    <button onClick={handleLogin} className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:-translate-y-0.5 text-sm">
                       Giriş Yap
                     </button>
                   </div>
-
-                  {/* Divider */}
                   <div className="flex items-center gap-3 my-5">
                     <div className="flex-1 h-px bg-gray-200"></div>
                     <span className="text-xs text-gray-400 font-medium">veya</span>
                     <div className="flex-1 h-px bg-gray-200"></div>
                   </div>
-
-                  {/* Register CTA */}
-                  <button
-                    onClick={() => setShowRegister(true)}
-                    className="w-full border-2 border-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:border-purple-300 hover:text-purple-600 hover:bg-purple-50/50 transition-all duration-300 text-sm"
-                  >
-                    Yeni Hesap Oluştur
+                  <button onClick={() => setShowSetPassword(true)} className="w-full border-2 border-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:border-purple-300 hover:text-purple-600 hover:bg-purple-50/50 transition-all text-sm">
+                    Şifre Belirle
                   </button>
+                  <p className="text-center text-xs text-gray-400 mt-3">Admin tarafından eklendiyseniz ilk girişte şifrenizi belirleyin</p>
                 </>
               ) : (
                 <>
-                  {/* Register Header */}
                   <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">Hesap Oluştur ✨</h2>
-                    <p className="text-gray-500 text-sm mt-1">FocusPro ailesine katılın</p>
-                  </div>
-
-                  {/* Register Form */}
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Ad Soyad</label>
-                      <div className="relative">
-                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                          <User size={18} />
-                        </div>
-                        <input
-                          type="text"
-                          value={registerForm.name}
-                          onChange={(e) => setRegisterForm({...registerForm, name: e.target.value})}
-                          className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-300 focus:bg-white transition-all text-sm"
-                          placeholder="Adınız Soyadınız"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
-                      <div className="relative">
-                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                          <Mail size={18} />
-                        </div>
-                        <input
-                          type="email"
-                          value={registerForm.email}
-                          onChange={(e) => setRegisterForm({...registerForm, email: e.target.value})}
-                          className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-300 focus:bg-white transition-all text-sm"
-                          placeholder="email@example.com"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Şifre</label>
-                      <div className="relative">
-                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                          <Lock size={18} />
-                        </div>
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          value={registerForm.password}
-                          onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
-                          className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-300 focus:bg-white transition-all text-sm"
-                          placeholder="••••••••"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
-                        >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={handleRegister}
-                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 text-sm"
-                    >
-                      Kayıt Ol
+                    <button onClick={() => { setShowSetPassword(false); setSetPasswordSuccess(''); }} className="flex items-center gap-1 text-gray-400 hover:text-gray-600 text-sm mb-4">
+                      <ChevronLeft size={16} /> Geri
                     </button>
+                    <h2 className="text-2xl font-bold text-gray-800">Şifre Belirle 🔒</h2>
+                    <p className="text-gray-500 text-sm mt-1">ID numaranızı girin ve şifrenizi oluşturun</p>
                   </div>
-
-                  {/* Divider */}
-                  <div className="flex items-center gap-3 my-5">
-                    <div className="flex-1 h-px bg-gray-200"></div>
-                    <span className="text-xs text-gray-400 font-medium">zaten hesabınız var mı?</span>
-                    <div className="flex-1 h-px bg-gray-200"></div>
-                  </div>
-
-                  {/* Back to Login */}
-                  <button
-                    onClick={() => setShowRegister(false)}
-                    className="w-full border-2 border-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:border-purple-300 hover:text-purple-600 hover:bg-purple-50/50 transition-all duration-300 text-sm"
-                  >
-                    Giriş Sayfasına Dön
-                  </button>
+                  {setPasswordSuccess ? (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6 text-center">
+                      <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Check size={24} className="text-emerald-600" />
+                      </div>
+                      <p className="text-emerald-700 font-semibold text-sm">{setPasswordSuccess}</p>
+                      <p className="text-emerald-500 text-xs mt-2">Giriş sayfasına yönlendiriliyorsunuz...</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">ID Numaranız</label>
+                        <div className="relative">
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">#</span>
+                          <input type="text" value={setPasswordForm.userId} onChange={(e) => setSetPasswordForm({...setPasswordForm, userId: e.target.value})} className="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm" placeholder="Örn: 1, 2, 15" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Yeni Şifre</label>
+                        <div className="relative">
+                          <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <input type={showPassword ? 'text' : 'password'} value={setPasswordForm.password} onChange={(e) => setSetPasswordForm({...setPasswordForm, password: e.target.value})} className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm" placeholder="En az 6 karakter" />
+                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Şifre Tekrar</label>
+                        <div className="relative">
+                          <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            value={setPasswordForm.confirmPassword}
+                            onChange={(e) => setSetPasswordForm({...setPasswordForm, confirmPassword: e.target.value})}
+                            onKeyPress={(e) => e.key === 'Enter' && handleSetPassword()}
+                            className={`w-full pl-11 pr-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm ${
+                              setPasswordForm.confirmPassword && setPasswordForm.password !== setPasswordForm.confirmPassword ? 'border-red-300' : 'border-gray-200'
+                            }`}
+                            placeholder="Şifrenizi tekrar girin"
+                          />
+                        </div>
+                        {setPasswordForm.confirmPassword && setPasswordForm.password !== setPasswordForm.confirmPassword && (
+                          <p className="text-red-500 text-xs mt-1">Şifreler eşleşmiyor</p>
+                        )}
+                      </div>
+                      <button onClick={handleSetPassword} className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all hover:-translate-y-0.5 text-sm">
+                        Şifreyi Kaydet
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
             </div>
 
-            {/* Footer */}
             <div className="text-center mt-6">
-              <p className="text-xs text-gray-400">
-                © {new Date().getFullYear()} FocusPro · Tüm hakları saklıdır
-              </p>
+              <p className="text-xs text-gray-400">© {new Date().getFullYear()} FocusPro · Tüm hakları saklıdır</p>
             </div>
           </div>
         </div>
