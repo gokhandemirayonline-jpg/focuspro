@@ -2541,7 +2541,7 @@ const FocusProApp = () => {
 
           <button
             onClick={() => setCurrentPage('events')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
               currentPage === 'events' ? 'bg-white/20' : 'hover:bg-white/10'
             }`}
           >
