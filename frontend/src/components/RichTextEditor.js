@@ -6,6 +6,7 @@ import Link from '@tiptap/extension-link';
 import Youtube from '@tiptap/extension-youtube';
 import TextAlign from '@tiptap/extension-text-align';
 import { TextStyle } from '@tiptap/extension-text-style';
+import { Color } from '@tiptap/extension-color';
 import Placeholder from '@tiptap/extension-placeholder';
 
 /* ──────────────────────────────────────────
@@ -36,6 +37,7 @@ const Sep = () => <div className="w-px h-5 bg-gray-200 mx-1 self-center" />;
 ─────────────────────────────────────────── */
 const RichTextEditor = ({ value, onChange, onImageUpload }) => {
   const fileInputRef = useRef(null);
+  const colorInputRef = useRef(null);
 
   const editor = useEditor({
     extensions: [
@@ -47,6 +49,7 @@ const RichTextEditor = ({ value, onChange, onImageUpload }) => {
       Youtube.configure({ width: '100%', height: 400, nocookie: true }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       TextStyle,
+      Color,
       Placeholder.configure({ placeholder: 'Blog içeriğini buraya yazın...' }),
     ],
     content: value || '',
@@ -181,6 +184,40 @@ const RichTextEditor = ({ value, onChange, onImageUpload }) => {
         <ToolBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} active={false} title="Yatay çizgi">
           —
         </ToolBtn>
+        <Sep />
+
+        {/* Text Color */}
+        <div className="relative flex items-center gap-0.5" title="Yazı rengi">
+          <button
+            type="button"
+            onMouseDown={(e) => { e.preventDefault(); colorInputRef.current?.click(); }}
+            className="p-1.5 rounded hover:bg-gray-100 cursor-pointer transition-all"
+            title="Yazı rengi seç"
+          >
+            <span className="flex flex-col items-center gap-0.5">
+              <span className="text-sm font-bold leading-none" style={{ color: editor.getAttributes('textStyle').color || '#1a1a1a' }}>A</span>
+              <span
+                className="block w-4 h-1 rounded-sm"
+                style={{ backgroundColor: editor.getAttributes('textStyle').color || '#1a1a1a' }}
+              />
+            </span>
+          </button>
+          <input
+            ref={colorInputRef}
+            type="color"
+            className="sr-only"
+            value={editor.getAttributes('textStyle').color || '#1a1a1a'}
+            onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
+          />
+          <button
+            type="button"
+            onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().unsetColor().run(); }}
+            className="text-[10px] text-gray-400 hover:text-gray-700 px-0.5 rounded hover:bg-gray-100 transition-all leading-none"
+            title="Rengi sıfırla"
+          >
+            ×
+          </button>
+        </div>
         <Sep />
 
         {/* Link */}
