@@ -461,13 +461,21 @@ async def get_users(current_user: dict = Depends(get_current_user)):
 
 @api_router.post("/users", response_model=UserResponse)
 async def create_user(user_data: UserCreate, current_user: dict = Depends(get_current_user)):
-    # Sadece admin'ler başka admin veya manager oluşturabilir
-    if current_user['role'] != 'admin' and user_data.role in ['admin', 'manager']:
-        raise HTTPException(status_code=403, detail="Sadece normal kullanıcı yetkisiyle kişi ekleyebilirsiniz")
+    is_admin = current_user.get('role') == 'admin'
+    has_users_manage = 'users_manage' in current_user.get('permissions', [])
     
-    # Kullanıcılar sadece user rolünde kişi ekleyebilmeli (eğer UI override etmediyse)
-    if current_user['role'] != 'admin':
+    # Sadece admin veya kişi ekleme yetkisi olanlar kullanıcı ekleyebilir
+    if not is_admin and not has_users_manage:
+        raise HTTPException(status_code=403, detail="Yalnızca admin veya kişi ekleme yetkisine sahip kullanıcılar işlem yapabilir")
+    
+    # Kullanıcılar zorunlu olarak "user" rolüne çekiliyor
+    if not is_admin:
         user_data.role = 'user'
+    elif user_data.role == 'manager':
+        # Yeni mimaride 'manager' yok. Manager istenirse user olarak kaydet
+        user_data.role = 'user'
+        if 'users_manage' not in user_data.permissions:
+            user_data.permissions.append('users_manage')
     
     # Email çakışma kontrolü
     existing_email = await db.users.find_one({"email": user_data.email}, {"_id": 0})
@@ -523,12 +531,23 @@ async def create_user(user_data: UserCreate, current_user: dict = Depends(get_cu
 
 @api_router.put("/users/{user_id}", response_model=UserResponse)
 async def update_user(user_id: str, user_data: UserAdminUpdate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] != 'admin':
+    is_admin = current_user['role'] == 'admin'
+    has_users_manage = 'users_manage' in current_user.get('permissions', [])
+    
+    if not is_admin and not has_users_manage:
         raise HTTPException(status_code=403, detail="Admin access required")
     
     user = await db.users.find_one({"id": user_id}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+        
+    if not is_admin and user.get('created_by') != current_user['id']:
+        raise HTTPException(status_code=403, detail="Sadece kendi eklediğiniz kullanıcıları güncelleyebilirsiniz")
+    
+    # Non-admin cannot change role or permissions
+    if not is_admin:
+        user_data.role = None
+        user_data.permissions = None
     
     # Only update fields that are provided (not None)
     update_data = {}
@@ -595,6 +614,47 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
     
     return {"message": "User deleted successfully"}
 
+
+# ============= NEW ADMIN DATA ENDPOINT =============
+@api_router.get("/admin/users/{target_id}/details")
+async def get_user_full_details(target_id: str, current_user: dict = Depends(get_current_user)):
+    is_admin = current_user.get('role') == 'admin'
+    has_users_manage = 'users_manage' in current_user.get('permissions', [])
+    
+    if not is_admin and not has_users_manage:
+        raise HTTPException(status_code=403, detail="Bu veriyi görüntüleme yetkiniz yok")
+        
+    # Check if target user exists and (if not admin) was created by the current user
+    target_user = await db.users.find_one({"id": target_id}, {"_id": 0})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
+        
+    if not is_admin and target_user.get('created_by') != current_user['id']:
+        raise HTTPException(status_code=403, detail="Sadece kendi eklediğiniz kullanıcıların verilerini görebilirsiniz")
+        
+    # Fetch all data concurrently
+    goals = await db.goals.find({"user_id": target_id}, {"_id": 0}).to_list(100)
+    prospects = await db.prospects.find({"user_id": target_id}, {"_id": 0}).to_list(100)
+    reasons = await db.reasons.find({"user_id": target_id}, {"_id": 0}).to_list(100)
+    habits = await db.habits.find({"user_id": target_id}, {"_id": 0}).to_list(100)
+    tasks = await db.tasks.find({"user_id": target_id}, {"_id": 0}).to_list(100)
+    meetings = await db.meetings.find({"user_id": target_id}, {"_id": 0}).to_list(100)
+    badges = await db.user_badges.find({"user_id": target_id}, {"_id": 0}).to_list(100)
+    
+    # Takım / Kendi ekledikleri
+    team = await db.users.find({"created_by": target_id}, {"_id": 0, "password": 0}).to_list(100)
+    
+    return {
+        "user": target_user,
+        "goals": goals,
+        "prospects": prospects,
+        "reasons": reasons,
+        "habits": habits,
+        "tasks": tasks,
+        "meetings": meetings,
+        "badges": badges,
+        "team": team
+    }
 
 # ============= VIDEO CATEGORY ENDPOINTS =============
 @api_router.get("/video-categories", response_model=List[VideoCategory])

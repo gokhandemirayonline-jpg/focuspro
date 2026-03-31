@@ -41,6 +41,11 @@ export const userAPI = {
   getBadges: (userId) => api.get(`/users/${userId}/badges`),
 };
 
+// Admin API
+export const adminAPI = {
+  getUserDetails: (userId) => api.get(`/admin/users/${userId}/details`),
+};
+
 // Video Category API
 export const videoCategoryAPI = {
   getAll: () => api.get('/video-categories'),

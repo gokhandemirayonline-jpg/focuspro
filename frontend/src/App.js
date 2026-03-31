@@ -8,8 +8,11 @@ const ROLE_CONFIG = {
   user:    { label: 'Normal Kullanıcı',  color: 'bg-gray-100 text-gray-600',     level: 1 },
 };
 const getRoleConfig = (role) => ROLE_CONFIG[role] || ROLE_CONFIG['user'];
-const isAdminOrManager = (role) => role === 'admin' || role === 'manager';
-import { authAPI, userAPI, videoCategoryAPI, videoAPI, progressAPI, meetingAPI, taskAPI, goalAPI, reasonAPI, prospectCategoryAPI, prospectAPI, partnerAPI, habitAPI, eventAPI, eventRegistrationAPI, notificationAPI, recommendationAPI, blogAPI, searchAPI, fileAPI, messageAPI, statisticsAPI, activityLogAPI, learningPathAPI, badgeAPI, characterAnalysisAPI, futureCharacterAPI, fullLifeProfileAPI, dreamPriorityAPI } from './services/api';
+const isAdminOrManager = (user) => {
+  if (typeof user === 'string') return user === 'admin' || user === 'manager'; // fallback if role string is passed
+  return user?.role === 'admin' || (user?.permissions && user.permissions.includes('users_manage'));
+};
+import { authAPI, userAPI, adminAPI, videoCategoryAPI, videoAPI, progressAPI, meetingAPI, taskAPI, goalAPI, reasonAPI, prospectCategoryAPI, prospectAPI, partnerAPI, habitAPI, eventAPI, eventRegistrationAPI, notificationAPI, recommendationAPI, blogAPI, searchAPI, fileAPI, messageAPI, statisticsAPI, activityLogAPI, learningPathAPI, badgeAPI, characterAnalysisAPI, futureCharacterAPI, fullLifeProfileAPI, dreamPriorityAPI } from './services/api';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -543,8 +546,8 @@ const FocusProApp = () => {
         loadBlogs(),
         loadMessages(),
         loadUsers(),
-        isAdminOrManager(currentUser?.role) ? loadStatistics() : Promise.resolve(),
-        isAdminOrManager(currentUser?.role) ? loadVideoStatistics() : Promise.resolve(),
+        isAdminOrManager(currentUser) ? loadStatistics() : Promise.resolve(),
+        isAdminOrManager(currentUser) ? loadVideoStatistics() : Promise.resolve(),
         currentUser?.role === 'admin' ? loadActivityLogs() : Promise.resolve()
       ]);
     } catch (error) {
@@ -580,7 +583,7 @@ const FocusProApp = () => {
   };
 
   const loadVideoStatistics = async () => {
-    if (!isAdminOrManager(currentUser?.role)) return;
+    if (!isAdminOrManager(currentUser)) return;
     
     try {
       const response = await videoAPI.getStatistics();
@@ -1886,24 +1889,25 @@ const FocusProApp = () => {
 
   const viewUserDetails = async (user_param) => {
     setSelectedUserDetail(user_param);
-    setShowUserDetailModal(true);
+    setUserActivities(null); // Reset while loading
+    setAdminTab('user_analysis'); // Switch to inline analysis page
     
-    // Load user activities
+    // Load full user activities using the new admin endpoint
     try {
-      const [goalsRes, prospectsRes, reasonsRes] = await Promise.all([
-        goalAPI.getAll(),
-        prospectAPI.getAll(),
-        reasonAPI.getAll()
-      ]);
-      
+      const response = await adminAPI.getUserDetails(user_param.id);
       setUserActivities({
-        goals: goalsRes.data.filter(g => g.user_id === user_param.id),
-        partners: users.filter(u => u.created_by === user_param.id),
-        prospects: prospectsRes.data.filter(p => p.user_id === user_param.id),
-        reasons: reasonsRes.data.filter(r => r.user_id === user_param.id)
+        goals: response.data.goals || [],
+        partners: response.data.team || [],
+        prospects: response.data.prospects || [],
+        reasons: response.data.reasons || [],
+        habits: response.data.habits || [],
+        tasks: response.data.tasks || [],
+        meetings: response.data.meetings || [],
+        badges: response.data.badges || []
       });
     } catch (error) {
       console.error('Kullanıcı aktiviteleri yüklenemedi:', error);
+      setUserActivities({ goals: [], partners: [], prospects: [], reasons: [], habits: [], tasks: [], meetings: [], badges: [] });
     }
   };
 
@@ -2433,7 +2437,7 @@ const FocusProApp = () => {
             {sidebarOpen && <span>İstatistikler</span>}
           </button>
 
-          {isAdminOrManager(currentUser?.role) && (
+          {isAdminOrManager(currentUser) && (
             <button
               onClick={() => setCurrentPage('admin')}
               className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
@@ -5416,187 +5420,335 @@ const FocusProApp = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {(() => {
-                        const filteredUsers = getFilteredUsers();
-                        // Ekleyene göre grupla
-                        const grouped = {};
-                        filteredUsers.forEach(u => {
-                          const creatorId = u.created_by || '__admin__';
-                          if (!grouped[creatorId]) grouped[creatorId] = [];
-                          grouped[creatorId].push(u);
-                        });
-
-                        const rows = [];
-                        Object.entries(grouped).forEach(([creatorId, groupUsers]) => {
-                          const creatorUser = filteredUsers.find(u => u.id === creatorId);
-                          const creatorLabel = creatorUser ? creatorUser.name : (creatorId === '__admin__' ? 'Admin (Sistem)' : 'Bilinmiyor');
-
-                          if (Object.keys(grouped).length > 1) {
-                            rows.push(
-                              <tr key={`group-${creatorId}`}>
-                                <td colSpan={8} className="px-6 py-2 bg-purple-50 border-t border-purple-100">
-                                  <span className="text-xs font-bold text-purple-600 uppercase tracking-wide">
-                                    👤 {creatorLabel} tarafından eklendi ({groupUsers.length} kullanıcı)
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          }
-
-                          groupUsers.forEach(user => {
-                            // Bu kullanıcının partnerlerini bul
-                            const userPartners = partners.filter(p => p.user_id === user.id);
-                            const isExpanded = expandedUserPartners[user.id];
-
-                            rows.push(
-                              <tr key={user.id} className="hover:bg-gray-50">
-                                <td className="px-4 py-4">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedUsers.includes(user.id)}
-                                    onChange={() => toggleUserSelection(user.id)}
-                                    className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
-                                  />
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-purple-600">
-                                  #{formatUserNumber(user.user_number)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="flex items-center gap-2">
-                                    {userPartners.length > 0 && (
-                                      <button
-                                        onClick={() => setExpandedUserPartners(prev => ({...prev, [user.id]: !prev[user.id]}))}
-                                        className="text-purple-400 hover:text-purple-600 transition-colors"
-                                        title={isExpanded ? 'Gizle' : `${userPartners.length} partner göster`}
-                                      >
-                                        {isExpanded
-                                          ? <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="18 15 12 9 6 15"/></svg>
-                                          : <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
-                                        }
-                                      </button>
-                                    )}
-                                    <span className="text-sm font-medium text-gray-900">{user.name}</span>
-                                    {userPartners.length > 0 && (
-                                      <span className="ml-1 bg-purple-100 text-purple-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
-                                        {userPartners.length}
-                                      </span>
-                                    )}
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleConfig(user.role).color}`}>
-                                    {getRoleConfig(user.role).label}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {user.created_by
-                                    ? (() => {
-                                        const cr = filteredUsers.find(u => u.id === user.created_by);
-                                        return cr ? (
-                                          <span className="inline-flex items-center gap-1 text-purple-600">
-                                            <span className="w-2 h-2 rounded-full bg-purple-400 inline-block"></span>
-                                            {cr.name}
-                                          </span>
-                                        ) : <span className="text-gray-400 text-xs">Bilinmiyor</span>;
-                                      })()
-                                    : <span className="text-gray-400 text-xs">Admin</span>
-                                  }
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                  {new Date(user.created_at).toLocaleDateString('tr-TR')}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm flex gap-2">
-                                  <button
-                                    onClick={() => {
-                                      setStatsPreselectedUser(user.id);
-                                      setCurrentPage('statistics');
-                                    }}
-                                    className="text-indigo-600 hover:text-indigo-800"
-                                    title="İstatistikleri Gör"
-                                  >
-                                    <BarChart3 size={16} />
-                                  </button>
-                                  <button
-                                    onClick={() => viewUserDetails(user)}
-                                    className="text-green-600 hover:text-green-700"
-                                    title="Detayları Gör"
-                                  >
-                                    <Eye size={16} />
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      setEditingUser(user);
-                                      setNewUser({
-                                        ...user,
-                                        user_number: user.user_number !== undefined ? String(user.user_number) : '',
-                                        permissions: user.permissions || []
-                                      });
-                                      setShowUserModal(true);
-                                    }}
-                                    className="text-blue-600 hover:text-blue-700"
-                                    title="Düzenle"
-                                  >
-                                    <Edit size={16} />
-                                  </button>
-                                  <button
-                                    onClick={() => deleteUser(user.id)}
-                                    className="text-red-600 hover:text-red-700"
-                                    title="Sil"
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
-                                </td>
-                              </tr>
-                            );
-
-                            // Eğer açıksa partnerlerini göster
-                            if (isExpanded && userPartners.length > 0) {
-                              userPartners.forEach(partner => {
-                                rows.push(
-                                  <tr
-                                    key={`partner-${partner.id}`}
-                                    className="bg-purple-50/50 hover:bg-purple-50 cursor-pointer"
-                                    onClick={() => { setSelectedPartner(partner); setShowPartnerDetailModal(true); }}
-                                  >
-                                    <td className="px-4 py-3"></td>
-                                    <td className="px-6 py-3">
-                                      <span className="text-xs text-purple-400 font-medium">Partner</span>
-                                    </td>
-                                    <td className="px-6 py-3">
-                                      <div className="flex items-center gap-2 pl-5">
-                                        <span className="w-2 h-2 rounded-full bg-purple-300 flex-shrink-0"></span>
-                                        <span className="text-sm font-medium text-purple-800">{partner.name}</span>
-                                        <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                                          partner.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                                        }`}>
-                                          {partner.status === 'active' ? 'Aktif' : 'Pasif'}
-                                        </span>
-                                      </div>
-                                    </td>
-                                    <td className="px-6 py-3 text-sm text-gray-500">{partner.email || partner.phone || '—'}</td>
-                                    <td className="px-6 py-3">
-                                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
-                                        {partner.rank || 'Partner'}
-                                      </span>
-                                    </td>
-                                    <td className="px-6 py-3 text-xs text-gray-400">{user.name}</td>
-                                    <td className="px-6 py-3 text-sm text-gray-500">{partner.join_date || '—'}</td>
-                                    <td className="px-6 py-3">
-                                      <span className="text-xs text-purple-400 italic">Detay için tıkla →</span>
-                                    </td>
-                                  </tr>
-                                );
-                              });
-                            }
-                          });
-                        });
-                        return rows;
-                      })()}
+                      {getFilteredUsers().map(user => {
+                        const creator = users.find(u => u.id === user.created_by);
+                        return (
+                          <tr
+                            key={user.id}
+                            className="hover:bg-purple-50/40 cursor-pointer transition-colors"
+                            onClick={() => viewUserDetails(user)}
+                          >
+                            <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
+                              <input
+                                type="checkbox"
+                                checked={selectedUsers.includes(user.id)}
+                                onChange={() => toggleUserSelection(user.id)}
+                                className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                              />
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="text-sm font-bold text-purple-600">#{formatUserNumber(user.user_number)}</span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                                  {user.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                                  {creator && (
+                                    <p className="text-xs text-purple-500">↳ {creator.name} tarafından eklendi</p>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleConfig(user.role).color}`}>
+                                {getRoleConfig(user.role).label}
+                              </span>
+                              {user.permissions && user.permissions.includes('users_manage') && (
+                                <span className="ml-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">Yetkili</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                              {new Date(user.created_at).toLocaleDateString('tr-TR')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm flex gap-2" onClick={e => e.stopPropagation()}>
+                              <button
+                                onClick={() => viewUserDetails(user)}
+                                className="p-1.5 rounded-lg text-green-600 hover:text-green-700 hover:bg-green-50 transition-colors"
+                                title="Analiz Sayfasını Aç"
+                              >
+                                <Eye size={16} />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setEditingUser(user);
+                                  setNewUser({
+                                    ...user,
+                                    user_number: user.user_number !== undefined ? String(user.user_number) : '',
+                                    permissions: user.permissions || []
+                                  });
+                                  setShowUserModal(true);
+                                }}
+                                className="p-1.5 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors"
+                                title="Düzenle"
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button
+                                onClick={() => deleteUser(user.id)}
+                                className="p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors"
+                                title="Sil"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
               </div>
+              )}
+
+              {/* User Analysis Tab — Inline full-page view */}
+              {adminTab === 'user_analysis' && selectedUserDetail && (
+                <div className="space-y-6">
+                  {/* Header: Back button + User info */}
+                  <div className="bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 rounded-2xl p-6 text-white shadow-lg">
+                    <button
+                      onClick={() => {
+                        setAdminTab('users');
+                        setSelectedUserDetail(null);
+                        setUserActivities(null);
+                      }}
+                      className="flex items-center gap-2 text-white/80 hover:text-white mb-5 text-sm font-medium transition-colors group"
+                    >
+                      <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                      Kullanıcı Listesine Geri Dön
+                    </button>
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/40 flex items-center justify-center text-2xl font-bold shadow-inner">
+                        {selectedUserDetail.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1">
+                        <h2 className="text-2xl font-bold tracking-tight">{selectedUserDetail.name}</h2>
+                        <div className="flex items-center gap-3 mt-1 flex-wrap">
+                          <span className="text-sm bg-white/20 px-3 py-0.5 rounded-full font-mono font-semibold">
+                            #{formatUserNumber(selectedUserDetail.user_number)}
+                          </span>
+                          <span className="text-sm text-white/70">{selectedUserDetail.email}</span>
+                        </div>
+                        {/* Creator info */}
+                        {selectedUserDetail.created_by && (() => {
+                          const creator = users.find(u => u.id === selectedUserDetail.created_by);
+                          return creator ? (
+                            <p className="mt-2 text-sm text-white/80 flex items-center gap-1.5">
+                              <Users size={14} className="opacity-70" />
+                              <span className="font-medium">{creator.name}</span> tarafından sisteme eklendi
+                              <span className="text-white/50 ml-1">(#{formatUserNumber(creator.user_number)})</span>
+                            </p>
+                          ) : null;
+                        })()}
+                      </div>
+                      <div className="text-right hidden md:block">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${selectedUserDetail.role === 'admin' ? 'bg-red-400/30 text-red-100' : 'bg-white/20 text-white/90'}`}>
+                          {getRoleConfig(selectedUserDetail.role).label}
+                        </span>
+                        {selectedUserDetail.permissions && selectedUserDetail.permissions.includes('users_manage') && (
+                          <span className="ml-2 px-3 py-1 bg-amber-400/30 text-amber-100 rounded-full text-xs font-bold">Yetkili Kullanıcı</span>
+                        )}
+                        <p className="text-xs text-white/50 mt-2">
+                          Kayıt: {new Date(selectedUserDetail.created_at).toLocaleDateString('tr-TR')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Activities */}
+                  {userActivities ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                      {/* Sol Sütun */}
+                      <div className="space-y-5">
+                        {/* Goals */}
+                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                          <h5 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center"><Target size={16} className="text-purple-600" /></span>
+                            Hedefler
+                            <span className="ml-auto text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-semibold">{userActivities.goals.length}</span>
+                          </h5>
+                          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                            {userActivities.goals.length > 0 ? (
+                              userActivities.goals.map(goal => (
+                                <div key={goal.id} className="p-3 bg-gray-50 rounded-lg border-l-2 border-purple-300">
+                                  <p className="text-sm font-medium text-gray-800">{goal.description}</p>
+                                  <div className="flex justify-between items-center mt-2">
+                                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${goal.done ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                      {goal.done ? '✓ Tamamlandı' : '⏳ Devam Ediyor'}
+                                    </span>
+                                    <span className="text-xs text-gray-400">{new Date(goal.created_at).toLocaleDateString('tr-TR')}</span>
+                                  </div>
+                                </div>
+                              ))
+                            ) : <p className="text-sm text-gray-400 text-center py-4">Kayıtlı hedef yok</p>}
+                          </div>
+                        </div>
+
+                        {/* Tasks */}
+                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                          <h5 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center"><ListChecks size={16} className="text-blue-600" /></span>
+                            Görevler
+                            <span className="ml-auto text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">{userActivities.tasks.length}</span>
+                          </h5>
+                          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                            {userActivities.tasks.length > 0 ? (
+                              userActivities.tasks.map(task => (
+                                <div key={task.id} className="p-3 bg-gray-50 rounded-lg border-l-2 border-blue-300">
+                                  <p className="text-sm font-medium text-gray-800">{task.title}</p>
+                                  <div className="flex justify-between items-center mt-1">
+                                    <span className="text-xs font-medium text-gray-500 capitalize">{task.status}</span>
+                                    {task.due_date && <span className="text-xs text-gray-400">{new Date(task.due_date).toLocaleDateString('tr-TR')}</span>}
+                                  </div>
+                                </div>
+                              ))
+                            ) : <p className="text-sm text-gray-400 text-center py-4">Kayıtlı görev yok</p>}
+                          </div>
+                        </div>
+
+                        {/* Habits */}
+                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                          <h5 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center"><CheckCircle2 size={16} className="text-emerald-600" /></span>
+                            Alışkanlıklar
+                            <span className="ml-auto text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-semibold">{userActivities.habits.length}</span>
+                          </h5>
+                          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                            {userActivities.habits.length > 0 ? (
+                              userActivities.habits.map(habit => (
+                                <div key={habit.id} className="p-3 bg-gray-50 rounded-lg flex justify-between items-center border-l-2 border-emerald-300">
+                                  <p className="text-sm font-medium text-gray-800">{habit.title}</p>
+                                  <span className="text-xs bg-emerald-100 text-emerald-700 rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap ml-2">🔥 {habit.streak || 0} gün</span>
+                                </div>
+                              ))
+                            ) : <p className="text-sm text-gray-400 text-center py-4">Kayıtlı alışkanlık yok</p>}
+                          </div>
+                        </div>
+
+                        {/* Reasons */}
+                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                          <h5 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center"><MessageSquare size={16} className="text-orange-600" /></span>
+                            Nedenlerim
+                            <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">{userActivities.reasons.length}</span>
+                          </h5>
+                          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                            {userActivities.reasons.length > 0 ? (
+                              userActivities.reasons.map(reason => (
+                                <div key={reason.id} className="p-3 bg-orange-50 rounded-lg border-l-2 border-orange-300">
+                                  <p className="text-sm italic text-gray-700">"{reason.description}"</p>
+                                </div>
+                              ))
+                            ) : <p className="text-sm text-gray-400 text-center py-4">Kayıtlı neden yok</p>}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Sağ Sütun */}
+                      <div className="space-y-5">
+                        {/* Team / Partners added by this user */}
+                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                          <h5 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center"><Users size={16} className="text-indigo-600" /></span>
+                            Eklediği Kişiler
+                            <span className="ml-auto text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-semibold">{userActivities.partners.length}</span>
+                          </h5>
+                          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                            {userActivities.partners.length > 0 ? (
+                              userActivities.partners.map(partner => (
+                                <div key={partner.id} className="p-3 bg-indigo-50/60 rounded-lg flex justify-between items-center border-l-2 border-indigo-300">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-7 h-7 rounded-full bg-indigo-200 flex items-center justify-center text-xs font-bold text-indigo-800">
+                                      {partner.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-semibold text-indigo-900">{partner.name}</p>
+                                      <p className="text-xs text-indigo-500">#{formatUserNumber(partner.user_number)}</p>
+                                    </div>
+                                  </div>
+                                  <span className="text-xs text-gray-400">{new Date(partner.created_at).toLocaleDateString('tr-TR')}</span>
+                                </div>
+                              ))
+                            ) : <p className="text-sm text-gray-400 text-center py-4">Alt ekip üyesi yok</p>}
+                          </div>
+                        </div>
+
+                        {/* Prospects */}
+                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                          <h5 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center"><UserPlus size={16} className="text-green-600" /></span>
+                            İsim Listesi – Adaylar
+                            <span className="ml-auto text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">{userActivities.prospects.length}</span>
+                          </h5>
+                          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                            {userActivities.prospects.length > 0 ? (
+                              userActivities.prospects.map(prospect => (
+                                <div key={prospect.id} className="p-3 bg-gray-50 rounded-lg flex justify-between items-center border-l-2 border-green-300">
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-800">{prospect.name}</p>
+                                    {prospect.phone && <p className="text-xs text-gray-400">{prospect.phone}</p>}
+                                  </div>
+                                  <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">{prospect.category || 'Aday'}</span>
+                                </div>
+                              ))
+                            ) : <p className="text-sm text-gray-400 text-center py-4">Kayıtlı aday yok</p>}
+                          </div>
+                        </div>
+
+                        {/* Meetings */}
+                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                          <h5 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center"><CalendarDays size={16} className="text-amber-600" /></span>
+                            Görüşmeler
+                            <span className="ml-auto text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-semibold">{userActivities.meetings.length}</span>
+                          </h5>
+                          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                            {userActivities.meetings.length > 0 ? (
+                              userActivities.meetings.map(meeting => (
+                                <div key={meeting.id} className="p-3 bg-gray-50 rounded-lg border-l-2 border-amber-300">
+                                  <p className="text-sm font-medium text-gray-800">{meeting.title}</p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-xs text-gray-400">{meeting.date ? new Date(meeting.date).toLocaleDateString('tr-TR') : '—'}</span>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${meeting.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                                      {meeting.status === 'completed' ? 'Tamamlandı' : 'Planlandı'}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))
+                            ) : <p className="text-sm text-gray-400 text-center py-4">Kayıtlı görüşme yok</p>}
+                          </div>
+                        </div>
+
+                        {/* Badges */}
+                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                          <h5 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center"><Award size={16} className="text-yellow-600" /></span>
+                            Rozetler
+                            <span className="ml-auto text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-semibold">{userActivities.badges.length}</span>
+                          </h5>
+                          <div className="flex flex-wrap gap-3">
+                            {userActivities.badges.length > 0 ? (
+                              userActivities.badges.map(badge => (
+                                <div key={badge.id} className="w-11 h-11 rounded-full bg-yellow-100 flex items-center justify-center border-2 border-yellow-300 shadow-sm" title={badge.badge_id}>
+                                  <span className="text-xl">🏅</span>
+                                </div>
+                              ))
+                            ) : <p className="text-sm text-gray-400 py-2">Kazanılmış rozet yok</p>}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                      <div className="animate-spin rounded-full h-14 w-14 border-4 border-purple-200 border-t-purple-600"></div>
+                      <p className="text-gray-500 text-sm font-medium">Veriler yükleniyor...</p>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Trainings Tab */}
@@ -6975,14 +7127,13 @@ const FocusProApp = () => {
                     className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500"
                   >
                     <option value="user">🟢 Normal Kullanıcı</option>
-                    <option value="manager">🟡 Yönetici</option>
                     <option value="admin">🔴 Admin</option>
                   </select>
                 </div>
               )}
 
-              {/* YETKİNLİK ATAMA - Sadece Yönetici rolü seçilince göster */}
-              {newUser.role === 'manager' && (() => {
+              {/* YETKİNLİK ATAMA - Sadece Adminler, Normal Kullanıcılar için atayabilir */}
+              {currentUser?.role === 'admin' && newUser.role === 'user' && (() => {
                 const ALL_PERMS = [
                   { key: 'users_view',         label: 'Kullanıcıları Görüntüle',    icon: '👥', group: 'Kullanıcı Yönetimi' },
                   { key: 'users_manage',       label: 'Kullanıcı Ekle/Düzenle',   icon: '⚙️', group: 'Kullanıcı Yönetimi' },
@@ -7056,8 +7207,8 @@ const FocusProApp = () => {
                       </div>
                     ))}
                   </div>
-                );
-              })()}
+              );
+            })()}
 
               <div className="flex gap-3">
                 <button
@@ -7077,149 +7228,6 @@ const FocusProApp = () => {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* User Detail Modal */}
-      {showUserDetailModal && selectedUserDetail && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl p-6 my-8">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-800">Kullanıcı Detayları</h3>
-              <button
-                onClick={() => {
-                  setShowUserDetailModal(false);
-                  setSelectedUserDetail(null);
-                  setUserActivities(null);
-                }}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            {/* User Info */}
-            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 mb-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                  {selectedUserDetail.name.charAt(0)}
-                </div>
-                <div>
-                  <h4 className="text-xl font-bold text-gray-800">{selectedUserDetail.name}</h4>
-                  <p className="text-gray-600">{selectedUserDetail.email}</p>
-                  <p className="text-sm text-purple-600 font-medium">ID: {formatUserNumber(selectedUserDetail.user_number)}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-sm text-gray-600">Rol:</span>
-                  <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getRoleConfig(selectedUserDetail.role).color}`}>
-                    {getRoleConfig(selectedUserDetail.role).label}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-sm text-gray-600">Kayıt Tarihi:</span>
-                  <span className="ml-2 text-sm font-medium text-gray-800">
-                    {new Date(selectedUserDetail.created_at).toLocaleDateString('tr-TR')}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Activities */}
-            {userActivities ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Goals */}
-                <div className="bg-white rounded-lg border border-gray-200 p-4">
-                  <h5 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                    <Target size={20} className="text-purple-600" />
-                    Hedefler ({userActivities.goals.length})
-                  </h5>
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {userActivities.goals.length > 0 ? (
-                      userActivities.goals.map(goal => (
-                        <div key={goal.id} className="p-3 bg-gray-50 rounded-lg">
-                          <p className="text-sm text-gray-700">{goal.description}</p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {new Date(goal.created_at).toLocaleDateString('tr-TR')}
-                          </p>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-gray-500">Henüz hedef eklenmemiş</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Partners */}
-                <div className="bg-white rounded-lg border border-gray-200 p-4">
-                  <h5 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                    <Users size={20} className="text-blue-600" />
-                    Partnerler ({userActivities.partners.length})
-                  </h5>
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {userActivities.partners.length > 0 ? (
-                      userActivities.partners.map(partner => (
-                        <div key={partner.id} className="p-3 bg-gray-50 rounded-lg">
-                          <p className="text-sm font-medium text-gray-800">{partner.name}</p>
-                          <p className="text-xs text-gray-500">{partner.phone}</p>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-gray-500">Henüz partner eklenmemiş</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Prospects */}
-                <div className="bg-white rounded-lg border border-gray-200 p-4">
-                  <h5 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                    <UserPlus size={20} className="text-green-600" />
-                    İsim Listesi ({userActivities.prospects.length})
-                  </h5>
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {userActivities.prospects.length > 0 ? (
-                      userActivities.prospects.map(prospect => (
-                        <div key={prospect.id} className="p-3 bg-gray-50 rounded-lg">
-                          <p className="text-sm font-medium text-gray-800">{prospect.name}</p>
-                          <p className="text-xs text-gray-500">{prospect.phone}</p>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-gray-500">Henüz isim eklenmemiş</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Reasons */}
-                <div className="bg-white rounded-lg border border-gray-200 p-4">
-                  <h5 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                    <MessageSquare size={20} className="text-orange-600" />
-                    Nedenler ({userActivities.reasons.length})
-                  </h5>
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {userActivities.reasons.length > 0 ? (
-                      userActivities.reasons.map(reason => (
-                        <div key={reason.id} className="p-3 bg-gray-50 rounded-lg">
-                          <p className="text-sm text-gray-700">{reason.description}</p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {new Date(reason.created_at).toLocaleDateString('tr-TR')}
-                          </p>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-gray-500">Henüz neden eklenmemiş</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-                <p className="text-gray-600 mt-4">Aktiviteler yükleniyor...</p>
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -8077,7 +8085,7 @@ END:VCALENDAR`;
           <span className="text-[10px] mt-1">Profil</span>
         </button>
         
-        {isAdminOrManager(currentUser?.role) && (
+        {isAdminOrManager(currentUser) && (
           <button
             onClick={() => setCurrentPage('admin')}
             className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
