@@ -442,11 +442,91 @@ async def check_id(user_number: str):
         raise HTTPException(status_code=404, detail="Kayıtlı ID bulunamadı. Lütfen sponsorunuzla iletişime geçiniz.")
     return {"message": "ID found", "name": user.get("name", "")}
 
-# ================= PASSWORD RESET (FORGOT PASSWORD) =================
+# ================= EMAIL SERVICE =================
+SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USER = os.environ.get("SMTP_USER", "")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+SMTP_FROM_NAME = os.environ.get("SMTP_FROM_NAME", "FocusPro")
+
+async def send_email(to_email: str, subject: str, html_body: str):
+    """Send email via SMTP. Falls back to console log if SMTP not configured."""
+    if not SMTP_USER or not SMTP_PASSWORD:
+        import logging
+        logging.warning(
+            f"\n{'='*60}\n"
+            f"[SMTP YAPILANDI DEĞİL - KONSOL MODU]\n"
+            f"Kime  : {to_email}\n"
+            f"Konu  : {subject}\n"
+            f"İçerik: {html_body[:200]}...\n"
+            f"{'='*60}\n"
+        )
+        return
+
+    import aiosmtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = f"{SMTP_FROM_NAME} <{SMTP_USER}>"
+    msg["To"] = to_email
+    msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+    await aiosmtplib.send(
+        msg,
+        hostname=SMTP_HOST,
+        port=SMTP_PORT,
+        username=SMTP_USER,
+        password=SMTP_PASSWORD,
+        start_tls=True,
+    )
+
 async def send_reset_email(email: str, code: str, name: str):
-    # Proje ileride SMTP alırsa bu kısım güncellenecek
-    import logging
-    logging.info(f"\n{'='*50}\nE-POSTA GÖNDERİLDİ SIMULASYONU\nKime: {email}\nKonu: FocusPro Şifre Sıfırlama Kodu\nMerhaba {name}, şifre sıfırlama kodunuz: {code}\n{'='*50}\n")
+    html = f"""
+    <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;background:#f9fafb;padding:32px;border-radius:16px;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <h1 style="color:#7c3aed;font-size:28px;margin:0;">FocusPro</h1>
+        <p style="color:#6b7280;font-size:13px;margin-top:4px;">Şifre Sıfırlama Talebi</p>
+      </div>
+      <div style="background:white;border-radius:12px;padding:28px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <p style="color:#374151;font-size:15px;">Merhaba <strong>{name}</strong>,</p>
+        <p style="color:#6b7280;font-size:14px;">Şifre sıfırlama talebinizi aldık. Aşağıdaki kodu kullanarak şifrenizi sıfırlayabilirsiniz:</p>
+        <div style="text-align:center;margin:28px 0;">
+          <span style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:white;font-size:36px;font-weight:bold;letter-spacing:12px;padding:16px 32px;border-radius:12px;">{code}</span>
+        </div>
+        <p style="color:#9ca3af;font-size:12px;text-align:center;">Bu kod <strong>15 dakika</strong> geçerlidir.</p>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;">
+        <p style="color:#9ca3af;font-size:12px;">Bu isteği siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.</p>
+      </div>
+    </div>
+    """
+    await send_email(email, "FocusPro – Şifre Sıfırlama Kodunuz", html)
+
+async def send_welcome_email(email: str, name: str, user_number: int):
+    html = f"""
+    <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;background:#f9fafb;padding:32px;border-radius:16px;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <h1 style="color:#7c3aed;font-size:28px;margin:0;">FocusPro</h1>
+        <p style="color:#6b7280;font-size:13px;margin-top:4px;">Hesabınız Oluşturuldu 🎉</p>
+      </div>
+      <div style="background:white;border-radius:12px;padding:28px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <p style="color:#374151;font-size:15px;">Merhaba <strong>{name}</strong>,</p>
+        <p style="color:#6b7280;font-size:14px;">FocusPro sistemine hoş geldiniz! Hesabınız başarıyla oluşturuldu.</p>
+        <div style="background:#f3f4f6;border-radius:10px;padding:16px;margin:20px 0;text-align:center;">
+          <p style="color:#6b7280;font-size:12px;margin:0 0 6px;">Atomy ID Numaranız</p>
+          <p style="color:#7c3aed;font-size:28px;font-weight:bold;font-family:monospace;margin:0;letter-spacing:4px;">{user_number:08d}</p>
+        </div>
+        <p style="color:#6b7280;font-size:14px;">Sisteme ilk girişte <strong>"Şifre Belirle"</strong> butonuna tıklayarak ID numaranızı girin ve şifrenizi oluşturun.</p>
+        <div style="text-align:center;margin-top:24px;">
+          <a href="https://focuspro.vercel.app" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:white;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:bold;font-size:14px;">Sisteme Giriş Yap →</a>
+        </div>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;">
+        <p style="color:#9ca3af;font-size:12px;">Herhangi bir sorunuz varsa yöneticinizle iletişime geçiniz.</p>
+      </div>
+    </div>
+    """
+    await send_email(email, "FocusPro – Hesabınız Oluşturuldu", html)
 
 @api_router.post("/auth/forgot-password")
 async def forgot_password(req: ForgotPasswordRequest):
@@ -636,6 +716,14 @@ async def create_user(user_data: UserCreate, current_user: dict = Depends(get_cu
         message=f"{user_data.name} ({user_data.email}) sisteme eklendi. ID: {user_number}",
         notification_type="user"
     )
+    
+    # Hoşgeldin e-postası - gerçek e-posta adresi varsa gönder
+    if user_data.email and '@' in user_data.email and not user_data.email.endswith('@focuspro.local'):
+        try:
+            await send_welcome_email(user_data.email, user_data.name, user_number)
+        except Exception as e:
+            import logging
+            logging.error(f"Hoşgeldin maili gönderilemedi: {e}")
     
     return UserResponse(**doc)
 
@@ -3299,8 +3387,8 @@ async def update_profile(profile_data: UserUpdate, current_user: dict = Depends(
             {"$set": update_data}
         )
     
-    # Get updated user
-    updated_user = await db.users.find_one({"id": current_user['id']}, {"_id": 0, "password": 0})
+    # Get updated user (with password to compute status)
+    updated_user = await db.users.find_one({"id": current_user['id']}, {"_id": 0})
     if 'user_number' not in updated_user:
         updated_user['user_number'] = 0
     
@@ -3311,6 +3399,10 @@ async def update_profile(profile_data: UserUpdate, current_user: dict = Depends(
     
     if 'language' not in updated_user:
         updated_user['language'] = "tr"
+    
+    # Compute status and strip password
+    updated_user['status'] = 'aktif' if updated_user.get('password') else 'beklemede'
+    updated_user.pop('password', None)
     
     return UserResponse(**updated_user)
 

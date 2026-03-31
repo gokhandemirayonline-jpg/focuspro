@@ -129,6 +129,17 @@ const ProfilePage = ({
             <h4 className="text-lg font-semibold text-gray-800 mb-4">İletişim Bilgileri</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">E-posta Adresi</label>
+                <input
+                  type="email"
+                  value={profileData.email || currentUser?.email || ''}
+                  onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+                  placeholder="ornek@mail.com"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+                <p className="text-xs text-gray-400 mt-1">Şifre sıfırlama ve bildirimler bu adrese gönderilecek</p>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
                 <input
                   type="tel"

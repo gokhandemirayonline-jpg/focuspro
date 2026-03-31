@@ -48,6 +48,7 @@ class UserLogin(BaseModel):
 
 class UserUpdate(BaseModel):
     name: str = None
+    email: str = None
     career_title: str = None
     phone: str = None
     city: str = None

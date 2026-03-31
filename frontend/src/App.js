@@ -318,6 +318,7 @@ const FocusProApp = () => {
   // Profile states
   const [profileData, setProfileData] = useState({
     name: '',
+    email: '',
     career_title: '',
     phone: '',
     city: '',
@@ -1519,6 +1520,7 @@ const FocusProApp = () => {
     if (currentUser) {
       setProfileData({
         name: currentUser.name || '',
+        email: currentUser.email || '',
         career_title: currentUser.career_title || '',
         phone: currentUser.phone || '',
         city: currentUser.city || '',
@@ -7247,6 +7249,19 @@ const FocusProApp = () => {
                   value={newUser.name}
                   onChange={(e) => setNewUser({...newUser, name: e.target.value})}
                   placeholder="Ad Soyad"
+                  className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  E-posta Adresi
+                  <span className="ml-1.5 text-[11px] font-normal text-gray-400">(isteğe bağlı – Şifre yenileme ve bildirim için gerekli)</span>
+                </label>
+                <input
+                  type="email"
+                  value={newUser.email || ''}
+                  onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                  placeholder="ornek@mail.com"
                   className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500"
                 />
               </div>
