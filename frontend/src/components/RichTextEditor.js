@@ -1,5 +1,5 @@
 import React, { useCallback, useRef } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, Extension } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
@@ -8,6 +8,47 @@ import TextAlign from '@tiptap/extension-text-align';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import Placeholder from '@tiptap/extension-placeholder';
+
+/* ──────────────────────────────────────────
+   Custom Line Height Extension
+─────────────────────────────────────────── */
+const LINE_HEIGHTS = [
+  { label: 'Tek (1.0)', value: '1' },
+  { label: 'Dar (1.25)', value: '1.25' },
+  { label: 'Normal (1.5)', value: '1.5' },
+  { label: 'Orta (1.75)', value: '1.75' },
+  { label: 'Geniş (2.0)', value: '2' },
+  { label: 'Çok Geniş (2.5)', value: '2.5' },
+];
+
+const LineHeight = Extension.create({
+  name: 'lineHeight',
+  addOptions() { return { types: ['paragraph', 'heading'] }; },
+  addGlobalAttributes() {
+    return [{
+      types: this.options.types,
+      attributes: {
+        lineHeight: {
+          default: null,
+          parseHTML: (el) => el.style.lineHeight || null,
+          renderHTML: (attrs) => {
+            if (!attrs.lineHeight) return {};
+            return { style: `line-height: ${attrs.lineHeight}` };
+          },
+        },
+      },
+    }];
+  },
+  addCommands() {
+    return {
+      setLineHeight: (lineHeight) => ({ commands }) =>
+        this.options.types.every((t) => commands.updateAttributes(t, { lineHeight })),
+      unsetLineHeight: () => ({ commands }) =>
+        this.options.types.every((t) => commands.resetAttributes(t, 'lineHeight')),
+    };
+  },
+});
+
 
 /* ──────────────────────────────────────────
    Toolbar Button
@@ -50,6 +91,7 @@ const RichTextEditor = ({ value, onChange, onImageUpload }) => {
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       TextStyle,
       Color,
+      LineHeight,
       Placeholder.configure({ placeholder: 'Blog içeriğini buraya yazın...' }),
     ],
     content: value || '',
@@ -103,6 +145,33 @@ const RichTextEditor = ({ value, onChange, onImageUpload }) => {
 
   if (!editor) return null;
 
+  const lineHeightSelect = (
+    <select
+      value={
+        LINE_HEIGHTS.find(lh =>
+          editor.isActive({ lineHeight: lh.value })
+        )?.value ||
+        editor.getAttributes('paragraph').lineHeight ||
+        editor.getAttributes('heading').lineHeight ||
+        ''
+      }
+      onChange={(e) => {
+        if (!e.target.value) {
+          editor.chain().focus().unsetLineHeight().run();
+        } else {
+          editor.chain().focus().setLineHeight(e.target.value).run();
+        }
+      }}
+      title="Satır aralığı"
+      className="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-purple-400 cursor-pointer"
+    >
+      <option value="">Satır Aralığı</option>
+      {LINE_HEIGHTS.map(lh => (
+        <option key={lh.value} value={lh.value}>{lh.label}</option>
+      ))}
+    </select>
+  );
+
   const headingSelect = (
     <select
       value={
@@ -133,6 +202,7 @@ const RichTextEditor = ({ value, onChange, onImageUpload }) => {
 
         {/* Heading */}
         {headingSelect}
+        {lineHeightSelect}
         <Sep />
 
         {/* Bold / Italic / Strike / Code */}
