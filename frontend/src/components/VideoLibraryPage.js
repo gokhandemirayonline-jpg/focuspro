@@ -145,6 +145,7 @@ const VideoLibraryPage = ({ user }) => {
   const [lastValidTime, setLastValidTime] = useState(0);
   const playerRef = useRef(null);
   const playerContainerRef = useRef(null);
+  const viewCountedRef = useRef(false); // Bu oturumda %50 sayıldı mı?
 
   // Drag & Drop sensors
   const sensors = useSensors(
@@ -277,20 +278,8 @@ const VideoLibraryPage = ({ user }) => {
       return;
     }
     
-    // İzlenme sayısını artır ve lokal state'i güncelle
-    try {
-      const viewRes = await progressAPI.incrementView(video.id);
-      const newViewCount = viewRes.data?.view_count || 0;
-      setVideoProgress(prev => ({
-        ...prev,
-        [video.id]: {
-          ...(prev[video.id] || {}),
-          view_count: newViewCount,
-        }
-      }));
-    } catch (error) {
-      console.error('View count artırma hatası:', error);
-    }
+    // İzlenme sayısını artırma buraya TAŞINDI: %50 izlenince artıyor
+    // (bkz. Player interval içi)
     
     // Önce mevcut player'ı temizle (eğer varsa)
     if (playerRef.current) {
@@ -305,6 +294,7 @@ const VideoLibraryPage = ({ user }) => {
     }
     setPlayer(null);
 
+    viewCountedRef.current = false; // Her yeni video açılışında sıfırla
     setSelectedVideo(video);
     setVideoCompleted(false);
     setComment('');
@@ -460,6 +450,23 @@ const VideoLibraryPage = ({ user }) => {
                           watch_percentage: watchPercentage,
                           watched: false
                         }).catch(err => console.error('Progress kayıt hatası:', err));
+
+                        // %50 eşiği geçildi mi? → Bir kez izlenme sayısını artır
+                        if (watchPercentage >= 50 && !viewCountedRef.current) {
+                          viewCountedRef.current = true;
+                          progressAPI.incrementView(selectedVideo.id)
+                            .then(res => {
+                              const newCount = res.data?.view_count || 0;
+                              setVideoProgress(prev => ({
+                                ...prev,
+                                [selectedVideo.id]: {
+                                  ...(prev[selectedVideo.id] || {}),
+                                  view_count: newCount,
+                                }
+                              }));
+                            })
+                            .catch(err => console.error('View count hatası:', err));
+                        }
 
                         // Anlık durumu React state'ine de ekleyelim ki kapat/aç yapınca sayfayı yenilemeden kaldığı yeri bilsin
                         setVideoProgress(prev => ({
