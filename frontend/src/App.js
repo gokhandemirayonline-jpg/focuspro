@@ -1566,6 +1566,13 @@ const FocusProApp = () => {
   const updateProfilePhoto = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
+
+    const MAX_SIZE_KB = 700;
+    if (file.size > MAX_SIZE_KB * 1024) {
+      alert(`Fotoğraf boyutu en fazla ${MAX_SIZE_KB} KB olabilir. Seçilen dosya: ${Math.round(file.size / 1024)} KB`);
+      event.target.value = '';
+      return;
+    }
     
     setUploadingImage(true);
     try {
