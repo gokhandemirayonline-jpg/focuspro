@@ -209,14 +209,7 @@ const StatisticsPage = ({ user, preSelectUserId, onClearPreselect }) => {
               <p className="text-sm opacity-80">Başarı: {statsData.meetings?.success_rate || 0}%</p>
             </div>
 
-            <div className="bg-gradient-to-br from-pink-500 to-pink-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
-              <div className="flex items-center justify-between mb-2">
-                <Users size={32} className="opacity-80" />
-                <span className="text-3xl font-bold">{statsData.partners?.total || 0}</span>
-              </div>
-              <h3 className="text-lg font-semibold">Partnerler</h3>
-              <p className="text-sm opacity-80">Aktif: {statsData.partners?.active || 0}</p>
-            </div>
+
 
             <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
               <div className="flex items-center justify-between mb-2">
@@ -236,14 +229,7 @@ const StatisticsPage = ({ user, preSelectUserId, onClearPreselect }) => {
               <p className="text-sm opacity-80">Bu dönem</p>
             </div>
 
-            <div className="bg-gradient-to-br from-teal-500 to-teal-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
-              <div className="flex items-center justify-between mb-2">
-                <Target size={32} className="opacity-80" />
-                <span className="text-3xl font-bold">{statsData.partners?.new_partners || 0}</span>
-              </div>
-              <h3 className="text-lg font-semibold">Yeni Partner</h3>
-              <p className="text-sm opacity-80">Bu dönem</p>
-            </div>
+
 
             <div className="bg-gradient-to-br from-cyan-500 to-cyan-700 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow">
               <div className="flex items-center justify-between mb-2">
@@ -310,22 +296,7 @@ const StatisticsPage = ({ user, preSelectUserId, onClearPreselect }) => {
           </div>
         )}
 
-        {/* Partner Growth Chart */}
-        {statsData.partners && statsData.partners.monthly_trend && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Partner Büyüme Trendi</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={statsData.partners.monthly_trend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Area type="monotone" dataKey="count" stroke={COLORS[0]} fill={COLORS[0]} name="Yeni Partnerler" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        )}
+
 
         {/* Task Status Distribution */}
         {statsData.tasks && statsData.tasks.by_status && (

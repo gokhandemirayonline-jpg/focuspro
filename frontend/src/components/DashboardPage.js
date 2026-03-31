@@ -66,16 +66,7 @@ const DashboardPage = ({
       page: 'agenda',
       stat: 'Görevler, hedefler, hayaller'
     },
-    {
-      icon: <Users size={28} />,
-      title: 'Partner Ağı',
-      description: 'İş ortaklarınızı ve ekip üyelerinizi yönetin.',
-      color: 'from-pink-500 to-rose-500',
-      bgColor: 'bg-pink-50 dark:bg-pink-900/20',
-      iconColor: 'text-pink-600 dark:text-pink-400',
-      page: 'partners',
-      stat: `${stats.activePartners} aktif partner`
-    },
+
     {
       icon: <Award size={28} />,
       title: 'Rozetler & Başarılar',
@@ -205,15 +196,7 @@ const DashboardPage = ({
                 <p className="text-2xl md:text-3xl font-bold text-white">{stats.todayMeetings}</p>
                 <p className="text-purple-200/70 text-xs mt-0.5">Bugünkü Görüşme</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10 hover:bg-white/15 transition-all cursor-pointer" onClick={() => onNavigate('partners')}>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 bg-pink-400/20 rounded-lg flex items-center justify-center">
-                    <Users size={16} className="text-pink-300" />
-                  </div>
-                </div>
-                <p className="text-2xl md:text-3xl font-bold text-white">{stats.activePartners}</p>
-                <p className="text-purple-200/70 text-xs mt-0.5">Aktif Partner</p>
-              </div>
+
             </div>
           </div>
         </div>

@@ -406,6 +406,40 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         current_user['user_number'] = 0
     return UserResponse(**current_user)
 
+@api_router.post("/auth/set-password")
+async def set_password(data: dict):
+    user_number_str = str(data.get("user_number", ""))
+    
+    if not user_number_str.isdigit() or len(user_number_str) != 8:
+        raise HTTPException(status_code=400, detail="ID numarası 8 haneli olmalıdır.")
+    
+    user_number = int(user_number_str)
+    new_password = data.get("new_password")
+    
+    if not new_password or len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Şifre en az 6 karakter olmalıdır.")
+        
+    user = await db.users.find_one({"user_number": user_number}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Kayıtlı ID bulunamadı. Lütfen sponsorunuzla iletişime geçiniz.")
+        
+    hashed_pwd = hash_password(new_password)
+    await db.users.update_one(
+        {"user_number": user_number},
+        {"$set": {"password": hashed_pwd}}
+    )
+    
+    user_updated = await db.users.find_one({"user_number": user_number}, {"_id": 0})
+    return {"message": "Şifreniz başarıyla belirlendi.", "name": user_updated.get("name", "Kullanıcı")}
+
+@api_router.get("/auth/check-id/{user_number}")
+async def check_id(user_number: str):
+    if not user_number.isdigit() or len(user_number) != 8:
+        raise HTTPException(status_code=400, detail="ID numarası 8 haneli olmalıdır.")
+    user = await db.users.find_one({"user_number": int(user_number)}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Kayıtlı ID bulunamadı. Lütfen sponsorunuzla iletişime geçiniz.")
+    return {"message": "ID found", "name": user.get("name", "")}
 
 # ============= USER MANAGEMENT (ADMIN) =============
 @api_router.get("/users", response_model=List[UserResponse])
@@ -440,15 +474,9 @@ async def create_user(user_data: UserCreate, current_user: dict = Depends(get_cu
     if existing_email:
         raise HTTPException(status_code=400, detail="Bu email adresi zaten kayıtlı")
     
-    # user_number zorunlu ve 8 haneli olmalı. Eğer gelmemişse otomatik oluştur (özellikle takım üyeleri eklerken)
-    import random
+    # user_number zorunlu ve 8 haneli olmalı. Sadece admin belirleyecek.
     if user_data.user_number is None or user_data.user_number == '':
-        while True:
-            new_number = random.randint(10000000, 99999999)
-            existing_number = await db.users.find_one({"user_number": new_number}, {"_id": 0})
-            if not existing_number:
-                user_data.user_number = new_number
-                break
+        raise HTTPException(status_code=400, detail="ID numarası girilmesi zorunludur")
     
     user_number = user_data.user_number
     try:

@@ -50,6 +50,7 @@ const FocusProApp = () => {
   const [loginForm, setLoginForm] = useState({ userId: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [showSetPassword, setShowSetPassword] = useState(false);
+  const [idVerified, setIdVerified] = useState(false);
   const [setPasswordForm, setSetPasswordForm] = useState({ userId: '', password: '', confirmPassword: '' });
   const [setPasswordSuccess, setSetPasswordSuccess] = useState('');
   
@@ -460,6 +461,27 @@ const FocusProApp = () => {
     }
   };
 
+  const handleCheckId = async () => {
+    if (!setPasswordForm.userId) {
+      alert('Lütfen ID numaranızı girin.');
+      return;
+    }
+    if (String(setPasswordForm.userId).length !== 8) {
+      alert('ID numarası tam olarak 8 haneli olmalıdır!');
+      return;
+    }
+    try {
+      await authAPI.checkId(setPasswordForm.userId);
+      setIdVerified(true);
+    } catch (error) {
+      if (error.response?.status === 404) {
+        alert('Kayıtlı ID bulunamadı. Lütfen sponsorunuzla iletişime geçiniz.');
+      } else {
+        alert(error.response?.data?.detail || 'Bir hata oluştu.');
+      }
+    }
+  };
+
   const handleSetPassword = async () => {
     if (!setPasswordForm.userId || !setPasswordForm.password || !setPasswordForm.confirmPassword) {
       alert('Tüm alanları doldurun!');
@@ -475,7 +497,7 @@ const FocusProApp = () => {
     }
     try {
       const response = await authAPI.setPassword(
-        parseInt(setPasswordForm.userId, 10),
+        setPasswordForm.userId,
         setPasswordForm.password
       );
       const name = response.data.name;
@@ -483,10 +505,15 @@ const FocusProApp = () => {
       setSetPasswordForm({ userId: '', password: '', confirmPassword: '' });
       setTimeout(() => {
         setShowSetPassword(false);
+        setIdVerified(false);
         setSetPasswordSuccess('');
       }, 3000);
     } catch (error) {
-      alert(error.response?.data?.detail || 'Şifre belirlenemedi. ID numarasını kontrol edin.');
+      if (error.response?.status === 404) {
+        alert('Kayıtlı ID bulunamadı. Lütfen sponsorunuzla iletişime geçiniz.');
+      } else {
+        alert(error.response?.data?.detail || 'Şifre belirlenemedi. ID numarasını kontrol edin.');
+      }
     }
   };
 
@@ -1685,55 +1712,45 @@ const FocusProApp = () => {
   };
 
   const addOrUpdateUser = async () => {
-    if (!newUser.name || !newUser.email) {
-      alert('İsim ve email alanları zorunludur!');
+    if (!newUser.name) {
+      alert('İsim alanı zorunludur!');
       return;
     }
     
-    // Yeni kullanıcı oluştururken 8 haneli ID zorunlu
-    if (!editingUser) {
-      if (!newUser.user_number) {
-        alert('ID numarası zorunludur!');
-        return;
-      }
-      const idNum = parseInt(newUser.user_number, 10);
-      if (isNaN(idNum) || newUser.user_number.length !== 8) {
-        alert('ID numarası tam olarak 8 haneli olmalıdır!');
-        return;
-      }
+    if (!newUser.user_number) {
+      alert('ID numarası zorunludur!');
+      return;
     }
+    
+    const idNum = parseInt(newUser.user_number, 10);
+    if (isNaN(idNum) || String(newUser.user_number).length !== 8) {
+      alert('ID numarası tam olarak 8 haneli olmalıdır!');
+      return;
+    }
+    
+    // Auto generate email
+    const autoEmail = newUser.email || `${newUser.user_number}@focuspro.local`;
     
     try {
       if (editingUser) {
-        // Düzenlemede isim, email, rol, ID ve yetkinlikler güncellenebilir
         const updateData = {
           name: newUser.name,
-          email: newUser.email,
+          email: autoEmail,
           role: newUser.role,
+          user_number: idNum,
           permissions: newUser.role === 'manager' ? (newUser.permissions || []) : []
         };
-        // ID numarası değiştiyse ekle
-        if (newUser.user_number) {
-          const idNum = parseInt(newUser.user_number, 10);
-          if (!isNaN(idNum) && newUser.user_number.length === 8) {
-            updateData.user_number = idNum;
-          } else if (newUser.user_number.length > 0 && newUser.user_number.length !== 8) {
-            alert('ID numarası tam olarak 8 haneli olmalıdır!');
-            return;
-          }
-        }
         await userAPI.update(editingUser.id, updateData);
         alert('Kullanıcı başarıyla güncellendi!');
       } else {
-        // Yeni kullanıcı: ID numarasıyla ekle, şifresiz
         await userAPI.create({
           name: newUser.name,
-          email: newUser.email,
-          user_number: parseInt(newUser.user_number, 10),
+          email: autoEmail,
+          user_number: idNum,
           role: newUser.role,
           permissions: newUser.role === 'manager' ? (newUser.permissions || []) : []
         });
-        alert(`Kullanıcı başarıyla eklendi!\nKullanıcı ID ${newUser.user_number} ile giriş yaparak Şifre Belirle butonuyla şifresini oluşturabilir.`);
+        alert(`Kullanıcı başarıyla eklendi!\nKullanıcı ID ${newUser.user_number} ile 'Şifre Belirle' adımından şifresini oluşturabilir.`);
       }
       
       await loadUsers();
@@ -2222,7 +2239,7 @@ const FocusProApp = () => {
               ) : (
                 <>
                   <div className="mb-6">
-                    <button onClick={() => { setShowSetPassword(false); setSetPasswordSuccess(''); }} className="flex items-center gap-1 text-gray-400 hover:text-gray-600 text-sm mb-4">
+                    <button onClick={() => { setShowSetPassword(false); setIdVerified(false); setSetPasswordSuccess(''); }} className="flex items-center gap-1 text-gray-400 hover:text-gray-600 text-sm mb-4">
                       <ChevronLeft size={16} /> Geri
                     </button>
                     <h2 className="text-2xl font-bold text-gray-800">Şifre Belirle 🔒</h2>
@@ -2242,39 +2259,48 @@ const FocusProApp = () => {
                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">ID Numaranız</label>
                         <div className="relative">
                           <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">#</span>
-                          <input type="text" value={setPasswordForm.userId} onChange={(e) => setSetPasswordForm({...setPasswordForm, userId: e.target.value})} className="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm" placeholder="Örn: 1, 2, 15" />
+                          <input type="text" value={setPasswordForm.userId} onChange={(e) => setSetPasswordForm({...setPasswordForm, userId: e.target.value})} className="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm disabled:opacity-50" placeholder="8 haneli Atomy ID'niz" disabled={idVerified} />
                         </div>
                       </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Yeni Şifre</label>
-                        <div className="relative">
-                          <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                          <input type={showPassword ? 'text' : 'password'} value={setPasswordForm.password} onChange={(e) => setSetPasswordForm({...setPasswordForm, password: e.target.value})} className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm" placeholder="En az 6 karakter" />
-                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Şifre Tekrar</label>
-                        <div className="relative">
-                          <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                          <input
-                            type={showPassword ? 'text' : 'password'}
-                            value={setPasswordForm.confirmPassword}
-                            onChange={(e) => setSetPasswordForm({...setPasswordForm, confirmPassword: e.target.value})}
-                            onKeyPress={(e) => e.key === 'Enter' && handleSetPassword()}
-                            className={`w-full pl-11 pr-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm ${
-                              setPasswordForm.confirmPassword && setPasswordForm.password !== setPasswordForm.confirmPassword ? 'border-red-300' : 'border-gray-200'
-                            }`}
-                            placeholder="Şifrenizi tekrar girin"
-                          />
-                        </div>
-                        {setPasswordForm.confirmPassword && setPasswordForm.password !== setPasswordForm.confirmPassword && (
-                          <p className="text-red-500 text-xs mt-1">Şifreler eşleşmiyor</p>
-                        )}
-                      </div>
-                      <button onClick={handleSetPassword} className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all hover:-translate-y-0.5 text-sm">
-                        Şifreyi Kaydet
-                      </button>
+                      
+                      {!idVerified ? (
+                        <button onClick={handleCheckId} className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all hover:-translate-y-0.5 text-sm">
+                          Devam Et
+                        </button>
+                      ) : (
+                        <>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Yeni Şifre</label>
+                            <div className="relative">
+                              <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                              <input type={showPassword ? 'text' : 'password'} value={setPasswordForm.password} onChange={(e) => setSetPasswordForm({...setPasswordForm, password: e.target.value})} className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm" placeholder="En az 6 karakter" />
+                              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Şifre Tekrar</label>
+                            <div className="relative">
+                              <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                              <input
+                                type={showPassword ? 'text' : 'password'}
+                                value={setPasswordForm.confirmPassword}
+                                onChange={(e) => setSetPasswordForm({...setPasswordForm, confirmPassword: e.target.value})}
+                                onKeyPress={(e) => e.key === 'Enter' && handleSetPassword()}
+                                className={`w-full pl-11 pr-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm ${
+                                  setPasswordForm.confirmPassword && setPasswordForm.password !== setPasswordForm.confirmPassword ? 'border-red-300' : 'border-gray-200'
+                                }`}
+                                placeholder="Şifrenizi tekrar girin"
+                              />
+                            </div>
+                            {setPasswordForm.confirmPassword && setPasswordForm.password !== setPasswordForm.confirmPassword && (
+                              <p className="text-red-500 text-xs mt-1">Şifreler eşleşmiyor</p>
+                            )}
+                          </div>
+                          <button onClick={handleSetPassword} className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all hover:-translate-y-0.5 text-sm">
+                            Şifreyi Kaydet
+                          </button>
+                        </>
+                      )}
                     </div>
                   )}
                 </>
@@ -2357,15 +2383,7 @@ const FocusProApp = () => {
             {sidebarOpen && <span>Eğitimler</span>}
           </button>
 
-          <button
-            onClick={() => setCurrentPage('team')}
-            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
-              currentPage === 'team' ? 'bg-white/20' : 'hover:bg-white/10'
-            }`}
-          >
-            <Users size={20} />
-            {sidebarOpen && <span>Ekibim</span>}
-          </button>
+
 
           <button
             onClick={() => setCurrentPage('events')}
@@ -2738,92 +2756,7 @@ const FocusProApp = () => {
             </div>
           )}
 
-          {/* EKIBIM PAGE */}
-          {currentPage === 'team' && (
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold text-gray-800">Ekibim</h2>
-                <button
-                  onClick={() => {
-                    setShowUserModal(true);
-                    setEditingUser(null);
-                    setNewUser({ name: '', email: '', user_number: '', role: 'user', permissions: [] });
-                  }}
-                  className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
-                >
-                  <Plus size={20} />
-                  Kişi Ekle
-                </button>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {users.filter(u => u.created_by === currentUser?.id).map(partner => (
-                  <div
-                    key={partner.id}
-                    className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 cursor-pointer hover:shadow-md hover:border-purple-200 transition-all duration-200 group"
-                    onClick={() => {
-                      setSelectedPartner(partner);
-                      setShowPartnerDetailModal(true);
-                    }}
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-bold text-gray-800 group-hover:text-purple-700 transition-colors">{partner.name}</h3>
-                        <p className="text-sm text-gray-600">{partner.career_title || (partner.role === 'manager' ? 'Yönetici' : 'Kullanıcı')}</p>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        partner.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                      }`}>
-                        {partner.status === 'active' ? 'Aktif' : 'Pasif'}
-                      </span>
-                    </div>
-
-                    <div className="space-y-2 text-sm text-gray-600 mb-4">
-                      {partner.phone && <p>📞 {partner.phone}</p>}
-                      {partner.email && <p>📧 {partner.email}</p>}
-                      <p>🆔 ID: {partner.user_number}</p>
-                    </div>
-
-                    <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                      <button
-                        onClick={() => {
-                          setEditingUser(partner);
-                          setNewUser({ ...partner, password: '' });
-                          setShowUserModal(true);
-                        }}
-                        className="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm hover:bg-blue-700"
-                      >
-                        Düzenle
-                      </button>
-                      <button
-                        onClick={async () => {
-                          if (window.confirm('Bu ağ üyesini silmek istediğinize emin misiniz?')) {
-                            try {
-                              await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/users/${partner.id}`, {
-                                method: 'DELETE',
-                                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-                              });
-                              loadUsers();
-                            } catch (e) {
-                              console.error(e);
-                            }
-                          }
-                        }}
-                        className="px-4 bg-red-600 text-white py-2 rounded-lg text-sm hover:bg-red-700"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                {users.filter(u => u.created_by === currentUser?.id).length === 0 && (
-                  <div className="col-span-3 text-center py-12 text-gray-500">
-                    Henüz ekibinizde kimse yok. Sağ üstten Kişi Ekle butonunu kullanarak ekibinizi kurabilirsiniz.
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* EVENTS PAGE - NEW DESIGN */}
           {currentPage === 'events' && (
@@ -7017,20 +6950,8 @@ const FocusProApp = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={newUser.email}
-                  onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                  placeholder="ornek@mail.com"
-                  className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-              {/* ID Numarası - Opsiyonel (Boş bırakılırsa otomatik atanır) */}
-              <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  ID Numarası
-                  <span className="text-xs text-gray-400 ml-1">(boş bırakılırsa otomatik atanır)</span>
+                  Atomy ID Numarası (8 Haneli)
                 </label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-purple-500 font-bold text-sm">#</span>
@@ -8121,15 +8042,7 @@ END:VCALENDAR`;
           <span className="text-[10px] mt-1">Adaylar</span>
         </button>
         
-        <button
-          onClick={() => setCurrentPage('team')}
-          className={`flex flex-col items-center justify-center min-w-[70px] h-14 rounded-lg ${
-            currentPage === 'team' ? 'text-purple-600 bg-purple-50' : 'text-gray-500'
-          }`}
-        >
-          <Users size={20} />
-          <span className="text-[10px] mt-1">Ekibim</span>
-        </button>
+
         
         <button
           onClick={() => setCurrentPage('events')}
