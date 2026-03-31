@@ -459,20 +459,17 @@ const FocusProApp = () => {
     } catch (error) {
       alert('ID numerası veya şifre hatalı!');
     }
-  };
-
-  const handleCheckId = async () => {
-    if (!setPasswordForm.userId) {
-      alert('Lütfen ID numaranızı girin.');
+  const handleInitSetPassword = async () => {
+    if (!loginForm.userId || String(loginForm.userId).trim().length !== 8) {
+      alert('Lütfen önce Atomy ID numaranızı eksiksiz (8 haneli) girin.');
       return;
     }
-    if (String(setPasswordForm.userId).length !== 8) {
-      alert('ID numarası tam olarak 8 haneli olmalıdır!');
-      return;
-    }
+    
     try {
-      await authAPI.checkId(setPasswordForm.userId);
+      await authAPI.checkId(loginForm.userId);
+      setSetPasswordForm({ ...setPasswordForm, userId: String(loginForm.userId).trim() });
       setIdVerified(true);
+      setShowSetPassword(true);
     } catch (error) {
       if (error.response?.status === 404) {
         alert('Kayıtlı ID bulunamadı. Lütfen sponsorunuzla iletişime geçiniz.');
@@ -2231,7 +2228,7 @@ const FocusProApp = () => {
                     <span className="text-xs text-gray-400 font-medium">veya</span>
                     <div className="flex-1 h-px bg-gray-200"></div>
                   </div>
-                  <button onClick={() => setShowSetPassword(true)} className="w-full border-2 border-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:border-purple-300 hover:text-purple-600 hover:bg-purple-50/50 transition-all text-sm">
+                  <button onClick={handleInitSetPassword} className="w-full border-2 border-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:border-purple-300 hover:text-purple-600 hover:bg-purple-50/50 transition-all text-sm">
                     Şifre Belirle
                   </button>
                   <p className="text-center text-xs text-gray-400 mt-3">Admin tarafından eklendiyseniz ilk girişte şifrenizi belirleyin</p>
@@ -2256,51 +2253,35 @@ const FocusProApp = () => {
                   ) : (
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">ID Numaranız</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Yeni Şifre</label>
                         <div className="relative">
-                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">#</span>
-                          <input type="text" value={setPasswordForm.userId} onChange={(e) => setSetPasswordForm({...setPasswordForm, userId: e.target.value})} className="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm disabled:opacity-50" placeholder="8 haneli Atomy ID'niz" disabled={idVerified} />
+                          <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <input type={showPassword ? 'text' : 'password'} value={setPasswordForm.password} onChange={(e) => setSetPasswordForm({...setPasswordForm, password: e.target.value})} className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm" placeholder="En az 6 karakter" />
+                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
                         </div>
                       </div>
-                      
-                      {!idVerified ? (
-                        <button onClick={handleCheckId} className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all hover:-translate-y-0.5 text-sm">
-                          Devam Et
-                        </button>
-                      ) : (
-                        <>
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Yeni Şifre</label>
-                            <div className="relative">
-                              <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                              <input type={showPassword ? 'text' : 'password'} value={setPasswordForm.password} onChange={(e) => setSetPasswordForm({...setPasswordForm, password: e.target.value})} className="w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm" placeholder="En az 6 karakter" />
-                              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Şifre Tekrar</label>
-                            <div className="relative">
-                              <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                              <input
-                                type={showPassword ? 'text' : 'password'}
-                                value={setPasswordForm.confirmPassword}
-                                onChange={(e) => setSetPasswordForm({...setPasswordForm, confirmPassword: e.target.value})}
-                                onKeyPress={(e) => e.key === 'Enter' && handleSetPassword()}
-                                className={`w-full pl-11 pr-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm ${
-                                  setPasswordForm.confirmPassword && setPasswordForm.password !== setPasswordForm.confirmPassword ? 'border-red-300' : 'border-gray-200'
-                                }`}
-                                placeholder="Şifrenizi tekrar girin"
-                              />
-                            </div>
-                            {setPasswordForm.confirmPassword && setPasswordForm.password !== setPasswordForm.confirmPassword && (
-                              <p className="text-red-500 text-xs mt-1">Şifreler eşleşmiyor</p>
-                            )}
-                          </div>
-                          <button onClick={handleSetPassword} className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all hover:-translate-y-0.5 text-sm">
-                            Şifreyi Kaydet
-                          </button>
-                        </>
-                      )}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Şifre Tekrar</label>
+                        <div className="relative">
+                          <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            value={setPasswordForm.confirmPassword}
+                            onChange={(e) => setSetPasswordForm({...setPasswordForm, confirmPassword: e.target.value})}
+                            onKeyPress={(e) => e.key === 'Enter' && handleSetPassword()}
+                            className={`w-full pl-11 pr-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm ${
+                              setPasswordForm.confirmPassword && setPasswordForm.password !== setPasswordForm.confirmPassword ? 'border-red-300' : 'border-gray-200'
+                            }`}
+                            placeholder="Şifrenizi tekrar girin"
+                          />
+                        </div>
+                        {setPasswordForm.confirmPassword && setPasswordForm.password !== setPasswordForm.confirmPassword && (
+                          <p className="text-red-500 text-xs mt-1">Şifreler eşleşmiyor</p>
+                        )}
+                      </div>
+                      <button onClick={handleSetPassword} className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all hover:-translate-y-0.5 text-sm">
+                        Şifreyi Kaydet
+                      </button>
                     </div>
                   )}
                 </>
