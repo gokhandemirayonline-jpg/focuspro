@@ -103,9 +103,9 @@ const SortableVideoCard = ({ video, isUnlocked, progress, onVideoClick, isAdmin 
           </h3>
           
           <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1" title="Sizin izleme sayınız">
               <Eye size={14} />
-              {video.view_count || 0}
+              {progress?.view_count || 0}
             </span>
             <span>{video.level}</span>
             {isWatched && (
@@ -277,9 +277,17 @@ const VideoLibraryPage = ({ user }) => {
       return;
     }
     
-    // İzlenme sayısını artır
+    // İzlenme sayısını artır ve lokal state'i güncelle
     try {
-      await progressAPI.incrementView(video.id);
+      const viewRes = await progressAPI.incrementView(video.id);
+      const newViewCount = viewRes.data?.view_count || 0;
+      setVideoProgress(prev => ({
+        ...prev,
+        [video.id]: {
+          ...(prev[video.id] || {}),
+          view_count: newViewCount,
+        }
+      }));
     } catch (error) {
       console.error('View count artırma hatası:', error);
     }
@@ -828,12 +836,12 @@ const VideoLibraryPage = ({ user }) => {
                       )}
                     </div>
                     
-                    {/* İzlenme Sayısı - Oynatma durumundan sonra */}
+                    {/* İzlenme Sayısı - kullanıcıya özel */}
                     <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hidden sm:flex">
                       <Eye size={14} />
-                      <span>İzlenme:</span>
+                      <span>Siz izlediniz:</span>
                       <span className="font-semibold text-gray-700 dark:text-gray-300">
-                        {selectedVideo.view_count || 0} kez
+                        {videoProgress[selectedVideo.id]?.view_count || 0} kez
                       </span>
                     </div>
                   </div>
