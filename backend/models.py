@@ -81,6 +81,18 @@ class ChangePassword(BaseModel):
     current_password: str
     new_password: str
 
+class ForgotPasswordRequest(BaseModel):
+    email_or_id: str
+
+class VerifyResetCodeRequest(BaseModel):
+    email_or_id: str
+    code: str
+
+class ResetPasswordRequest(BaseModel):
+    email_or_id: str
+    code: str
+    new_password: str
+
 class User(UserBase):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -88,6 +100,8 @@ class User(UserBase):
     user_number: int = Field(default=0)  # ID numarası
     permissions: List[str] = Field(default=[])  # Manager yetkinlikleri
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    reset_token: Optional[str] = None
+    reset_token_expiry: Optional[datetime] = None
 
 class UserResponse(BaseModel):
     id: str

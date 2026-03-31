@@ -29,6 +29,9 @@ export const authAPI = {
   getMe: () => api.get(`/auth/me?t=${new Date().getTime()}`),
   updateProfile: (profileData) => api.put('/auth/profile', profileData),
   changePassword: (passwordData) => api.post('/auth/change-password', passwordData),
+  forgotPassword: (email_or_id) => api.post('/auth/forgot-password', { email_or_id }),
+  verifyResetCode: (email_or_id, code) => api.post('/auth/verify-reset-code', { email_or_id, code }),
+  resetPassword: (email_or_id, code, new_password) => api.post('/auth/reset-password', { email_or_id, code, new_password }),
 };
 
 // User API

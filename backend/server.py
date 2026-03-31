@@ -20,6 +20,7 @@ load_dotenv(".env")
 
 from models import (
     UserCreate, UserLogin, User, UserResponse, UserUpdate, UserAdminUpdate, ChangePassword,
+    ForgotPasswordRequest, VerifyResetCodeRequest, ResetPasswordRequest,
     VideoCategoryCreate, VideoCategory,
     VideoCreate, Video,
     VideoProgress, VideoProgressBase, VideoProgressUpdate,
@@ -440,6 +441,99 @@ async def check_id(user_number: str):
     if not user:
         raise HTTPException(status_code=404, detail="Kayıtlı ID bulunamadı. Lütfen sponsorunuzla iletişime geçiniz.")
     return {"message": "ID found", "name": user.get("name", "")}
+
+# ================= PASSWORD RESET (FORGOT PASSWORD) =================
+async def send_reset_email(email: str, code: str, name: str):
+    # Proje ileride SMTP alırsa bu kısım güncellenecek
+    import logging
+    logging.info(f"\n{'='*50}\nE-POSTA GÖNDERİLDİ SIMULASYONU\nKime: {email}\nKonu: FocusPro Şifre Sıfırlama Kodu\nMerhaba {name}, şifre sıfırlama kodunuz: {code}\n{'='*50}\n")
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(req: ForgotPasswordRequest):
+    query = {"$or": [{"email": req.email_or_id}]}
+    if req.email_or_id.isdigit() and len(req.email_or_id) == 8:
+        query["$or"].append({"user_number": int(req.email_or_id)})
+        
+    user = await db.users.find_one(query)
+    if not user:
+        raise HTTPException(status_code=404, detail="Sistemde böyle bir e-posta veya ID bulunamadı.")
+        
+    if not user.get("email"):
+        raise HTTPException(status_code=400, detail="Kullanıcıya ait e-posta adresi bulunmuyor. Lütfen yetkiliyle iletişime geçin.")
+        
+    import random
+    from datetime import datetime, timedelta
+    
+    reset_code = str(random.randint(100000, 999999))
+    expiry = datetime.utcnow() + timedelta(minutes=15)
+    hashed_token = hash_password(reset_code)
+    
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"reset_token": hashed_token, "reset_token_expiry": expiry}}
+    )
+    
+    await send_reset_email(user["email"], reset_code, user["name"])
+    
+    email_parts = user["email"].split('@')
+    masked_email = f"{email_parts[0][:2]}***@{email_parts[1]}" if len(email_parts) == 2 else "***"
+        
+    return {"message": "Şifre sıfırlama kodu gönderildi.", "masked_email": masked_email}
+
+@api_router.post("/auth/verify-reset-code")
+async def verify_reset_code(req: VerifyResetCodeRequest):
+    query = {"$or": [{"email": req.email_or_id}]}
+    if req.email_or_id.isdigit() and len(req.email_or_id) == 8:
+        query["$or"].append({"user_number": int(req.email_or_id)})
+        
+    user = await db.users.find_one(query)
+    if not user:
+        raise HTTPException(status_code=404, detail="Sistemde böyle bir kullanıcı bulunamadı.")
+        
+    if not user.get("reset_token") or not user.get("reset_token_expiry"):
+        raise HTTPException(status_code=400, detail="Geçersiz işlem. Lütfen önce şifre sıfırlama talebinde bulunun.")
+        
+    if datetime.utcnow() > user["reset_token_expiry"]:
+        raise HTTPException(status_code=400, detail="Sıfırlama kodunun süresi dolmuş. Lütfen tekrar istekte bulunun.")
+        
+    if not verify_password(req.code, user["reset_token"]):
+        raise HTTPException(status_code=400, detail="Girdiğiniz kod hatalı. Lütfen kontrol edip tekrar deneyin.")
+        
+    return {"message": "Kod başarıyla doğrulandı.", "token_valid": True}
+
+@api_router.post("/auth/reset-password")
+async def reset_password_flow(req: ResetPasswordRequest):
+    query = {"$or": [{"email": req.email_or_id}]}
+    if req.email_or_id.isdigit() and len(req.email_or_id) == 8:
+        query["$or"].append({"user_number": int(req.email_or_id)})
+        
+    user = await db.users.find_one(query)
+    if not user:
+        raise HTTPException(status_code=404, detail="Sistemde böyle bir kullanıcı bulunamadı.")
+        
+    if not user.get("reset_token") or not user.get("reset_token_expiry"):
+        raise HTTPException(status_code=400, detail="Geçersiz işlem. Lütfen önce şifre sıfırlama talebinde bulunun.")
+        
+    if datetime.utcnow() > user["reset_token_expiry"]:
+        raise HTTPException(status_code=400, detail="Sıfırlama kodunun süresi dolmuş.")
+        
+    if not verify_password(req.code, user["reset_token"]):
+        raise HTTPException(status_code=400, detail="Girdiğiniz kod hatalı. Güvenlik sebebiyle işlem iptal edildi.")
+        
+    if len(req.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Şifre en az 6 karakter olmalıdır.")
+        
+    hashed_pwd = hash_password(req.new_password)
+    
+    await db.users.update_one(
+        {"id": user["id"]},
+        {
+            "$set": {"password": hashed_pwd},
+            "$unset": {"reset_token": "", "reset_token_expiry": ""}
+        }
+    )
+    
+    return {"message": "Şifreniz başarıyla yenilendi. Yeni şifrenizle giriş yapabilirsiniz."}
 
 # ============= USER MANAGEMENT (ADMIN) =============
 @api_router.get("/users", response_model=List[UserResponse])

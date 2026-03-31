@@ -176,6 +176,11 @@ const FocusProApp = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventModal, setShowEventModal] = useState(false);
   
+  // Forgot Password States
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
+  const [forgotPasswordStep, setForgotPasswordStep] = useState(1);
+  const [forgotPasswordData, setForgotPasswordData] = useState({ emailOrId: '', code: '', newPassword: '' });
+  
   // Dream Priority States
   const [dreamStep, setDreamStep] = useState(1);
   const [dreamData, setDreamData] = useState({
@@ -483,6 +488,56 @@ const FocusProApp = () => {
       }
     }
   };
+
+  const handleForgotPasswordRequest = async () => {
+    if (!forgotPasswordData.emailOrId) {
+      alert('Lütfen kayıtlı E-posta adresinizi veya 8 haneli Atomy ID numaranızı girin.');
+      return;
+    }
+    try {
+      const response = await authAPI.forgotPassword(forgotPasswordData.emailOrId);
+      alert(response.data.message + '\n\n(Güvenliğiniz için onay kodu şu e-posta adresinize gönderildi:\n' + response.data.masked_email + ')');
+      setForgotPasswordStep(2);
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Bir hata oluştu.');
+    }
+  };
+
+  const handleVerifyResetCode = async () => {
+    if (!forgotPasswordData.code || forgotPasswordData.code.length !== 6) {
+      alert('Lütfen e-postanıza gelen 6 haneli doğrulama kodunu girin.');
+      return;
+    }
+    try {
+      const response = await authAPI.verifyResetCode(forgotPasswordData.emailOrId, forgotPasswordData.code);
+      if (response.data.token_valid) {
+        setForgotPasswordStep(3);
+      }
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Hatalı veya süresi dolmuş kod.');
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!forgotPasswordData.newPassword || forgotPasswordData.newPassword.length < 6) {
+      alert('Yeni şifre en az 6 karakter olmalıdır.');
+      return;
+    }
+    try {
+      const response = await authAPI.resetPassword(
+        forgotPasswordData.emailOrId,
+        forgotPasswordData.code,
+        forgotPasswordData.newPassword
+      );
+      alert(response.data.message);
+      setShowForgotPasswordModal(false);
+      setForgotPasswordStep(1);
+      setForgotPasswordData({ emailOrId: '', code: '', newPassword: '' });
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Bir hata oluştu.');
+    }
+  };
+
 
   const handleSetPassword = async () => {
     if (!setPasswordForm.userId || !setPasswordForm.password || !setPasswordForm.confirmPassword) {
@@ -2209,7 +2264,12 @@ const FocusProApp = () => {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Şifre</label>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-sm font-semibold text-gray-700">Şifre</label>
+                        <button type="button" onClick={() => setShowForgotPasswordModal(true)} className="text-xs font-medium text-purple-600 hover:text-purple-700 transition-colors">
+                          Şifremi / ID'mi Unuttum
+                        </button>
+                      </div>
                       <div className="relative">
                         <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
@@ -2299,6 +2359,92 @@ const FocusProApp = () => {
             </div>
           </div>
         </div>
+
+        {/* Forgot Password Modal */}
+        {showForgotPasswordModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden relative" onClick={e => e.stopPropagation()}>
+              <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 flex justify-between items-center text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-[100px] pointer-events-none"></div>
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  <Lock size={22} className="text-purple-200" /> Şifremi / ID'mi Unuttum
+                </h3>
+                <button onClick={() => {setShowForgotPasswordModal(false); setForgotPasswordStep(1); setForgotPasswordData({emailOrId: '', code: '', newPassword: ''});}} className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-xl transition-colors relative z-10">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-6">
+                
+                {forgotPasswordStep === 1 && (
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-600 text-center mb-6">Lütfen sisteme kayıtlı olan e-posta adresinizi veya 8 haneli Atomy ID numaranızı girin. Size bir sıfırlama kodu göndereceğiz.</p>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">E-posta veya Atomy ID</label>
+                      <input
+                        type="text"
+                        value={forgotPasswordData.emailOrId}
+                        onChange={(e) => setForgotPasswordData({...forgotPasswordData, emailOrId: e.target.value})}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm"
+                        placeholder="Örn: ornek@mail.com veya 12345678"
+                      />
+                    </div>
+                    <button onClick={handleForgotPasswordRequest} className="w-full mt-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all text-sm">
+                      Doğrulama Kodu Gönder
+                    </button>
+                  </div>
+                )}
+
+                {forgotPasswordStep === 2 && (
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-600 text-center mb-6">Lütfen e-posta adresinize gönderdiğimiz <strong className="text-purple-600">6 haneli</strong> doğrulama kodunu girin.</p>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Doğrulama Kodu</label>
+                      <input
+                        type="text"
+                        value={forgotPasswordData.code}
+                        onChange={(e) => setForgotPasswordData({...forgotPasswordData, code: e.target.value})}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 text-center tracking-widest text-xl font-bold transition-all"
+                        placeholder="••••••"
+                        maxLength={6}
+                      />
+                    </div>
+                    <button onClick={handleVerifyResetCode} className="w-full mt-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all text-sm">
+                      Kodu Doğrula
+                    </button>
+                    <button onClick={() => setForgotPasswordStep(1)} className="w-full text-center text-xs text-gray-500 hover:text-purple-600 font-medium">
+                      Geri Dön
+                    </button>
+                  </div>
+                )}
+
+                {forgotPasswordStep === 3 && (
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-600 text-center mb-6">Kod doğrulandı! Lütfen hesabınız için yeni bir şifre belirleyin.</p>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Yeni Şifre</label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={forgotPasswordData.newPassword}
+                          onChange={(e) => setForgotPasswordData({...forgotPasswordData, newPassword: e.target.value})}
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all text-sm pr-12"
+                          placeholder="En az 6 karakter"
+                        />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+                    <button onClick={handleResetPassword} className="w-full mt-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg hover:shadow-emerald-500/20 transition-all text-sm">
+                      Yeni Şifreyi Kaydet
+                    </button>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
