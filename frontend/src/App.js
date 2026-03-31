@@ -459,6 +459,8 @@ const FocusProApp = () => {
     } catch (error) {
       alert('ID numerası veya şifre hatalı!');
     }
+  };
+
   const handleInitSetPassword = async () => {
     if (!loginForm.userId || String(loginForm.userId).trim().length !== 8) {
       alert('Lütfen önce Atomy ID numaranızı eksiksiz (8 haneli) girin.');
