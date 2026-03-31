@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, ChevronLeft, Edit, Trash2, Eye, Calendar, Upload, X, Lightbulb, FileText, ExternalLink } from 'lucide-react';
 import { blogAPI, uploadAPI } from '../services/api';
+import RichTextEditor from './RichTextEditor';
 
 const BlogPage = ({ user }) => {
   const [activeTab, setActiveTab] = useState('blog'); // 'blog' or 'recommendations'
@@ -70,14 +71,20 @@ const BlogPage = ({ user }) => {
     }
   };
 
+  // HTML'den düz metin çıkar (arama için)
+  const stripHtml = (html) => {
+    if (!html) return '';
+    return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  };
+
   // Filtreleme
   const filteredBlogs = blogs
     .filter(blog => isAdmin || blog.published)
     .filter(blog => selectedCategory === 'all' || blog.category === selectedCategory)
-    .filter(blog => 
-      blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      blog.content.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    .filter(blog => {
+      const q = searchQuery.toLowerCase();
+      return blog.title.toLowerCase().includes(q) || stripHtml(blog.content).toLowerCase().includes(q);
+    });
 
   if (loading) {
     return (
@@ -144,10 +151,19 @@ const BlogPage = ({ user }) => {
               </div>
             )}
 
-            {/* İçerik */}
-            <div className="prose prose-lg max-w-none text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-              {selectedBlog.content}
-            </div>
+            {/* İçerik — HTML render */}
+            <div
+              className="prose prose-lg prose-purple max-w-none text-gray-700 dark:text-gray-300
+                leading-relaxed
+                prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-gray-100
+                prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl
+                prose-blockquote:border-l-4 prose-blockquote:border-purple-400 prose-blockquote:pl-4 prose-blockquote:italic
+                prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded prose-code:text-sm
+                prose-pre:bg-gray-900 prose-pre:text-green-400
+                prose-img:rounded-xl prose-img:shadow-md
+                prose-a:text-purple-600 prose-a:underline"
+              dangerouslySetInnerHTML={{ __html: selectedBlog.content }}
+            />
 
             {/* Admin Düzenle/Sil Butonları */}
             {isAdmin && (
@@ -304,7 +320,7 @@ const BlogPage = ({ user }) => {
 
               {/* Özet */}
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
-                {blog.excerpt || blog.content.substring(0, 150) + '...'}
+                {blog.excerpt || stripHtml(blog.content).substring(0, 150) + '...'}
               </p>
 
               {/* Tarih */}
@@ -522,6 +538,12 @@ const BlogModal = ({ blog, categories, onClose, onSave }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadMethod, setUploadMethod] = useState('file'); // 'file' or 'url'
 
+  // Image upload handler for RichTextEditor inline images
+  const handleEditorImageUpload = async (file) => {
+    const response = await uploadAPI.uploadFile(file);
+    return response.data.url;
+  };
+
   const handleFileSelect = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -567,7 +589,8 @@ const BlogModal = ({ blog, categories, onClose, onSave }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.content) {
+    const isEmpty = !formData.content || formData.content === '<p></p>' || formData.content.trim() === '';
+    if (!formData.title || isEmpty) {
       alert('Başlık ve içerik zorunludur');
       return;
     }
@@ -743,19 +766,19 @@ const BlogModal = ({ blog, categories, onClose, onSave }) => {
               />
             </div>
 
-            {/* İçerik */}
+            {/* İçerik - Rich Text Editor */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 İçerik *
               </label>
-              <textarea
+              <RichTextEditor
                 value={formData.content}
-                onChange={(e) => setFormData({...formData, content: e.target.value})}
-                rows={12}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 font-mono text-sm"
-                placeholder="Blog içeriğini yazın..."
-                required
+                onChange={(html) => setFormData(prev => ({ ...prev, content: html }))}
+                onImageUpload={handleEditorImageUpload}
               />
+              {!formData.content || formData.content === '<p></p>' ? (
+                <p className="text-xs text-red-500 mt-1">İçerik zorunludur</p>
+              ) : null}
             </div>
 
             {/* Yayın Durumu */}
