@@ -98,6 +98,7 @@ class UserResponse(BaseModel):
     permissions: List[str] = []
     created_at: datetime
     profile_photo: str = ""
+    status: str = "active"
     career_title: str = ""
     phone: str = ""
     city: str = ""

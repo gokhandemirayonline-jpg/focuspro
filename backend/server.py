@@ -446,17 +446,28 @@ async def check_id(user_number: str):
 async def get_users(current_user: dict = Depends(get_current_user)):
     if current_user['role'] == 'admin':
         # Admin - tüm kullanıcıları gör
-        users = await db.users.find({}, {"_id": 0, "password": 0}).to_list(1000)
+        users = await db.users.find({}, {"_id": 0}).to_list(1000)
     else:
         # Manager ve User - sadece kendisinin eklediği kullanıcıları gör
         users = await db.users.find(
             {"created_by": current_user['id']},
-            {"_id": 0, "password": 0}
+            {"_id": 0}
         ).to_list(1000)
     
     for user in users:
         if 'user_number' not in user:
             user['user_number'] = 0
+            
+        # Determine status: "beklemede" if no password (just assigned an ID), "aktif" otherwise
+        user_pwd = user.get('password', '')
+        if not user_pwd:
+            user['status'] = 'beklemede'
+        else:
+            user['status'] = 'aktif'
+            
+        # Remove password from response for security
+        user.pop('password', None)
+        
     return users
 
 @api_router.post("/users", response_model=UserResponse)
@@ -518,6 +529,13 @@ async def create_user(user_data: UserCreate, current_user: dict = Depends(get_cu
     
     await db.users.insert_one(doc)
     
+    # Calculate status for the response
+    if not doc.get('password'):
+        doc['status'] = 'beklemede'
+    else:
+        doc['status'] = 'aktif'
+    doc.pop('password', None)
+    
     # Admin bildirimi
     await notify_admin(
         title="Yeni Kullanıcı Eklendi",
@@ -569,11 +587,16 @@ async def update_user(user_id: str, user_data: UserAdminUpdate, current_user: di
     
     # If no data to update, return current user
     if not update_data:
+        if not user.get('password'):
+            user['status'] = 'beklemede'
+        else:
+            user['status'] = 'aktif'
+        user.pop('password', None)
         return UserResponse(**user)
     
     await db.users.update_one({"id": user_id}, {"$set": update_data})
     
-    updated_user = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0})
+    updated_user = await db.users.find_one({"id": user_id}, {"_id": 0})
     
     # Fill missing fields with defaults for UserResponse
     if 'user_number' not in updated_user:
@@ -581,6 +604,13 @@ async def update_user(user_id: str, user_data: UserAdminUpdate, current_user: di
     for field in ['profile_photo', 'career_title', 'phone', 'city', 'country', 'language', 'linkedin_url', 'twitter_url', 'instagram_url', 'facebook_url']:
         if field not in updated_user:
             updated_user[field] = '' if field != 'language' else 'tr'
+            
+    # Calculate status
+    if not updated_user.get('password'):
+        updated_user['status'] = 'beklemede'
+    else:
+        updated_user['status'] = 'aktif'
+    updated_user.pop('password', None)
     
     return UserResponse(**updated_user)
 

@@ -5452,7 +5452,22 @@ const FocusProApp = () => {
                                 </div>
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex flex-col gap-1.5 items-start">
+                                <span className="text-sm text-gray-500">{user.email}</span>
+                                {user.status === 'beklemede' ? (
+                                  <span className="inline-flex items-center gap-1 w-max px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200 shadow-sm">
+                                    <Clock size={11} strokeWidth={2.5} />
+                                    Beklemede (Şifresiz)
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 w-max px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 shadow-sm">
+                                    <CheckCircle2 size={11} strokeWidth={2.5} />
+                                    Aktif
+                                  </span>
+                                )}
+                              </div>
+                            </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleConfig(user.role).color}`}>
                                 {getRoleConfig(user.role).label}
@@ -5531,6 +5546,17 @@ const FocusProApp = () => {
                             #{formatUserNumber(selectedUserDetail.user_number)}
                           </span>
                           <span className="text-sm text-white/70">{selectedUserDetail.email}</span>
+                          {selectedUserDetail.status === 'beklemede' ? (
+                            <span className="text-[11px] bg-amber-500/20 text-amber-200 border border-amber-500/30 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 shadow-sm">
+                              <Clock size={12} strokeWidth={2.5} />
+                              Şifre Bekliyor
+                            </span>
+                          ) : (
+                            <span className="text-[11px] bg-emerald-500/20 text-emerald-200 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 shadow-sm">
+                              <CheckCircle2 size={12} strokeWidth={2.5} />
+                              Aktif Kullanıcı
+                            </span>
+                          )}
                         </div>
                         {/* Creator info */}
                         {selectedUserDetail.created_by && (() => {
