@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
-import { User } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Briefcase, Lock, Globe, Link, Camera, Eye, EyeOff } from 'lucide-react';
 
-const ProfilePage = ({ 
-  currentUser, 
-  profileData, 
+const Field = ({ label, children }) => (
+  <div>
+    <label className="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1.5">{label}</label>
+    {children}
+  </div>
+);
+
+const inputCls = "w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all";
+
+const ProfilePage = ({
+  currentUser,
+  profileData,
   setProfileData,
   passwordData,
   setPasswordData,
@@ -13,27 +22,36 @@ const ProfilePage = ({
   uploadingImage,
   formatUserNumber
 }) => {
-  const [activeProfileTab, setActiveProfileTab] = useState('personal');
+  const [tab, setTab] = useState('profile');
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+
+  const tabs = [
+    { key: 'profile',   label: 'Profil',       icon: <User size={14} /> },
+    { key: 'social',    label: 'Sosyal Medya',  icon: <Link size={14} /> },
+    { key: 'security',  label: 'Güvenlik',      icon: <Lock size={14} /> },
+  ];
 
   return (
-    <div>
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">Profilim</h2>
+    <div className="max-w-3xl mx-auto space-y-5">
 
-      {/* Profile Header */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-        <div className="flex flex-col sm:flex-row items-start gap-6">
-          {/* Profile Photo */}
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center overflow-hidden">
+      {/* ── Minimal Header Banner ── */}
+      <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+        {/* Thin gradient strip */}
+        <div className="h-1.5 bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500" />
+
+        <div className="p-6 flex items-center gap-5">
+          {/* Avatar + upload */}
+          <div className="relative flex-shrink-0 group">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center overflow-hidden ring-2 ring-purple-100">
               {profileData.profile_photo ? (
-                <img 
-                  src={profileData.profile_photo} 
-                  alt="Profil Fotoğrafı" 
-                  className="w-full h-full object-cover"
-                />
+                <img src={profileData.profile_photo} alt="Profil" className="w-full h-full object-cover" />
               ) : (
-                <User size={40} className="text-purple-600" />
+                <User size={32} className="text-purple-400" />
               )}
+            </div>
+            <div className="absolute inset-0 rounded-2xl bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <Camera size={20} className="text-white" />
             </div>
             <input
               type="file"
@@ -44,260 +62,208 @@ const ProfilePage = ({
             />
           </div>
 
-          {/* Basic Info */}
-          <div className="flex-1">
-            <h3 className="text-2xl font-bold text-gray-800">{currentUser?.name}</h3>
-            <p className="text-purple-600 font-medium">ID: {formatUserNumber(currentUser?.user_number)}</p>
+          {/* Name & meta */}
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl font-bold text-gray-800 truncate">{currentUser?.name}</h2>
             {profileData.career_title && (
-              <p className="text-gray-600 mt-1">{profileData.career_title}</p>
+              <p className="text-sm text-gray-500 mt-0.5 truncate">{profileData.career_title}</p>
             )}
-            
-            <div className="mt-4 space-y-1">
-              <p className="text-sm text-gray-600">📧 {currentUser?.email}</p>
-              {profileData.phone && (
-                <p className="text-sm text-gray-600">📱 {profileData.phone}</p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+              <span className="inline-flex items-center gap-1 text-xs text-purple-600 font-semibold bg-purple-50 px-2 py-0.5 rounded-lg">
+                ID: {formatUserNumber(currentUser?.user_number)}
+              </span>
+              {(profileData.email || currentUser?.email) && (
+                <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+                  <Mail size={11} /> {profileData.email || currentUser?.email}
+                </span>
               )}
               {(profileData.city || profileData.country) && (
-                <p className="text-sm text-gray-600">📍 {[profileData.city, profileData.country].filter(Boolean).join(', ')}</p>
+                <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+                  <MapPin size={11} /> {[profileData.city, profileData.country].filter(Boolean).join(', ')}
+                </span>
               )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Settings Tabs */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        {/* Tab Navigation */}
-        <div className="flex flex-wrap gap-2 mb-6 border-b">
-          {[
-            { key: 'personal', label: 'Kişisel Bilgiler', icon: '👤' },
-            { key: 'contact', label: 'İletişim', icon: '📞' },
-            { key: 'social', label: 'Sosyal Medya', icon: '🔗' },
-            { key: 'security', label: 'Güvenlik', icon: '🔒' },
-            { key: 'preferences', label: 'Tercihler', icon: '⚙️' }
-          ].map(tab => (
+      {/* ── Tab Panel ── */}
+      <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+        {/* Tab bar */}
+        <div className="flex border-b border-gray-100">
+          {tabs.map(t => (
             <button
-              key={tab.key}
-              onClick={() => setActiveProfileTab(tab.key)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeProfileTab === tab.key 
-                  ? 'bg-purple-100 text-purple-700' 
-                  : 'text-gray-600 hover:bg-gray-100'
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-3.5 text-sm font-semibold transition-colors relative ${
+                tab === t.key ? 'text-purple-700' : 'text-gray-400 hover:text-gray-700'
               }`}
             >
-              {tab.icon} {tab.label}
+              {t.icon} {t.label}
+              {tab === t.key && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-600 rounded-t" />
+              )}
             </button>
           ))}
         </div>
 
-        {/* Tab Content */}
-        {activeProfileTab === 'personal' && (
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">Kişisel Bilgiler</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Ad Soyad</label>
-                <input
-                  type="text"
-                  value={profileData.name}
-                  onChange={(e) => setProfileData({...profileData, name: e.target.value})}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Kariyer/Unvan</label>
-                <input
-                  type="text"
-                  value={profileData.career_title}
-                  onChange={(e) => setProfileData({...profileData, career_title: e.target.value})}
-                  placeholder="ör: Network Marketing Uzmanı"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-            </div>
-            <button
-              onClick={onUpdateProfile}
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
-            >
-              Kaydet
-            </button>
-          </div>
-        )}
+        <div className="p-6">
 
-        {activeProfileTab === 'contact' && (
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">İletişim Bilgileri</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">E-posta Adresi</label>
-                <input
-                  type="email"
-                  value={profileData.email || currentUser?.email || ''}
-                  onChange={(e) => setProfileData({...profileData, email: e.target.value})}
-                  placeholder="ornek@mail.com"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-                <p className="text-xs text-gray-400 mt-1">Şifre sıfırlama ve bildirimler bu adrese gönderilecek</p>
+          {/* ── Profil Sekmesi ── */}
+          {tab === 'profile' && (
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <Field label="Ad Soyad">
+                  <div className="relative">
+                    <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input type="text" value={profileData.name} onChange={e => setProfileData({...profileData, name: e.target.value})} className={inputCls + " pl-9"} placeholder="Ad Soyad" />
+                  </div>
+                </Field>
+                <Field label="Kariyer / Unvan">
+                  <div className="relative">
+                    <Briefcase size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input type="text" value={profileData.career_title} onChange={e => setProfileData({...profileData, career_title: e.target.value})} className={inputCls + " pl-9"} placeholder="ör: Network Marketing Uzmanı" />
+                  </div>
+                </Field>
+                <Field label="E-posta">
+                  <div className="relative">
+                    <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input type="email" value={profileData.email || currentUser?.email || ''} onChange={e => setProfileData({...profileData, email: e.target.value})} className={inputCls + " pl-9"} placeholder="ornek@mail.com" />
+                  </div>
+                  <p className="text-[11px] text-gray-400 mt-1">Şifre sıfırlama kodları bu adrese gönderilecek</p>
+                </Field>
+                <Field label="Telefon">
+                  <div className="relative">
+                    <Phone size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input type="tel" value={profileData.phone} onChange={e => setProfileData({...profileData, phone: e.target.value})} className={inputCls + " pl-9"} placeholder="0555 123 45 67" />
+                  </div>
+                </Field>
+                <Field label="Şehir">
+                  <div className="relative">
+                    <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input type="text" value={profileData.city} onChange={e => setProfileData({...profileData, city: e.target.value})} className={inputCls + " pl-9"} placeholder="İstanbul" />
+                  </div>
+                </Field>
+                <Field label="Ülke">
+                  <div className="relative">
+                    <Globe size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input type="text" value={profileData.country} onChange={e => setProfileData({...profileData, country: e.target.value})} className={inputCls + " pl-9"} placeholder="Türkiye" />
+                  </div>
+                </Field>
+                <Field label="Dil">
+                  <select value={profileData.language} onChange={e => setProfileData({...profileData, language: e.target.value})} className={inputCls}>
+                    <option value="tr">🇹🇷 Türkçe</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                    <option value="fr">🇫🇷 Français</option>
+                  </select>
+                </Field>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
-                <input
-                  type="tel"
-                  value={profileData.phone}
-                  onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                  placeholder="0555 123 45 67"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Şehir</label>
-                <input
-                  type="text"
-                  value={profileData.city}
-                  onChange={(e) => setProfileData({...profileData, city: e.target.value})}
-                  placeholder="İstanbul"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Ülke</label>
-                <input
-                  type="text"
-                  value={profileData.country}
-                  onChange={(e) => setProfileData({...profileData, country: e.target.value})}
-                  placeholder="Türkiye"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
+              <div className="pt-2">
+                <button onClick={onUpdateProfile} className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm">
+                  Değişiklikleri Kaydet
+                </button>
               </div>
             </div>
-            <button
-              onClick={onUpdateProfile}
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
-            >
-              Kaydet
-            </button>
-          </div>
-        )}
+          )}
 
-        {activeProfileTab === 'social' && (
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">Sosyal Medya Bağlantıları</h4>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn</label>
-                <input
-                  type="url"
-                  value={profileData.linkedin_url}
-                  onChange={(e) => setProfileData({...profileData, linkedin_url: e.target.value})}
-                  placeholder="https://linkedin.com/in/username"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
+          {/* ── Sosyal Medya Sekmesi ── */}
+          {tab === 'social' && (
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {[
+                  { key: 'linkedin_url',  label: 'LinkedIn',   placeholder: 'linkedin.com/in/kullanici' },
+                  { key: 'twitter_url',   label: 'X / Twitter', placeholder: 'x.com/kullanici' },
+                  { key: 'instagram_url', label: 'Instagram',   placeholder: 'instagram.com/kullanici' },
+                  { key: 'facebook_url',  label: 'Facebook',   placeholder: 'facebook.com/kullanici' },
+                ].map(s => (
+                  <Field key={s.key} label={s.label}>
+                    <div className="relative">
+                      <Link size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="url"
+                        value={profileData[s.key]}
+                        onChange={e => setProfileData({...profileData, [s.key]: e.target.value})}
+                        className={inputCls + " pl-9"}
+                        placeholder={s.placeholder}
+                      />
+                    </div>
+                  </Field>
+                ))}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Twitter</label>
-                <input
-                  type="url"
-                  value={profileData.twitter_url}
-                  onChange={(e) => setProfileData({...profileData, twitter_url: e.target.value})}
-                  placeholder="https://twitter.com/username"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Instagram</label>
-                <input
-                  type="url"
-                  value={profileData.instagram_url}
-                  onChange={(e) => setProfileData({...profileData, instagram_url: e.target.value})}
-                  placeholder="https://instagram.com/username"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Facebook</label>
-                <input
-                  type="url"
-                  value={profileData.facebook_url}
-                  onChange={(e) => setProfileData({...profileData, facebook_url: e.target.value})}
-                  placeholder="https://facebook.com/username"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
+              <div className="pt-2">
+                <button onClick={onUpdateProfile} className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm">
+                  Değişiklikleri Kaydet
+                </button>
               </div>
             </div>
-            <button
-              onClick={onUpdateProfile}
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
-            >
-              Kaydet
-            </button>
-          </div>
-        )}
+          )}
 
-        {activeProfileTab === 'security' && (
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">Şifre Değiştir</h4>
-            <div className="space-y-4 max-w-md">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Mevcut Şifre</label>
-                <input
-                  type="password"
-                  value={passwordData.current_password}
-                  onChange={(e) => setPasswordData({...passwordData, current_password: e.target.value})}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Yeni Şifre</label>
-                <input
-                  type="password"
-                  value={passwordData.new_password}
-                  onChange={(e) => setPasswordData({...passwordData, new_password: e.target.value})}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Yeni Şifre Tekrar</label>
-                <input
-                  type="password"
-                  value={passwordData.confirm_password}
-                  onChange={(e) => setPasswordData({...passwordData, confirm_password: e.target.value})}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
+          {/* ── Güvenlik Sekmesi ── */}
+          {tab === 'security' && (
+            <div className="space-y-5 max-w-sm">
+              <Field label="Mevcut Şifre">
+                <div className="relative">
+                  <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type={showCurrent ? 'text' : 'password'}
+                    value={passwordData.current_password}
+                    onChange={e => setPasswordData({...passwordData, current_password: e.target.value})}
+                    className={inputCls + " pl-9 pr-10"}
+                    placeholder="••••••••"
+                  />
+                  <button type="button" onClick={() => setShowCurrent(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showCurrent ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </Field>
+              <Field label="Yeni Şifre">
+                <div className="relative">
+                  <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type={showNew ? 'text' : 'password'}
+                    value={passwordData.new_password}
+                    onChange={e => setPasswordData({...passwordData, new_password: e.target.value})}
+                    className={inputCls + " pl-9 pr-10"}
+                    placeholder="En az 6 karakter"
+                  />
+                  <button type="button" onClick={() => setShowNew(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showNew ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </Field>
+              <Field label="Yeni Şifre Tekrar">
+                <div className="relative">
+                  <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="password"
+                    value={passwordData.confirm_password}
+                    onChange={e => setPasswordData({...passwordData, confirm_password: e.target.value})}
+                    className={`${inputCls} pl-9 ${
+                      passwordData.confirm_password && passwordData.new_password !== passwordData.confirm_password
+                        ? 'border-red-300 focus:ring-red-400'
+                        : ''
+                    }`}
+                    placeholder="••••••••"
+                  />
+                </div>
+                {passwordData.confirm_password && passwordData.new_password !== passwordData.confirm_password && (
+                  <p className="text-xs text-red-500 mt-1">Şifreler eşleşmiyor</p>
+                )}
+              </Field>
+              <div className="pt-2">
+                <button
+                  onClick={onChangePassword}
+                  disabled={!passwordData.current_password || !passwordData.new_password || passwordData.new_password !== passwordData.confirm_password}
+                  className="px-6 py-2.5 bg-red-500 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
+                >
+                  Şifreyi Güncelle
+                </button>
               </div>
             </div>
-            <button
-              onClick={onChangePassword}
-              className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700"
-            >
-              Şifreyi Değiştir
-            </button>
-          </div>
-        )}
+          )}
 
-        {activeProfileTab === 'preferences' && (
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">Tercihler</h4>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Dil</label>
-              <select
-                value={profileData.language}
-                onChange={(e) => setProfileData({...profileData, language: e.target.value})}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="tr">Türkçe</option>
-                <option value="en">English</option>
-                <option value="de">Deutsch</option>
-                <option value="fr">Français</option>
-              </select>
-            </div>
-            <button
-              onClick={onUpdateProfile}
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
-            >
-              Kaydet
-            </button>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
