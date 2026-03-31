@@ -5400,9 +5400,9 @@ const FocusProApp = () => {
 
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-gray-50 border-b border-gray-100">
                       <tr>
-                        <th className="px-4 py-3 text-left">
+                        <th className="px-3 py-2 text-left w-10">
                           <input
                             type="checkbox"
                             checked={selectedUsers.length === getFilteredUsers().length && getFilteredUsers().length > 0}
@@ -5410,16 +5410,16 @@ const FocusProApp = () => {
                             className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
                           />
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID No</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İsim & Partnerler</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email / İletişim</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol / Rütbe</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ekleyen</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarih</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
+                        <th className="px-4 py-2 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">ID No</th>
+                        <th className="px-4 py-2 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">Kullanıcı</th>
+                        <th className="px-4 py-2 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">İletişim & Durum</th>
+                        <th className="px-4 py-2 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">Rol</th>
+                        <th className="px-4 py-2 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">Ekleyen</th>
+                        <th className="px-4 py-2 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">Tarih</th>
+                        <th className="px-4 py-2 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider">İşlemler</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-gray-100">
                       {getFilteredUsers().map(user => {
                         const creator = users.find(u => u.id === user.created_by);
                         return (
@@ -5428,7 +5428,7 @@ const FocusProApp = () => {
                             className="hover:bg-purple-50/40 cursor-pointer transition-colors"
                             onClick={() => viewUserDetails(user)}
                           >
-                            <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
+                            <td className="px-3 py-2.5" onClick={e => e.stopPropagation()}>
                               <input
                                 type="checkbox"
                                 checked={selectedUsers.includes(user.id)}
@@ -5436,56 +5436,50 @@ const FocusProApp = () => {
                                 className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
                               />
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className="text-sm font-bold text-purple-600">#{formatUserNumber(user.user_number)}</span>
+                            <td className="px-4 py-2.5 whitespace-nowrap">
+                              <span className="text-[13px] font-bold text-purple-600">#{formatUserNumber(user.user_number)}</span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                            <td className="px-4 py-2.5 whitespace-nowrap">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-7 h-7 rounded-md bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-[11px] font-bold shadow-sm">
                                   {user.name.charAt(0).toUpperCase()}
                                 </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-gray-900">{user.name}</p>
-                                  {creator && (
-                                    <p className="text-xs text-purple-500">↳ {creator.name} tarafından eklendi</p>
-                                  )}
-                                </div>
+                                <span className="text-[13px] font-semibold text-gray-800">{user.name}</span>
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex flex-col gap-1.5 items-start">
-                                <span className="text-sm text-gray-500">{user.email}</span>
+                            <td className="px-4 py-2.5 whitespace-nowrap">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[13px] text-gray-600">{user.email}</span>
                                 {user.status === 'beklemede' ? (
-                                  <span className="inline-flex items-center gap-1 w-max px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200 shadow-sm">
-                                    <Clock size={11} strokeWidth={2.5} />
-                                    Beklemede (Şifresiz)
-                                  </span>
+                                  <div title="Şifre Bekliyor (Beklemede)" className="w-2 h-2 rounded-full bg-amber-400 ring-4 ring-amber-50"></div>
                                 ) : (
-                                  <span className="inline-flex items-center gap-1 w-max px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 shadow-sm">
-                                    <CheckCircle2 size={11} strokeWidth={2.5} />
-                                    Aktif
-                                  </span>
+                                  <div title="Aktif Kullanıcı" className="w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-emerald-50"></div>
                                 )}
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleConfig(user.role).color}`}>
-                                {getRoleConfig(user.role).label}
-                              </span>
-                              {user.permissions && user.permissions.includes('users_manage') && (
-                                <span className="ml-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">Yetkili</span>
-                              )}
+                            <td className="px-4 py-2.5 whitespace-nowrap">
+                              <div className="flex items-center gap-1.5">
+                                <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${getRoleConfig(user.role).color}`}>
+                                  {getRoleConfig(user.role).label}
+                                </span>
+                                {user.permissions && user.permissions.includes('users_manage') && (
+                                  <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-md text-[10px] font-bold" title="Yetkili">Y</span>
+                                )}
+                              </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                            <td className="px-4 py-2.5 whitespace-nowrap">
+                              <span className="text-[13px] text-gray-500">{creator ? creator.name : '-'}</span>
+                            </td>
+                            <td className="px-4 py-2.5 whitespace-nowrap text-[13px] text-gray-400">
                               {new Date(user.created_at).toLocaleDateString('tr-TR')}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm flex gap-2" onClick={e => e.stopPropagation()}>
+                            <td className="px-4 py-2.5 whitespace-nowrap flex justify-end gap-1" onClick={e => e.stopPropagation()}>
                               <button
                                 onClick={() => viewUserDetails(user)}
-                                className="p-1.5 rounded-lg text-green-600 hover:text-green-700 hover:bg-green-50 transition-colors"
+                                className="p-1 rounded-md text-green-600 hover:text-green-700 hover:bg-green-50 transition-colors"
                                 title="Analiz Sayfasını Aç"
                               >
-                                <Eye size={16} />
+                                <Eye size={15} />
                               </button>
                               <button
                                 onClick={() => {
@@ -5497,17 +5491,17 @@ const FocusProApp = () => {
                                   });
                                   setShowUserModal(true);
                                 }}
-                                className="p-1.5 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors"
+                                className="p-1 rounded-md text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors"
                                 title="Düzenle"
                               >
-                                <Edit size={16} />
+                                <Edit size={15} />
                               </button>
                               <button
                                 onClick={() => deleteUser(user.id)}
-                                className="p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors"
+                                className="p-1 rounded-md text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors"
                                 title="Sil"
                               >
-                                <Trash2 size={16} />
+                                <Trash2 size={15} />
                               </button>
                             </td>
                           </tr>
