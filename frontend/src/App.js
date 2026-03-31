@@ -2477,6 +2477,25 @@ const FocusProApp = () => {
           )}
         </div>
 
+        {/* User Mini Profile */}
+        <div className={`px-4 pb-4 mb-2 border-b ${darkMode ? 'border-gray-700' : 'border-white/10'}`}>
+          <div className={`flex items-center ${sidebarOpen ? 'gap-3' : 'justify-center'} p-2 rounded-xl bg-white/5`}>
+            <div className="w-8 h-8 rounded-full bg-white/20 flex-shrink-0 overflow-hidden flex items-center justify-center">
+              {profileData?.profile_photo ? (
+                <img src={profileData.profile_photo} alt="User" className="w-full h-full object-cover" />
+              ) : (
+                <User size={16} />
+              )}
+            </div>
+            {sidebarOpen && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate">{currentUser?.name}</p>
+                <p className="text-[10px] text-white/50 truncate">ID: {formatUserNumber(currentUser?.user_number)}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
         <nav className="flex-1 px-2 py-4 space-y-2">
           <button
             onClick={() => setCurrentPage('dashboard')}
