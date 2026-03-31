@@ -5685,7 +5685,7 @@ const FocusProApp = () => {
                         <h2 className="text-2xl font-bold tracking-tight">{selectedUserDetail.name}</h2>
                         <div className="flex items-center gap-3 mt-1 flex-wrap">
                           <span className="text-sm bg-white/20 px-3 py-0.5 rounded-full font-mono font-semibold">
-                            #{formatUserNumber(selectedUserDetail.user_number)}
+                            ID: {formatUserNumber(selectedUserDetail.user_number)}
                           </span>
                           <span className="text-sm text-white/70">{selectedUserDetail.email}</span>
                           {selectedUserDetail.status === 'beklemede' ? (
@@ -5721,6 +5721,67 @@ const FocusProApp = () => {
                         )}
                         <p className="text-xs text-white/50 mt-2">
                           Kayıt: {new Date(selectedUserDetail.created_at).toLocaleDateString('tr-TR')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Kişisel Bilgiler Kartı */}
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                    <h4 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+                      <span className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center"><User size={15} className="text-purple-600" /></span>
+                      Kişisel Bilgiler
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {/* Editable email */}
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">E-posta</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="email"
+                            defaultValue={selectedUserDetail.email || ''}
+                            onBlur={async (e) => {
+                              const newEmail = e.target.value.trim();
+                              if (newEmail && newEmail !== selectedUserDetail.email) {
+                                try {
+                                  await userAPI.update(selectedUserDetail.id, { email: newEmail });
+                                  setSelectedUserDetail({ ...selectedUserDetail, email: newEmail });
+                                  setUsers(prev => prev.map(u => u.id === selectedUserDetail.id ? { ...u, email: newEmail } : u));
+                                } catch(err) {
+                                  alert('E-posta güncellenemedi: ' + (err.response?.data?.detail || 'Hata'));
+                                }
+                              }
+                            }}
+                            className="flex-1 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all"
+                            placeholder="mail@domain.com"
+                          />
+                        </div>
+                        <p className="text-[10px] text-gray-400 mt-0.5">Alanı değiştirip dışarı tıkla → otomatik kayıt</p>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Telefon</label>
+                        <p className="text-sm text-gray-800 bg-gray-50 rounded-lg px-3 py-1.5">{selectedUserDetail.phone || <span className="text-gray-400 italic">Girilmemiş</span>}</p>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Şehir / Ülke</label>
+                        <p className="text-sm text-gray-800 bg-gray-50 rounded-lg px-3 py-1.5">
+                          {[selectedUserDetail.city, selectedUserDetail.country].filter(Boolean).join(', ') || <span className="text-gray-400 italic">Girilmemiş</span>}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Kariyer / Unvan</label>
+                        <p className="text-sm text-gray-800 bg-gray-50 rounded-lg px-3 py-1.5">{selectedUserDetail.career_title || <span className="text-gray-400 italic">Girilmemiş</span>}</p>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Kayıt Tarihi</label>
+                        <p className="text-sm text-gray-800 bg-gray-50 rounded-lg px-3 py-1.5">{new Date(selectedUserDetail.created_at).toLocaleDateString('tr-TR')}</p>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Hesap Durumu</label>
+                        <p className="text-sm bg-gray-50 rounded-lg px-3 py-1.5">
+                          {selectedUserDetail.status === 'beklemede'
+                            ? <span className="text-amber-600 font-semibold">⏳ Şifre Bekleniyor</span>
+                            : <span className="text-emerald-600 font-semibold">✓ Aktif</span>}
                         </p>
                       </div>
                     </div>
