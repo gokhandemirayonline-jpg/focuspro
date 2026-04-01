@@ -121,8 +121,11 @@ const VideoLibraryPage = ({ user }) => {
       
       // Backend'e yeni sırayı kaydet
       try {
-        const videoIds = newVideos.map(v => v.id);
-        await videoAPI.reorder(videoIds);
+        const orderUpdates = newVideos.map((v, idx) => ({
+          id: v.id,
+          order: idx
+        }));
+        await videoAPI.reorder(orderUpdates);
       } catch (error) {
         console.error('Sıralama kaydetme hatası:', error);
       }
