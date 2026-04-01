@@ -916,7 +916,9 @@ async def delete_video_category(category_id: str, current_user: dict = Depends(g
 # ============= VIDEO ENDPOINTS =============
 @api_router.get("/videos", response_model=List[Video])
 async def get_videos(current_user: dict = Depends(get_current_user)):
-    videos = await db.videos.find({}, {"_id": 0}).to_list(1000)
+    videos = await db.videos.find({}, {"_id": 0}).sort(
+        [("category_id", 1), ("order", 1)]
+    ).to_list(1000)
     return videos
 
 @api_router.post("/videos", response_model=Video)
@@ -924,7 +926,16 @@ async def create_video(video_data: VideoCreate, current_user: dict = Depends(get
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin access required")
     
+    # Auto-assign order: put at end of its category
+    category_filter = {"category_id": video_data.category_id} if video_data.category_id else {}
+    last_video = await db.videos.find_one(
+        category_filter, {"order": 1, "_id": 0},
+        sort=[("order", -1)]
+    )
+    auto_order = (last_video["order"] + 1) if last_video and "order" in last_video else 0
+    
     video_obj = Video(**video_data.model_dump())
+    video_obj.order = auto_order
     doc = video_obj.model_dump()
     
     await db.videos.insert_one(doc)
