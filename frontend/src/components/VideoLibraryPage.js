@@ -301,8 +301,12 @@ const VideoLibraryPage = ({ user }) => {
     setShowCommentSection(false);
     setPlaybackSpeed(1);
     
-    // Arka planda veriyi yenile - loading ekranı GÖSTERME (modal kapanmasın)
-    loadData(false);
+    // Sadece progress verilerini yenile - video sıralamasını BOZMA
+    progressAPI.get().then(progressRes => {
+      const progressMap = {};
+      progressRes.data.forEach(p => { progressMap[p.video_id] = p; });
+      setVideoProgress(progressMap);
+    }).catch(err => console.error('Progress yenileme hatası:', err));
   };
 
   const handleVideoComplete = async () => {
@@ -333,7 +337,11 @@ const VideoLibraryPage = ({ user }) => {
 
       alert('✅ Video başarıyla tamamlandı! Sonraki video açıldı.');
       setSelectedVideo(null);
-      loadData(); // Kilit durumlarını güncelle
+      // Sadece progress yenile - video sıralamasını BOZMA
+      const progressRes = await progressAPI.get();
+      const progressMap = {};
+      progressRes.data.forEach(p => { progressMap[p.video_id] = p; });
+      setVideoProgress(progressMap);
     } catch (error) {
       console.error('Video tamamlama hatası:', error);
       alert('Video tamamlanırken bir hata oluştu.');
