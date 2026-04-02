@@ -2211,7 +2211,7 @@ async def register_for_event(event_id: str, current_user: dict = Depends(get_cur
             title="Yeni Etkinlik Kaydı",
             message=f"{current_user['name']} '{event['title']}' etkinliğine katılmak istiyor.",
             type="event_registration",
-            link="/events"
+            link=f"/events?event_id={event_id}"
         )
         notif_doc = notification.model_dump()
         notif_doc['created_at'] = notif_doc['created_at'].isoformat()

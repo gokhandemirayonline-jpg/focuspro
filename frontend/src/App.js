@@ -136,6 +136,7 @@ const FocusProApp = () => {
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [showMessageDetailModal, setShowMessageDetailModal] = useState(false);
   const [autoOpenMessageId, setAutoOpenMessageId] = useState(null);
+  const [autoOpenEventId, setAutoOpenEventId] = useState(null);
   const [selectedThread, setSelectedThread] = useState(null); // Thread (kişi) seçimi
   const [replyContent, setReplyContent] = useState(''); // Reply içeriği
   
@@ -374,6 +375,17 @@ const FocusProApp = () => {
       }
     }
   }, [currentPage, autoOpenMessageId, messages]);
+
+  // Auto-open event from notification
+  useEffect(() => {
+    if (currentPage === 'events' && autoOpenEventId && events.length > 0) {
+      const event = events.find(e => e.id === autoOpenEventId);
+      if (event) {
+        setSelectedEvent(event);
+        setAutoOpenEventId(null); // Reset
+      }
+    }
+  }, [currentPage, autoOpenEventId, events]);
 
   // Mesajları gönderene göre grupla (Thread sistemi)
   const groupMessagesBySender = () => {
@@ -2827,6 +2839,14 @@ const FocusProApp = () => {
                                 const messageId = urlParams.get('id');
                                 if (messageId) {
                                   setAutoOpenMessageId(messageId);
+                                }
+                              }
+                              // Eğer etkinlik bildirimi ise, event_id'yi al ve o etkinliği aç
+                              if (targetPage === 'events' && notif.link) {
+                                const urlParams = new URLSearchParams(notif.link.split('?')[1]);
+                                const eventId = urlParams.get('event_id');
+                                if (eventId) {
+                                  setAutoOpenEventId(eventId);
                                 }
                               }
                               setShowNotifications(false);
