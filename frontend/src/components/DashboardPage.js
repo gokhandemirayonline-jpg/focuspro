@@ -338,29 +338,32 @@ const DashboardPage = ({
                 <h3 className="text-base md:text-lg font-bold text-gray-800 dark:text-gray-100">Son Görevler</h3>
               </div>
               <button
-                onClick={() => onNavigate('tasks')}
+                onClick={() => onNavigate('agenda')}
                 className="text-purple-600 dark:text-purple-400 text-xs font-medium hover:underline flex items-center gap-1"
               >
                 Tümü <ChevronRight size={14} />
               </button>
             </div>
             <div className="space-y-2">
-              {tasks.slice(0, 3).map(task => (
-                <div key={task.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-gray-800 dark:text-gray-200 truncate">{task.title}</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{task.date}</p>
+              {[...tasks].reverse().slice(0, 5).map(task => {
+                const stageConfig = {
+                  'done':        { border: 'border-l-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: '✓', label: 'Tamamlandı' },
+                  'in_progress': { border: 'border-l-blue-500',    bg: 'bg-blue-50 dark:bg-blue-900/20',       badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',       icon: '▶', label: 'Devam Ediyor' },
+                  'todo':        { border: 'border-l-gray-300',     bg: 'bg-gray-50 dark:bg-gray-700/50',       badge: 'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300',           icon: '◦', label: 'Yapılacak' },
+                };
+                const s = stageConfig[task.status] || stageConfig['todo'];
+                return (
+                  <div key={task.id} className={`flex items-center justify-between p-3 ${s.bg} rounded-lg border-l-4 ${s.border}`}>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-gray-800 dark:text-gray-200 truncate">{task.title}</p>
+                      {task.date && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">📅 {task.date}</p>}
+                    </div>
+                    <span className={`ml-3 px-2.5 py-1 rounded-full text-xs font-semibold flex-shrink-0 ${s.badge}`}>
+                      {s.icon} {s.label}
+                    </span>
                   </div>
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
-                    task.status === 'done' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
-                    task.status === 'in_progress' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                    'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
-                  }`}>
-                    {task.status === 'done' ? '✓ Tamam' :
-                     task.status === 'in_progress' ? '▶ Devam' : '◦ Bekliyor'}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
               {tasks.length === 0 && (
                 <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-4">Henüz görev yok</p>
               )}
