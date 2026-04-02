@@ -15,6 +15,8 @@ import {
   Settings,
   ChevronDown,
   ChevronUp,
+  ArrowRightCircle,
+  CheckCircle2,
 } from 'lucide-react';
 import { prospectAPI, prospectCategoryAPI, prospectColumnAPI } from '../services/api';
 
@@ -198,22 +200,32 @@ const ProspectsPage = ({ user = null }) => {
     const actionsColumn = {
       id: 'actions',
       header: 'İşlemler',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => handleEditProspect(row.original)}
-            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-          >
-            <Edit size={16} />
-          </button>
-          <button
-            onClick={() => handleDeleteProspect(row.original.id)}
-            className="p-1 text-red-600 hover:bg-red-50 rounded"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const isFollowUp = row.original.custom_fields?.in_follow_up;
+        return (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleSendToFollowUp(row.original)}
+              title={isFollowUp ? 'Takip Listesinde' : 'Takip Listesine Gönder'}
+              className={`p-1 rounded ${isFollowUp ? 'text-green-600 bg-green-50' : 'text-orange-500 hover:bg-orange-50'}`}
+            >
+              {isFollowUp ? <CheckCircle2 size={16} /> : <ArrowRightCircle size={16} />}
+            </button>
+            <button
+              onClick={() => handleEditProspect(row.original)}
+              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+            >
+              <Edit size={16} />
+            </button>
+            <button
+              onClick={() => handleDeleteProspect(row.original.id)}
+              className="p-1 text-red-600 hover:bg-red-50 rounded"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        );
+      },
     };
 
     return [...baseColumns, ...customCols, actionsColumn];
@@ -280,6 +292,22 @@ const ProspectsPage = ({ user = null }) => {
     } catch (error) {
       console.error('Error deleting prospect:', error);
       alert('Kişi silinirken hata oluştu');
+    }
+  };
+
+  const handleSendToFollowUp = async (prospect) => {
+    const alreadyIn = prospect.custom_fields?.in_follow_up;
+    try {
+      await prospectAPI.update(prospect.id, {
+        ...prospect,
+        custom_fields: {
+          ...prospect.custom_fields,
+          in_follow_up: !alreadyIn,
+        },
+      });
+      loadProspects();
+    } catch (error) {
+      console.error('Error updating follow-up:', error);
     }
   };
 

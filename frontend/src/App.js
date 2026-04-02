@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Calendar, Users, GraduationCap, User, Play, Lock, Check, Shield, Plus, Trash2, Target, ListChecks, MessageSquare, BarChart3, LogOut, Eye, EyeOff, TrendingUp, Clock, CheckCircle2, Menu, X, Edit, ChevronLeft, ChevronRight, CalendarDays, UserPlus, Bell, Search, Book, Film, Bookmark, FileText, Mail, Send, Download, Activity, Award, MapPin, Share2, Star } from 'lucide-react';
+import { Home, Calendar, Users, GraduationCap, User, Play, Lock, Check, Shield, Plus, Trash2, Target, ListChecks, MessageSquare, BarChart3, LogOut, Eye, EyeOff, TrendingUp, Clock, CheckCircle2, Menu, X, Edit, ChevronLeft, ChevronRight, CalendarDays, UserPlus, Bell, Search, Book, Film, Bookmark, FileText, Mail, Send, Download, Activity, Award, MapPin, Share2, Star, ClipboardList } from 'lucide-react';
 
 // Rol sabitleri
 const ROLE_CONFIG = {
@@ -26,6 +26,7 @@ import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import BadgeCollection from './components/BadgeCollection';
 import FullLifeProfileForm from './components/FullLifeProfileForm';
 import ProspectsPage from './components/ProspectsPage';
+import FollowUpPage from './components/FollowUpPage';
 import HabitsPage from './components/HabitsPage';
 import DreamsPage from './components/DreamsPage';
 import VideoLibraryPage from './components/VideoLibraryPage';
@@ -3538,6 +3539,18 @@ const FocusProApp = () => {
                       <UserPlus size={16} />
                       İsim Listesi
                     </button>
+                    {/* Takip Listesi - yeni */}
+                    <button
+                      onClick={() => setAgendaTab('followup')}
+                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                        agendaTab === 'followup' 
+                          ? 'bg-teal-100 text-teal-700' 
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <ClipboardList size={16} />
+                      Takip Listesi
+                    </button>
                     <button
                       onClick={() => setAgendaTab('tasks')}
                       className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
@@ -3693,6 +3706,10 @@ const FocusProApp = () => {
 
                 {agendaTab === 'prospects' && (
                   <ProspectsPage user={currentUser} />
+                )}
+
+                {agendaTab === 'followup' && (
+                  <FollowUpPage user={currentUser} />
                 )}
 
                 {agendaTab === 'goals' && (
