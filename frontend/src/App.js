@@ -74,6 +74,9 @@ const FocusProApp = () => {
   });
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showMobileCalendar, setShowMobileCalendar] = useState(false);
+  const [showCalendarCreateMenu, setShowCalendarCreateMenu] = useState(false);
+  const [calendarCreateMenuPos, setCalendarCreateMenuPos] = useState({ x: 0, y: 0 });
+  const [calendarSlotInfo, setCalendarSlotInfo] = useState(null);
 
   const [videoCategories, setVideoCategories] = useState([]);
   const [videos, setVideos] = useState([]);
@@ -5014,18 +5017,101 @@ const FocusProApp = () => {
               {/* Page Title */}
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-3xl font-bold text-gray-800">Takvim</h2>
-                <button
-                  onClick={() => {
-                    setShowMeetingModal(true);
-                    setEditingMeeting(null);
-                    setNewMeeting({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled', category: 'work', color: '#3b82f6', all_day: false, recurrence: 'none', recurrence_end_date: '' });
-                  }}
-                  className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
-                >
-                  <Plus size={20} />
-                  <span className="hidden sm:inline">Yeni Görüşme</span>
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setCalendarCreateMenuPos({ x: rect.left, y: rect.bottom + 8 });
+                      setCalendarSlotInfo(null);
+                      setShowCalendarCreateMenu(v => !v);
+                    }}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700 shadow-md transition-all"
+                  >
+                    <Plus size={20} />
+                    <span className="hidden sm:inline">Yeni Oluştur</span>
+                  </button>
+                </div>
               </div>
+
+              {/* Google Calendar-style Quick Create Menu */}
+              {showCalendarCreateMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowCalendarCreateMenu(false)} />
+                  <div
+                    className="fixed z-50 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+                    style={{ top: calendarCreateMenuPos.y, left: calendarCreateMenuPos.x, minWidth: 220 }}
+                  >
+                    <div className="px-4 pt-4 pb-2">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Ne oluşturmak istersiniz?</p>
+                    </div>
+                    {[
+                      {
+                        key: 'event',
+                        icon: '🗓',
+                        label: 'Etkinlik',
+                        sub: 'Duyuru ve toplantı etkinliği',
+                        color: 'bg-purple-50 hover:bg-purple-100',
+                        iconBg: 'bg-purple-100',
+                        action: () => {
+                          setShowCalendarCreateMenu(false);
+                          setEditingEvent(null);
+                          const dateStr = calendarSlotInfo ? moment(calendarSlotInfo.start).format('YYYY-MM-DD') : '';
+                          const timeStr = calendarSlotInfo ? moment(calendarSlotInfo.start).format('HH:mm') : '';
+                          setNewEvent({ title: '', date: dateStr, time: timeStr, location: '', description: '', max_participants: '', recurrence: 'none', recurrence_end_date: '' });
+                          setShowEventModal(true);
+                        }
+                      },
+                      {
+                        key: 'meeting',
+                        icon: '👤',
+                        label: 'Randevu',
+                        sub: 'Kişisel veya iş görüşmesi',
+                        color: 'bg-blue-50 hover:bg-blue-100',
+                        iconBg: 'bg-blue-100',
+                        action: () => {
+                          setShowCalendarCreateMenu(false);
+                          setEditingMeeting(null);
+                          const dateStr = calendarSlotInfo ? moment(calendarSlotInfo.start).format('YYYY-MM-DD') : '';
+                          const startTime = calendarSlotInfo ? moment(calendarSlotInfo.start).format('HH:mm') : '';
+                          const endTime = calendarSlotInfo ? moment(calendarSlotInfo.end).format('HH:mm') : '';
+                          setNewMeeting({ title: '', date: dateStr, start_time: startTime, end_time: endTime, person: '', notes: '', status: 'scheduled', category: 'work', color: '#3b82f6', all_day: false, recurrence: 'none', recurrence_end_date: '' });
+                          setShowMeetingModal(true);
+                        }
+                      },
+                      {
+                        key: 'task',
+                        icon: '✅',
+                        label: 'Görev',
+                        sub: 'Yapılacaklar listesi görevi',
+                        color: 'bg-green-50 hover:bg-green-100',
+                        iconBg: 'bg-green-100',
+                        action: () => {
+                          setShowCalendarCreateMenu(false);
+                          const dateStr = calendarSlotInfo ? moment(calendarSlotInfo.start).format('YYYY-MM-DD') : '';
+                          setNewTask({ title: '', date: dateStr, priority: 'medium', status: 'todo', description: '', assignee: '' });
+                          setShowTaskModal(true);
+                        }
+                      }
+                    ].map(item => (
+                      <button
+                        key={item.key}
+                        onClick={item.action}
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${item.color}`}
+                      >
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${item.iconBg} flex-shrink-0`}>
+                          {item.icon}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-800 text-sm">{item.label}</div>
+                          <div className="text-xs text-gray-500">{item.sub}</div>
+                        </div>
+                      </button>
+                    ))}
+                    <div className="h-2" />
+                  </div>
+                </>
+              )}
+
 
               {/* Calendar Navigation Header */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
@@ -5365,6 +5451,19 @@ const FocusProApp = () => {
                         resource: ev,
                         eventType: 'event',
                         color: '#8b5cf6'
+                      })),
+                    // Görevler (salt okunur)
+                    ...tasks
+                      .filter(t => t.date)
+                      .map(t => ({
+                        id: `task-${t.id}`,
+                        title: `✅ ${t.title}`,
+                        start: new Date(`${t.date}T08:00`),
+                        end: new Date(`${t.date}T08:30`),
+                        allDay: true,
+                        resource: t,
+                        eventType: 'task',
+                        color: t.status === 'done' ? '#6b7280' : t.priority === 'high' ? '#ef4444' : t.priority === 'medium' ? '#f59e0b' : '#10b981'
                       }))
                   ]}
                   view={calendarView}
@@ -5373,29 +5472,21 @@ const FocusProApp = () => {
                   date={currentDate}
                   onNavigate={(date) => setCurrentDate(date)}
                   toolbar={false}
-                  onSelectSlot={(slotInfo) => {
-                    setShowMeetingModal(true);
-                    setEditingMeeting(null);
-                    const dateStr = moment(slotInfo.start).format('YYYY-MM-DD');
-                    const startTime = moment(slotInfo.start).format('HH:mm');
-                    const endTime = moment(slotInfo.end).format('HH:mm');
-                    setNewMeeting({ 
-                      title: '', 
-                      date: dateStr, 
-                      start_time: startTime, 
-                      end_time: endTime, 
-                      person: '', 
-                      notes: '', 
-                      status: 'scheduled',
-                      category: 'work',
-                      color: '#3b82f6',
-                      all_day: false
-                    });
+                  onSelectSlot={(slotInfo, e) => {
+                    // Store slot info and open the Quick Create menu at click position
+                    setCalendarSlotInfo(slotInfo);
+                    // Position menu near click – use a center-screen fallback
+                    const clickX = e?.clientX || window.innerWidth / 2;
+                    const clickY = e?.clientY || window.innerHeight / 2;
+                    setCalendarCreateMenuPos({ x: Math.min(clickX, window.innerWidth - 240), y: Math.min(clickY, window.innerHeight - 260) });
+                    setShowCalendarCreateMenu(true);
                   }}
                   onSelectEvent={(event) => {
                     if (event.eventType === 'event') {
-                      // Etkinliklere tıklandığında Etkinlikler sayfasına git
                       setCurrentPage('events');
+                    } else if (event.eventType === 'task') {
+                      setCurrentPage('agenda');
+                      setAgendaTab('tasks');
                     } else {
                       setEditingMeeting(event.resource);
                       setNewMeeting(event.resource);
@@ -5423,7 +5514,7 @@ const FocusProApp = () => {
                   }}
                   selectable
                   resizable
-                  draggableAccessor={(event) => event.eventType !== 'event'}
+                  draggableAccessor={(event) => event.eventType === 'meeting'}
                   eventPropGetter={(event) => ({
                     style: {
                       backgroundColor: event.color,
