@@ -2765,13 +2765,21 @@ const FocusProApp = () => {
 
                           // 1. Backend type kontrolü
                           const typeMap = {
-                            'user': 'admin', 'partner': 'partners', 'goal': 'agenda', 'video': 'videos', 'badge': 'badges', 'message': 'inbox', 'task': 'agenda', 'prospect': 'agenda'
+                            'user': 'admin', 'partner': 'partners', 'goal': 'agenda',
+                            'video': 'videos', 'badge': 'badges', 'message': 'inbox',
+                            'task': 'agenda', 'prospect': 'agenda',
+                            'event': 'events', 'event_registration': 'events', 'event_created': 'events',
+                            'meeting': 'calendar', 'meeting_created': 'calendar'
                           };
                           if (typeMap[type]) targetPage = typeMap[type];
 
                           // 2. Metin İçeriği Kontrolü (Eski bildirimler ve type="info"/"success" olanlar için)
                           if (text.includes('rozet')) {
                             targetPage = 'badges';
+                          } else if (text.includes('etkinlik') || text.includes('kayıt') || text.includes('katıl')) {
+                            targetPage = 'events';
+                          } else if (text.includes('randevu') || text.includes('görüşme') || text.includes('toplantı')) {
+                            targetPage = 'calendar';
                           } else if (text.includes('video') || text.includes('eğitim')) {
                             targetPage = 'videos';
                           } else if (text.includes('mesaj') || text.includes('message')) {
