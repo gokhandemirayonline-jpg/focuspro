@@ -3110,7 +3110,15 @@ const FocusProApp = () => {
                             )
                           )}
 
-                          {/* Admin: Katılımcı Listesi (sadece isimler, onay yok) */}
+                          {/* Katılımcı Sayısı - Tüm kullanıcılar görebilir */}
+                          {allRegistrations.length > 0 && !event.max_participants && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600 mt-2">
+                              <Users size={16} className="text-purple-600" />
+                              <span>{allRegistrations.length} kişi katıldı</span>
+                            </div>
+                          )}
+
+                          {/* Admin: İsim Listesi */}
                           {currentUser?.role === 'admin' && allRegistrations.length > 0 && (
                             <div className="mt-4 pt-4 border-t border-gray-200" onClick={(e) => e.stopPropagation()}>
                               <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
@@ -8123,9 +8131,38 @@ const FocusProApp = () => {
                     </div>
                   </div>
                 )}
+                {!selectedEvent.max_participants && eventRegistrations.filter(r => r.event_id === selectedEvent.id).length > 0 && (
+                  <div className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border border-purple-100 md:col-span-2">
+                    <Users size={24} className="text-purple-600 flex-shrink-0 mt-1" />
+                    <div>
+                      <p className="text-sm text-purple-600 font-semibold">Katılımcılar</p>
+                      <p className="text-lg text-gray-900 font-medium">
+                        {eventRegistrations.filter(r => r.event_id === selectedEvent.id).length} kişi katıldı
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Description */}
+              {/* Admin-only: Katılımcı isim listesi */}
+              {currentUser?.role === 'admin' && eventRegistrations.filter(r => r.event_id === selectedEvent.id).length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <Users size={20} /> Katılımcı Listesi
+                  </h3>
+                  <div className="space-y-2">
+                    {eventRegistrations.filter(r => r.event_id === selectedEvent.id).map(reg => (
+                      <div key={reg.id} className="flex items-center justify-between bg-green-50 border border-green-100 rounded-lg p-3">
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{reg.user_name}</p>
+                          <p className="text-xs text-gray-500">{reg.user_email}</p>
+                        </div>
+                        <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-1 rounded-full">✓ Katıldı</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {selectedEvent.description && (
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">Açıklama</h3>
