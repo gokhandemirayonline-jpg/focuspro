@@ -258,6 +258,9 @@ class MeetingBase(BaseModel):
     category: str = "work"  # work, personal, important
     color: str = "#3b82f6"  # Default blue color
     all_day: bool = False
+    recurrence: str = "none" # none, daily, weekdays, weekly, monthly, yearly
+    recurrence_end_date: Optional[str] = None
+    group_id: Optional[str] = None
 
 class MeetingCreate(MeetingBase):
     pass
@@ -637,6 +640,9 @@ class EventBase(BaseModel):
     description: str = ""
     max_participants: str = ""
     image: Optional[str] = None
+    recurrence: str = "none" # none, daily, weekdays, weekly, monthly, yearly
+    recurrence_end_date: Optional[str] = None
+    group_id: Optional[str] = None
 
 class EventCreate(EventBase):
     pass

@@ -59,6 +59,63 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+import calendar
+
+def add_months(sourcedate, months):
+    month = sourcedate.month - 1 + months
+    year = sourcedate.year + month // 12
+    month = month % 12 + 1
+    day = min(sourcedate.day, calendar.monthrange(year,month)[1])
+    return datetime.datetime(year, month, day)
+
+def generate_recurring_dates(start_date_str, recurrence, recurrence_end_date_str=None):
+    from datetime import datetime, timedelta
+    dates = []
+    try:
+        current_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+        if recurrence_end_date_str:
+            end_date = datetime.strptime(recurrence_end_date_str, "%Y-%m-%d")
+        else:
+            end_date = current_date + timedelta(days=365)
+            
+        if end_date > current_date + timedelta(days=365):
+             end_date = current_date + timedelta(days=365)
+             
+        while current_date <= end_date:
+            valid_to_add = True
+            
+            if recurrence == "weekdays":
+                if current_date.weekday() >= 5: # 5=Sat, 6=Sun
+                    valid_to_add = False
+            
+            if valid_to_add:
+                dates.append(current_date.strftime("%Y-%m-%d"))
+
+            if recurrence in ["daily", "weekdays"]:
+                current_date += timedelta(days=1)
+            elif recurrence == "weekly":
+                current_date += timedelta(days=7)
+            elif recurrence == "monthly":
+                try:
+                    month = current_date.month - 1 + 1
+                    year = current_date.year + month // 12
+                    month = month % 12 + 1
+                    day = min(current_date.day, calendar.monthrange(year, month)[1])
+                    current_date = current_date.replace(year=year, month=month, day=day)
+                except ValueError:
+                    break
+            elif recurrence == "yearly":
+                try:
+                    current_date = current_date.replace(year=current_date.year + 1)
+                except ValueError: # Feb 29
+                    current_date = current_date + timedelta(days=365)
+            else:
+                break
+    except Exception as e:
+        pass
+        
+    return list(dict.fromkeys(dates)) # Remove duplicates if any
+
 # JWT settings
 SECRET_KEY = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
 ALGORITHM = "HS256"
@@ -1110,12 +1167,36 @@ async def get_meetings(current_user: dict = Depends(get_current_user)):
 async def create_meeting(meeting_data: MeetingCreate, current_user: dict = Depends(get_current_user)):
     meeting_dict = meeting_data.model_dump()
     meeting_dict['user_id'] = current_user['id']
-    meeting_obj = Meeting(**meeting_dict)
     
-    doc = meeting_obj.model_dump()
-    doc['created_at'] = doc['created_at'].isoformat()
-    
-    await db.meetings.insert_one(doc)
+    if meeting_data.recurrence and meeting_data.recurrence != "none":
+        group_id = str(uuid.uuid4())
+        dates = generate_recurring_dates(meeting_data.date, meeting_data.recurrence, meeting_data.recurrence_end_date)
+        first_obj = None
+        docs = []
+        for d in dates:
+            m_dict = meeting_dict.copy()
+            m_dict['date'] = d
+            m_dict['group_id'] = group_id
+            m_obj = Meeting(**m_dict)
+            doc = m_obj.model_dump()
+            doc['created_at'] = doc['created_at'].isoformat()
+            docs.append(doc)
+            if not first_obj:
+                first_obj = m_obj
+                
+        if docs:
+            await db.meetings.insert_many(docs)
+            meeting_obj = first_obj
+        else:
+            meeting_obj = Meeting(**meeting_dict)
+            doc = meeting_obj.model_dump()
+            doc['created_at'] = doc['created_at'].isoformat()
+            await db.meetings.insert_one(doc)
+    else:
+        meeting_obj = Meeting(**meeting_dict)
+        doc = meeting_obj.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        await db.meetings.insert_one(doc)
     
     # Notify admin if user is not admin
     if current_user['role'] != 'admin':
@@ -2028,11 +2109,38 @@ async def create_event(event_data: EventCreate, current_user: dict = Depends(get
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin access required")
     
-    event_obj = Event(**event_data.model_dump())
-    doc = event_obj.model_dump()
-    doc['created_at'] = doc['created_at'].isoformat()
+    event_dict = event_data.model_dump()
     
-    await db.events.insert_one(doc)
+    if event_data.recurrence and event_data.recurrence != "none":
+        group_id = str(uuid.uuid4())
+        dates = generate_recurring_dates(event_data.date, event_data.recurrence, event_data.recurrence_end_date)
+        first_obj = None
+        docs = []
+        for d in dates:
+            e_dict = event_dict.copy()
+            e_dict['date'] = d
+            e_dict['group_id'] = group_id
+            e_obj = Event(**e_dict)
+            doc = e_obj.model_dump()
+            doc['created_at'] = doc['created_at'].isoformat()
+            docs.append(doc)
+            if not first_obj:
+                first_obj = e_obj
+                
+        if docs:
+            await db.events.insert_many(docs)
+            event_obj = first_obj
+        else:
+            event_obj = Event(**event_dict)
+            doc = event_obj.model_dump()
+            doc['created_at'] = doc['created_at'].isoformat()
+            await db.events.insert_one(doc)
+    else:
+        event_obj = Event(**event_dict)
+        doc = event_obj.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        await db.events.insert_one(doc)
+        
     return event_obj
 
 @api_router.put("/events/{event_id}", response_model=Event)

@@ -336,14 +336,14 @@ const FocusProApp = () => {
     confirm_password: ''
   });
 
-  const [newMeeting, setNewMeeting] = useState({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled', category: 'work', color: '#3b82f6', all_day: false });
+  const [newMeeting, setNewMeeting] = useState({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled', category: 'work', color: '#3b82f6', all_day: false, recurrence: 'none', recurrence_end_date: '' });
   const [newTask, setNewTask] = useState({ title: '', date: '', priority: 'medium', status: 'todo', description: '', assignee: '' });
   const [newGoal, setNewGoal] = useState({ title: '', type: 'daily', target: '', deadline: '', current: 0 });
   const [newReason, setNewReason] = useState({ title: '', description: '', image: '' });
   const [newProspect, setNewProspect] = useState({ name: '', phone: '', email: '', status: 'new', notes: '', source: '' });
   const [newPartner, setNewPartner] = useState({ name: '', phone: '', email: '', rank: '', join_date: '', performance: '', status: 'active' });
   const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'user' });
-  const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '', location: '', description: '', max_participants: '' });
+  const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '', location: '', description: '', max_participants: '', recurrence: 'none', recurrence_end_date: '' });
   const [newRecommendation, setNewRecommendation] = useState({ title: '', type: 'book', description: '', cover_image: '', link: '', author: '', duration: '', category: '' });
   const [newBlog, setNewBlog] = useState({ title: '', content: '', cover_image: '', excerpt: '', category: '', tags: [], published: false });
 
@@ -1296,7 +1296,7 @@ const FocusProApp = () => {
       }
       
       await loadMeetings();
-      setNewMeeting({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled' });
+      setNewMeeting({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled', recurrence: 'none', recurrence_end_date: '' });
       setEditingMeeting(null);
       setShowMeetingModal(false);
       setSelectedDate(null);
@@ -1986,7 +1986,7 @@ const FocusProApp = () => {
       }
       
       await loadEvents();
-      setNewEvent({ title: '', date: '', time: '', location: '', description: '', max_participants: '' });
+      setNewEvent({ title: '', date: '', time: '', location: '', description: '', max_participants: '', recurrence: 'none', recurrence_end_date: '' });
       setEditingEvent(null);
       setShowEventModal(false);
     } catch (error) {
@@ -2962,7 +2962,7 @@ const FocusProApp = () => {
                       onClick={() => {
                         setShowEventModal(true);
                         setEditingEvent(null);
-                        setNewEvent({ title: '', date: '', time: '', location: '', description: '', max_participants: '', image: '' });
+                        setNewEvent({ title: '', date: '', time: '', location: '', description: '', max_participants: '', image: '', recurrence: 'none', recurrence_end_date: '' });
                       }}
                       className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
                     >
@@ -5018,7 +5018,7 @@ const FocusProApp = () => {
                   onClick={() => {
                     setShowMeetingModal(true);
                     setEditingMeeting(null);
-                    setNewMeeting({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled', category: 'work', color: '#3b82f6', all_day: false });
+                    setNewMeeting({ title: '', date: '', start_time: '', end_time: '', person: '', notes: '', status: 'scheduled', category: 'work', color: '#3b82f6', all_day: false, recurrence: 'none', recurrence_end_date: '' });
                   }}
                   className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
                 >
@@ -6450,6 +6450,33 @@ const FocusProApp = () => {
                 className="w-full px-4 py-2 border rounded-lg"
               />
               
+              {/* Recurrence Selection */}
+              <select
+                value={newMeeting.recurrence || 'none'}
+                onChange={(e) => setNewMeeting({...newMeeting, recurrence: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg"
+              >
+                <option value="none">Tekrarlanmaz</option>
+                <option value="daily">Her gün</option>
+                <option value="weekdays">Hafta içi her gün (Pazartesi-Cuma)</option>
+                <option value="weekly">Her hafta</option>
+                <option value="monthly">Her ay</option>
+                <option value="yearly">Her yıl</option>
+              </select>
+              
+              {newMeeting.recurrence && newMeeting.recurrence !== 'none' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tekrar Bitiş Tarihi (Maks 1 Yıl)</label>
+                  <input
+                    type="date"
+                    value={newMeeting.recurrence_end_date || ''}
+                    onChange={(e) => setNewMeeting({...newMeeting, recurrence_end_date: e.target.value})}
+                    className="w-full px-4 py-2 border rounded-lg bg-purple-50 focus:bg-white"
+                    min={newMeeting.date}
+                  />
+                </div>
+              )}
+              
               {/* All Day Checkbox */}
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -7822,6 +7849,33 @@ const FocusProApp = () => {
                 placeholder="Maksimum Katılımcı"
                 className="w-full px-4 py-2 border rounded-lg"
               />
+              
+              {/* Recurrence Selection */}
+              <select
+                value={newEvent.recurrence || 'none'}
+                onChange={(e) => setNewEvent({...newEvent, recurrence: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg"
+              >
+                <option value="none">Tekrarlanmaz</option>
+                <option value="daily">Her gün</option>
+                <option value="weekdays">Hafta içi her gün (Pazartesi-Cuma)</option>
+                <option value="weekly">Her hafta</option>
+                <option value="monthly">Her ay</option>
+                <option value="yearly">Her yıl</option>
+              </select>
+              
+              {newEvent.recurrence && newEvent.recurrence !== 'none' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tekrar Bitiş Tarihi (Maks 1 Yıl)</label>
+                  <input
+                    type="date"
+                    value={newEvent.recurrence_end_date || ''}
+                    onChange={(e) => setNewEvent({...newEvent, recurrence_end_date: e.target.value})}
+                    className="w-full px-4 py-2 border rounded-lg bg-purple-50 focus:bg-white"
+                    min={newEvent.date}
+                  />
+                </div>
+              )}
               
               {/* Image Upload Section */}
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
