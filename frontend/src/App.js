@@ -2499,10 +2499,16 @@ const FocusProApp = () => {
           )}
         </div>
 
-        {/* User Mini Profile */}
+        {/* User Mini Profile - tiklandiginda profil sayfasina gider */}
         <div className={`px-4 pb-4 mb-2 border-b ${darkMode ? 'border-gray-700' : 'border-white/10'}`}>
-          <div className={`flex items-center ${sidebarOpen ? 'gap-3' : 'justify-center'} p-2 rounded-xl bg-white/5`}>
-            <div className="w-8 h-8 rounded-full bg-white/20 flex-shrink-0 overflow-hidden flex items-center justify-center">
+          <button
+            onClick={() => setCurrentPage('profile')}
+            className={`w-full flex items-center ${sidebarOpen ? 'gap-3' : 'justify-center'} p-2 rounded-xl transition-all ${
+              currentPage === 'profile' ? 'bg-white/20' : 'bg-white/5 hover:bg-white/15'
+            }`}
+            title="Profilimi Gör"
+          >
+            <div className="w-8 h-8 rounded-full bg-white/20 flex-shrink-0 overflow-hidden flex items-center justify-center ring-2 ring-white/20">
               {profileData?.profile_photo ? (
                 <img src={profileData.profile_photo} alt="User" className="w-full h-full object-cover" />
               ) : (
@@ -2510,12 +2516,12 @@ const FocusProApp = () => {
               )}
             </div>
             {sidebarOpen && (
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 text-left">
                 <p className="text-sm font-semibold truncate">{currentUser?.name}</p>
                 <p className="text-[10px] text-white/50 truncate">ID: {formatUserNumber(currentUser?.user_number)}</p>
               </div>
             )}
-          </div>
+          </button>
         </div>
 
         <nav className="flex-1 px-2 py-4 space-y-2">
@@ -2596,15 +2602,6 @@ const FocusProApp = () => {
             )}
           </button>
 
-          <button
-            onClick={() => setCurrentPage('profile')}
-            className={`w-full flex items-center gap-3 ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 rounded-lg transition-all ${
-              currentPage === 'profile' ? 'bg-white/20' : 'hover:bg-white/10'
-            }`}
-          >
-            <User size={20} />
-            {sidebarOpen && <span>Profilim</span>}
-          </button>
 
           <button
             onClick={() => setCurrentPage('badges')}
