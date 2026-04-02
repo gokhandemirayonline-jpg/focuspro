@@ -2753,18 +2753,49 @@ const FocusProApp = () => {
                     ) : (
                       notifications.slice(0, 10).map(notif => {
                         // Determine page based on notification type
-                        const getNotificationPage = (type) => {
+                        const getNotificationRouting = (notif) => {
+                          const type = notif.type;
+                          const text = (notif.title + ' ' + notif.message).toLowerCase();
+                          
+                          let targetPage = 'dashboard';
+                          let targetTab = null;
+
+                          // 1. Backend type kontrolü
                           const typeMap = {
-                            'user': 'admin',
-                            'partner': 'partners',
-                            'goal': 'agenda',
-                            'video': 'videos',
-                            'badge': 'badges',
-                            'message': 'inbox',
-                            'task': 'agenda',
-                            'prospect': 'agenda'
+                            'user': 'admin', 'partner': 'partners', 'goal': 'agenda', 'video': 'videos', 'badge': 'badges', 'message': 'inbox', 'task': 'agenda', 'prospect': 'agenda'
                           };
-                          return typeMap[type] || 'dashboard';
+                          if (typeMap[type]) targetPage = typeMap[type];
+
+                          // 2. Metin İçeriği Kontrolü (Eski bildirimler ve type="info"/"success" olanlar için)
+                          if (text.includes('rozet')) {
+                            targetPage = 'badges';
+                          } else if (text.includes('video') || text.includes('eğitim')) {
+                            targetPage = 'videos';
+                          } else if (text.includes('mesaj') || text.includes('message')) {
+                            targetPage = 'inbox';
+                          } else if (text.includes('görev') || text.includes('task')) {
+                            targetPage = 'agenda';
+                            targetTab = 'tasks';
+                          } else if (text.includes('hedef') || text.includes('goal')) {
+                            targetPage = 'agenda';
+                            targetTab = 'goals';
+                          } else if (text.includes('aday') || text.includes('prospect')) {
+                            targetPage = 'agenda';
+                            targetTab = 'prospects';
+                          } else if (text.includes('partner') || text.includes('ekip')) {
+                            targetPage = 'partners';
+                          } else if (text.includes('hoş geldiniz') || text.includes('welcome')) {
+                            targetPage = 'dashboard';
+                          }
+
+                          // 3. Tipik Agenda Tab düzeltmesi (backend type gelmişse eziyoruz)
+                          if (targetPage === 'agenda' && !targetTab) {
+                            if (type === 'task') targetTab = 'tasks';
+                            else if (type === 'goal') targetTab = 'goals';
+                            else if (type === 'prospect') targetTab = 'prospects';
+                          }
+
+                          return { targetPage, targetTab };
                         };
 
                         return (
@@ -2772,12 +2803,12 @@ const FocusProApp = () => {
                             key={notif.id}
                             onClick={() => {
                               if (!notif.read) markNotificationRead(notif.id);
-                              const targetPage = getNotificationPage(notif.type);
+                              
+                              const { targetPage, targetTab } = getNotificationRouting(notif);
+                              
                               setCurrentPage(targetPage);
-                              if (targetPage === 'agenda') {
-                                if (notif.type === 'task') setAgendaTab('tasks');
-                                else if (notif.type === 'goal') setAgendaTab('goals');
-                                else if (notif.type === 'prospect') setAgendaTab('prospects');
+                              if (targetTab) {
+                                setAgendaTab(targetTab);
                               }
                               // Eğer message notification ise, mesaj ID'sini al
                               if (targetPage === 'inbox' && notif.link) {
