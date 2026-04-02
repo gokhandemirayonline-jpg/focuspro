@@ -179,6 +179,7 @@ const FocusProApp = () => {
   const [newHabit, setNewHabit] = useState({ title: '', target: 1 });
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventModal, setShowEventModal] = useState(false);
+  const [eventsLoading, setEventsLoading] = useState(false);
   
   // Forgot Password States
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
@@ -387,7 +388,14 @@ const FocusProApp = () => {
     }
   }, [currentPage, autoOpenEventId, events]);
 
-  // Mesajları gönderene göre grupla (Thread sistemi)
+  // Events sayfasina gelindiginde veriyi yenile
+  useEffect(() => {
+    if (currentPage === 'events' && isLoggedIn) {
+      loadEvents();
+      loadEventRegistrations();
+    }
+  }, [currentPage]);
+
   const groupMessagesBySender = () => {
     const grouped = {};
     
@@ -1008,11 +1016,14 @@ const FocusProApp = () => {
   };
 
   const loadEvents = async () => {
+    setEventsLoading(true);
     try {
       const response = await eventAPI.getAll();
       setEvents(response.data);
     } catch (error) {
       console.error('Events yüklenemedi:', error);
+    } finally {
+      setEventsLoading(false);
     }
   };
 
@@ -2901,6 +2912,16 @@ const FocusProApp = () => {
           {/* EVENTS PAGE - NEW DESIGN */}
           {currentPage === 'events' && (
             <div className="space-y-6">
+              {/* Loading Spinner */}
+              {eventsLoading && (
+                <div className="flex flex-col items-center justify-center py-24 gap-4">
+                  <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                  <p className="text-gray-500 text-sm">Etkinlikler yükleniyor...</p>
+                </div>
+              )}
+
+              {!eventsLoading && (
+              <>
               {/* Header with Calendar Date Slider */}
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -3082,6 +3103,8 @@ const FocusProApp = () => {
                   <p className="text-gray-600 text-lg">Bu tarihte etkinlik bulunmuyor</p>
                   <p className="text-gray-500 text-sm mt-2">Farklı bir tarih seçmek için yukarıdaki ok butonlarını kullanın</p>
                 </div>
+              )}
+              </>
               )}
             </div>
           )}
