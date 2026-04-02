@@ -3528,17 +3528,6 @@ const FocusProApp = () => {
                       Taahhüt
                     </button>
                     <button
-                      onClick={() => setAgendaTab('tasks')}
-                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                        agendaTab === 'tasks' 
-                          ? 'bg-purple-100 text-purple-700' 
-                          : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      <ListChecks size={16} />
-                      Görevler
-                    </button>
-                    <button
                       onClick={() => setAgendaTab('prospects')}
                       className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                         agendaTab === 'prospects' 
@@ -3548,6 +3537,17 @@ const FocusProApp = () => {
                     >
                       <UserPlus size={16} />
                       İsim Listesi
+                    </button>
+                    <button
+                      onClick={() => setAgendaTab('tasks')}
+                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                        agendaTab === 'tasks' 
+                          ? 'bg-purple-100 text-purple-700' 
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <ListChecks size={16} />
+                      Görevler
                     </button>
                     <button
                       onClick={() => setAgendaTab('goals')}
