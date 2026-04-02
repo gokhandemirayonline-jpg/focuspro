@@ -2841,14 +2841,6 @@ const FocusProApp = () => {
                                   setAutoOpenMessageId(messageId);
                                 }
                               }
-                              // Eğer etkinlik bildirimi ise, event_id'yi al ve o etkinliği aç
-                              if (targetPage === 'events' && notif.link) {
-                                const urlParams = new URLSearchParams(notif.link.split('?')[1]);
-                                const eventId = urlParams.get('event_id');
-                                if (eventId) {
-                                  setAutoOpenEventId(eventId);
-                                }
-                              }
                               setShowNotifications(false);
                             }}
                             className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${!notif.read ? 'bg-purple-50' : ''}`}
