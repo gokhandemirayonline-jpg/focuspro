@@ -743,7 +743,7 @@ class Blog(BlogBase):
 # Event Registration Models
 class EventRegistrationBase(BaseModel):
     event_id: str
-    status: str = "pending"  # pending, approved, rejected
+    status: str = "approved"  # approved, rejected
 
 class EventRegistrationCreate(EventRegistrationBase):
     pass

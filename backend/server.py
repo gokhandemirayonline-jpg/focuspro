@@ -2208,8 +2208,8 @@ async def register_for_event(event_id: str, current_user: dict = Depends(get_cur
     for admin in admin_users:
         notification = Notification(
             user_id=admin['id'],
-            title="Yeni Etkinlik Kaydı",
-            message=f"{current_user['name']} '{event['title']}' etkinliğine katılmak istiyor.",
+            title="Yeni Etkinlik Katılımı",
+            message=f"{current_user['name']} '{event['title']}' etkinliğine katıldı.",
             type="event_registration",
             link=f"/events?event_id={event_id}"
         )

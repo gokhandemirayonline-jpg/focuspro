@@ -2841,14 +2841,6 @@ const FocusProApp = () => {
                                   setAutoOpenMessageId(messageId);
                                 }
                               }
-                              // Eğer etkinlik bildirimi ise, event_id'yi al ve o etkinliği aç
-                              if (targetPage === 'events' && notif.link) {
-                                const urlParams = new URLSearchParams(notif.link.split('?')[1]);
-                                const eventId = urlParams.get('event_id');
-                                if (eventId) {
-                                  setAutoOpenEventId(eventId);
-                                }
-                              }
                               setShowNotifications(false);
                             }}
                             className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${!notif.read ? 'bg-purple-50' : ''}`}
@@ -3102,13 +3094,8 @@ const FocusProApp = () => {
                           {/* Status Badge */}
                           {currentUser?.role !== 'admin' && (
                             userRegistration ? (
-                              <div className={`py-2 rounded-lg text-center font-medium text-sm ${
-                                userRegistration.status === 'approved' ? 'bg-green-100 text-green-700' :
-                                userRegistration.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                                'bg-yellow-100 text-yellow-700'
-                              }`}>
-                                {userRegistration.status === 'approved' ? '✓ Katılıyorsunuz' :
-                                 userRegistration.status === 'rejected' ? '✗ Reddedildi' : '⏳ Beklemede'}
+                              <div className="py-2 rounded-lg text-center font-medium text-sm bg-green-100 text-green-700">
+                                ✓ Katıldınız
                               </div>
                             ) : !isPast && (
                               <button
@@ -3123,52 +3110,23 @@ const FocusProApp = () => {
                             )
                           )}
 
-                          {/* Admin: Registration Requests for this Event */}
+                          {/* Admin: Katılımcı Listesi (sadece isimler, onay yok) */}
                           {currentUser?.role === 'admin' && allRegistrations.length > 0 && (
                             <div className="mt-4 pt-4 border-t border-gray-200" onClick={(e) => e.stopPropagation()}>
                               <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                                 <Users size={16} />
-                                Katılım Talepleri ({allRegistrations.length})
+                                Katılımcılar ({allRegistrations.length})
                               </h4>
                               <div className="space-y-2">
                                 {allRegistrations.map(reg => (
-                                  <div key={reg.id} className="bg-gray-50 rounded-lg p-3">
-                                    <div className="flex items-center justify-between mb-2">
-                                      <div className="flex-1">
-                                        <p className="text-sm font-medium text-gray-800">{reg.user_name}</p>
-                                        <p className="text-xs text-gray-500">{reg.user_email}</p>
-                                      </div>
-                                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                        reg.status === 'approved' ? 'bg-green-100 text-green-700' :
-                                        reg.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                                        'bg-yellow-100 text-yellow-700'
-                                      }`}>
-                                        {reg.status === 'approved' ? 'Onaylandı' :
-                                         reg.status === 'rejected' ? 'Reddedildi' : 'Beklemede'}
-                                      </span>
+                                  <div key={reg.id} className="bg-green-50 rounded-lg p-3 flex items-center justify-between">
+                                    <div>
+                                      <p className="text-sm font-medium text-gray-800">{reg.user_name}</p>
+                                      <p className="text-xs text-gray-500">{reg.user_email}</p>
                                     </div>
-                                    {reg.status === 'pending' && (
-                                      <div className="flex gap-2">
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            updateRegistrationStatus(reg.id, 'approved');
-                                          }}
-                                          className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1.5 rounded-lg font-medium"
-                                        >
-                                          Onayla
-                                        </button>
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            updateRegistrationStatus(reg.id, 'rejected');
-                                          }}
-                                          className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs py-1.5 rounded-lg font-medium"
-                                        >
-                                          Reddet
-                                        </button>
-                                      </div>
-                                    )}
+                                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                      ✓ Katıldı
+                                    </span>
                                   </div>
                                 ))}
                               </div>
@@ -8184,13 +8142,8 @@ const FocusProApp = () => {
                   
                   if (userRegistration) {
                     return (
-                      <div className={`flex-1 py-3 rounded-lg text-center font-semibold ${
-                        userRegistration.status === 'approved' ? 'bg-green-100 text-green-700' :
-                        userRegistration.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                        'bg-yellow-100 text-yellow-700'
-                      }`}>
-                        {userRegistration.status === 'approved' ? '✓ Katılıyorsunuz' :
-                         userRegistration.status === 'rejected' ? '✗ Reddedildi' : '⏳ Beklemede'}
+                      <div className="flex-1 py-3 rounded-lg text-center font-semibold bg-green-100 text-green-700">
+                        ✓ Katıldınız
                       </div>
                     );
                   } else if (!isPast) {
