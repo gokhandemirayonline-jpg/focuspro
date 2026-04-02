@@ -2892,84 +2892,12 @@ const FocusProApp = () => {
           )}
 
 
-          {/* TASKS PAGE */}
-          {currentPage === 'tasks' && (
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold text-gray-800">Görevler</h2>
-                <button
-                  onClick={() => {
-                    setShowTaskModal(true);
-                    setEditingTask(null);
-                    setNewTask({ title: '', date: '', priority: 'medium', status: 'todo', description: '', assignee: '' });
-                  }}
-                  className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
-                >
-                  <Plus size={20} />
-                  Yeni Görev
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {['todo', 'in_progress', 'done'].map(status => (
-                  <div key={status} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h3 className="font-bold text-gray-800 mb-4">
-                      {status === 'todo' ? 'Yapılacak' : status === 'in_progress' ? 'Devam Ediyor' : 'Tamamlandı'}
-                      <span className="ml-2 text-sm text-gray-500">
-                        ({tasks.filter(t => t.status === status).length})
-                      </span>
-                    </h3>
-                    <div className="space-y-3">
-                      {tasks.filter(t => t.status === status).map(task => (
-                        <div key={task.id} className="p-4 bg-gray-50 rounded-lg">
-                          <div className="flex items-start justify-between mb-2">
-                            <h4 className="font-semibold text-gray-800">{task.title}</h4>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => {
-                                  setEditingTask(task);
-                                  setNewTask(task);
-                                  setShowTaskModal(true);
-                                }}
-                                className="text-blue-600 hover:text-blue-700"
-                              >
-                                <Edit size={16} />
-                              </button>
-                              <button
-                                onClick={() => deleteTask(task.id)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
-                          </div>
-                          <p className="text-sm text-gray-600 mb-2">{task.description}</p>
-                          <div className="flex items-center justify-between text-xs text-gray-500">
-                            <span>{task.date}</span>
-                            <span className={`px-2 py-1 rounded-full ${
-                              task.priority === 'high' ? 'bg-red-100 text-red-700' :
-                              task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-green-100 text-green-700'
-                            }`}>
-                              {task.priority === 'high' ? 'Yüksek' : task.priority === 'medium' ? 'Orta' : 'Düşük'}
-                            </span>
-                          </div>
-                          {status !== 'done' && (
-                            <button
-                              onClick={() => updateTaskStatus(task.id, status === 'todo' ? 'in_progress' : 'done')}
-                              className="mt-3 w-full bg-purple-600 text-white py-2 rounded-lg text-sm hover:bg-purple-700"
-                            >
-                              {status === 'todo' ? 'Başla' : 'Tamamla'}
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* TASKS PAGE - Redirect to Agenda tasks tab */}
+          {currentPage === 'tasks' && (() => {
+            setCurrentPage('agenda');
+            setAgendaTab('tasks');
+            return null;
+          })()}
 
 
 
@@ -3642,14 +3570,13 @@ const FocusProApp = () => {
               <div className="px-1 overflow-x-hidden">
                 {agendaTab === 'tasks' && (
                   <div>
-                    {/* TASKS CONTENT - Will be moved here */}
                     <div className="mb-4 md:mb-6 flex items-center justify-between">
                       <h2 className="text-lg md:text-2xl font-bold text-gray-800">Görevler</h2>
                       <button
                         onClick={() => {
                           setShowTaskModal(true);
                           setEditingTask(null);
-                          setNewTask({ title: '', description: '', date: '', status: 'todo' });
+                          setNewTask({ title: '', description: '', date: '', priority: 'medium', status: 'todo', assignee: '' });
                         }}
                         className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700"
                       >
@@ -3658,37 +3585,55 @@ const FocusProApp = () => {
                       </button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {['todo', 'doing', 'done'].map(status => (
-                        <div key={status} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-                          <h3 className="font-bold text-gray-700 mb-4 text-center">
-                            {status === 'todo' ? '📝 Yapılacak' : status === 'doing' ? '⚡ Devam Eden' : '✅ Tamamlandı'}
+                      {['todo', 'in_progress', 'done'].map(status => (
+                        <div key={status} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                          <h3 className="font-bold text-gray-700 mb-4 text-center flex items-center justify-center gap-2">
+                            {status === 'todo' ? '📝 Yapılacak' : status === 'in_progress' ? '⚡ Devam Eden' : '✅ Tamamlandı'}
+                            <span className="ml-1 text-sm text-gray-400">({tasks.filter(t => t.status === status).length})</span>
                           </h3>
                           <div className="space-y-3">
                             {tasks.filter(t => t.status === status).map(task => (
-                              <div key={task.id} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                <h4 className="font-semibold text-gray-800">{task.title}</h4>
-                                <p className="text-sm text-gray-600 mt-1">{task.description}</p>
-                                {task.date && (
-                                  <p className="text-xs text-gray-500 mt-2">📅 {task.date}</p>
-                                )}
-                                <div className="flex gap-2 mt-3">
-                                  <button
-                                    onClick={() => {
-                                      setEditingTask(task);
-                                      setNewTask(task);
-                                      setShowTaskModal(true);
-                                    }}
-                                    className="text-blue-600 hover:text-blue-800 text-sm"
-                                  >
-                                    <Edit size={16} />
-                                  </button>
-                                  <button
-                                    onClick={() => deleteTask(task.id)}
-                                    className="text-red-600 hover:text-red-800 text-sm"
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
+                              <div key={task.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <div className="flex items-start justify-between mb-2">
+                                  <h4 className="font-semibold text-gray-800">{task.title}</h4>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => {
+                                        setEditingTask(task);
+                                        setNewTask(task);
+                                        setShowTaskModal(true);
+                                      }}
+                                      className="text-blue-600 hover:text-blue-700"
+                                    >
+                                      <Edit size={16} />
+                                    </button>
+                                    <button
+                                      onClick={() => deleteTask(task.id)}
+                                      className="text-red-600 hover:text-red-700"
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </div>
                                 </div>
+                                <p className="text-sm text-gray-600 mb-2">{task.description}</p>
+                                <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+                                  {task.date && <span>📅 {task.date}</span>}
+                                  <span className={`px-2 py-1 rounded-full ${
+                                    task.priority === 'high' ? 'bg-red-100 text-red-700' :
+                                    task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-green-100 text-green-700'
+                                  }`}>
+                                    {task.priority === 'high' ? 'Yüksek' : task.priority === 'medium' ? 'Orta' : 'Düşük'}
+                                  </span>
+                                </div>
+                                {status !== 'done' && (
+                                  <button
+                                    onClick={() => updateTaskStatus(task.id, status === 'todo' ? 'in_progress' : 'done')}
+                                    className="mt-1 w-full bg-purple-600 text-white py-2 rounded-lg text-sm hover:bg-purple-700 font-medium"
+                                  >
+                                    {status === 'todo' ? 'Başla' : 'Tamamla'}
+                                  </button>
+                                )}
                               </div>
                             ))}
                           </div>
