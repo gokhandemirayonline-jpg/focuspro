@@ -3503,6 +3503,30 @@ const FocusProApp = () => {
               <div className="mb-4 md:mb-6 relative">
                 <div className="overflow-x-auto hide-scrollbar touch-pan-x" style={{WebkitOverflowScrolling: 'touch'}}>
                   <div className="flex gap-1 min-w-max pb-2 px-1 border-b border-gray-200">
+                    {/* Hayaller - en sol */}
+                    <button
+                      onClick={() => setAgendaTab('dreams')}
+                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                        agendaTab === 'dreams' 
+                          ? 'bg-purple-100 text-purple-700' 
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Star size={16} />
+                      Hayaller
+                    </button>
+                    {/* Taahhüt - yeni tab */}
+                    <button
+                      onClick={() => setAgendaTab('commitment')}
+                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                        agendaTab === 'commitment' 
+                          ? 'bg-orange-100 text-orange-700' 
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Shield size={16} />
+                      Taahhüt
+                    </button>
                     <button
                       onClick={() => setAgendaTab('tasks')}
                       className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
@@ -3546,17 +3570,6 @@ const FocusProApp = () => {
                     >
                       <CheckCircle2 size={16} />
                       Alışkanlıklar
-                    </button>
-                    <button
-                      onClick={() => setAgendaTab('dreams')}
-                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                        agendaTab === 'dreams' 
-                          ? 'bg-purple-100 text-purple-700' 
-                          : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      <Star size={16} />
-                      Hayaller
                     </button>
                     <button
                       onClick={() => setAgendaTab('character')}
@@ -3660,6 +3673,21 @@ const FocusProApp = () => {
                         </div>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {agendaTab === 'commitment' && (
+                  <div>
+                    <div className="mb-6 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                        <Shield size={20} className="text-orange-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-gray-800">Taahhüt</h2>
+                        <p className="text-sm text-gray-500">İsim listenizi yönetin, takip edin</p>
+                      </div>
+                    </div>
+                    <ProspectsPage user={currentUser} />
                   </div>
                 )}
 
