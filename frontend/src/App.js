@@ -5331,28 +5331,42 @@ const FocusProApp = () => {
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4" style={{ height: '700px' }}>
                 <DnDCalendar
                   localizer={localizer}
-                  events={meetings
-                    .filter(m => {
-                      // Filter by status
-                      if (!showCompleted && m.status === 'completed') return false;
-                      if (!showRejected && m.status === 'cancelled') return false;
-                      // Filter by category
-                      if (!categoryFilters[m.category || 'work']) return false;
-                      return true;
-                    })
-                    .map(meeting => ({
-                      id: meeting.id,
-                      title: meeting.title,
-                      start: new Date(`${meeting.date}T${meeting.start_time || '09:00'}`),
-                      end: new Date(`${meeting.date}T${meeting.end_time || '10:00'}`),
-                      allDay: meeting.all_day || false,
-                      resource: meeting,
-                      color: meeting.color || (
-                        meeting.category === 'work' ? '#3b82f6' :
-                        meeting.category === 'personal' ? '#10b981' :
-                        meeting.category === 'important' ? '#ef4444' : '#3b82f6'
-                      )
-                    }))}
+                  events={[
+                    // Görüşmeler
+                    ...meetings
+                      .filter(m => {
+                        if (!showCompleted && m.status === 'completed') return false;
+                        if (!showRejected && m.status === 'cancelled') return false;
+                        if (!categoryFilters[m.category || 'work']) return false;
+                        return true;
+                      })
+                      .map(meeting => ({
+                        id: meeting.id,
+                        title: meeting.title,
+                        start: new Date(`${meeting.date}T${meeting.start_time || '09:00'}`),
+                        end: new Date(`${meeting.date}T${meeting.end_time || '10:00'}`),
+                        allDay: meeting.all_day || false,
+                        resource: meeting,
+                        eventType: 'meeting',
+                        color: meeting.color || (
+                          meeting.category === 'work' ? '#3b82f6' :
+                          meeting.category === 'personal' ? '#10b981' :
+                          meeting.category === 'important' ? '#ef4444' : '#3b82f6'
+                        )
+                      })),
+                    // Etkinlikler (salt okunur)
+                    ...events
+                      .map(ev => ({
+                        id: `event-${ev.id}`,
+                        title: `🗓 ${ev.title}`,
+                        start: new Date(`${ev.date}T${ev.time || '10:00'}`),
+                        end: new Date(`${ev.date}T${ev.time || '10:00'}`),
+                        allDay: !ev.time,
+                        resource: ev,
+                        eventType: 'event',
+                        color: '#8b5cf6'
+                      }))
+                  ]}
                   view={calendarView}
                   views={['day', 'week', 'work_week', 'month', 'agenda']}
                   onView={(view) => setCalendarView(view)}
@@ -5379,9 +5393,14 @@ const FocusProApp = () => {
                     });
                   }}
                   onSelectEvent={(event) => {
-                    setEditingMeeting(event.resource);
-                    setNewMeeting(event.resource);
-                    setShowMeetingModal(true);
+                    if (event.eventType === 'event') {
+                      // Etkinliklere tıklandığında Etkinlikler sayfasına git
+                      setCurrentPage('events');
+                    } else {
+                      setEditingMeeting(event.resource);
+                      setNewMeeting(event.resource);
+                      setShowMeetingModal(true);
+                    }
                   }}
                   onEventDrop={(args) => {
                     const { event, start, end } = args;
@@ -5404,12 +5423,15 @@ const FocusProApp = () => {
                   }}
                   selectable
                   resizable
-                  draggableAccessor={() => true}
+                  draggableAccessor={(event) => event.eventType !== 'event'}
                   eventPropGetter={(event) => ({
                     style: {
                       backgroundColor: event.color,
                       borderColor: event.color,
-                      color: 'white'
+                      color: 'white',
+                      opacity: event.eventType === 'event' ? 0.9 : 1,
+                      borderLeft: event.eventType === 'event' ? '4px solid #6d28d9' : undefined,
+                      cursor: event.eventType === 'event' ? 'pointer' : 'grab'
                     }
                   })}
                   messages={{
