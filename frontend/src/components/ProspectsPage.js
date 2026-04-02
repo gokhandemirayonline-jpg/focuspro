@@ -105,10 +105,11 @@ const ProspectsPage = ({ user = null }) => {
     }
   };
 
-  // Filtered prospects by category
+  // Filtered prospects by category (exclude those already in follow-up list)
   const filteredProspects = useMemo(() => {
-    if (selectedCategory === 'all') return prospects;
-    return prospects.filter((p) => p.category_id === selectedCategory);
+    const notInFollowUp = prospects.filter(p => !p.custom_fields?.in_follow_up);
+    if (selectedCategory === 'all') return notInFollowUp;
+    return notInFollowUp.filter((p) => p.category_id === selectedCategory);
   }, [prospects, selectedCategory]);
 
   // Table columns definition
