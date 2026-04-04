@@ -1023,7 +1023,8 @@ async def delete_video(video_id: str, current_user: dict = Depends(get_current_u
 
 @api_router.post("/videos/{video_id}/view")
 async def track_video_view(video_id: str, current_user: dict = Depends(get_current_user)):
-    """Track video view/watch"""
+    """Track video view - increments global view_count and per-user view_count"""
+    # 1) Global increment on videos collection (shown in UI)
     result = await db.videos.update_one(
         {"id": video_id},
         {"$inc": {"view_count": 1}}
@@ -1032,7 +1033,28 @@ async def track_video_view(video_id: str, current_user: dict = Depends(get_curre
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Video not found")
     
-    return {"success": True}
+    # 2) Per-user increment on video_progress collection
+    await db.video_progress.update_one(
+        {"user_id": current_user['id'], "video_id": video_id},
+        {
+            "$inc": {"view_count": 1},
+            "$setOnInsert": {
+                "watched": False,
+                "watch_percentage": 0,
+                "unlocked": True,
+                "user_id": current_user['id'],
+                "video_id": video_id,
+                "id": str(uuid.uuid4())
+            },
+            "$set": {"updated_at": datetime.utcnow().isoformat()}
+        },
+        upsert=True
+    )
+    
+    # 3) Get updated global count to return
+    video = await db.videos.find_one({"id": video_id}, {"_id": 0})
+    
+    return {"success": True, "view_count": video.get('view_count', 1)}
 
 @api_router.get("/videos/statistics/views")
 async def get_video_statistics(current_user: dict = Depends(get_current_user)):
@@ -3042,38 +3064,7 @@ async def reorder_videos(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# ============= VIDEO PROGRESS ENDPOINTS (Enhanced) =============
-@api_router.post("/videos/{video_id}/view")
-async def increment_video_view(
-    video_id: str,
-    current_user: dict = Depends(get_current_user)
-):
-    """Increment view count when video is opened"""
-    # Update or create progress with view count increment
-    result = await db.video_progress.update_one(
-        {"user_id": current_user['id'], "video_id": video_id},
-        {
-            "$inc": {"view_count": 1},
-            "$setOnInsert": {
-                "watched": False,
-                "watch_percentage": 0,
-                "unlocked": True,
-                "user_id": current_user['id'],
-                "video_id": video_id,
-                "id": str(uuid.uuid4())
-            },
-            "$set": {"updated_at": datetime.utcnow().isoformat()}
-        },
-        upsert=True
-    )
-    
-    # Get updated progress
-    progress = await db.video_progress.find_one(
-        {"user_id": current_user['id'], "video_id": video_id},
-        {"_id": 0}
-    )
-    
-    return {"success": True, "view_count": progress.get('view_count', 1)}
+# (view endpoint merged into /videos/{video_id}/view above)
 
 @api_router.patch("/videos/{video_id}/progress")
 async def update_video_progress(

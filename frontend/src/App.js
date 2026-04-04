@@ -2144,13 +2144,26 @@ const FocusProApp = () => {
     }
   };
 
-  const openVideo = (video) => {
+  const openVideo = async (video) => {
     // Admin can access all videos, others need unlock
     if (currentUser?.role === 'admin' || isVideoUnlocked(video.id)) {
       setSelectedVideo(video);
       setVideoWatched(false);
       const progress = getVideoProgress(video.id);
       setComment(progress?.comment || '');
+      // Track the view and update count in UI
+      try {
+        const res = await videoAPI.trackView(video.id);
+        const newCount = res.data?.view_count;
+        if (newCount !== undefined) {
+          setVideos(prev => prev.map(v =>
+            v.id === video.id ? { ...v, view_count: newCount } : v
+          ));
+          setSelectedVideo(prev => prev ? { ...prev, view_count: newCount } : prev);
+        }
+      } catch (e) {
+        console.error('View kaydedilemedi:', e);
+      }
     }
   };
 
